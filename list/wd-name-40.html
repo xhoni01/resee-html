@@ -1,0 +1,592 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><HEAD><TITLE>HistCite - RESEE: A Bibliographic Database on Balkan – Southeast European Studies</TITLE></HEAD>
+<BODY VLINK=blue OnLoad="focus()">
+<STYLE>
+body {
+	margin: 2px 10px; padding: 0;
+	background: #fff;
+}
+body, td, th {
+	font-size: 10pt; font-family: Verdana;
+}
+input, select, textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ui {
+	font-size: 10pt; font-family: Verdana;
+}
+.ui input, .ui select, .ui textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ci_title {
+	font-size: 8pt; font-weight: bold;
+}
+.ci_il {
+	color: black; text-decoration: none;	/* msie6 ! inherit */
+}
+.helpa { text-decoration: none;
+	cursor: help;
+}
+.helpt { background: #ffff77; padding: 4px;
+}
+.nu { text-decoration: none; 
+}
+.sc, .sc a { color: #904644 }
+.fnd { background-color: #beb;
+	padding: 0 3px 2px 2px;
+}
+td div.fndCR {
+	padding-left: 2em;
+//	text-indent: -2em;
+}
+.odd { background-color: #eeeeee }
+.evn { background-color: #dddddd }
+div.odd { padding: 5px; margin-bottom: 2px }
+div.evn { padding: 5px; margin-bottom: 2px }
+.yr { padding: 0; font-weight: bold }
+.ank:hover { cursor: pointer; text-decoration: none; color: inherit; }
+a {
+	text-decoration: none;
+}
+a:hover, a:hover .sc {
+	text-decoration: underline; color: blue;
+}
+.scr:hover, td a.scr:hover { color:#000; text-decoration:none; } /* FF td */
+@media print {
+	.nonprn, .ephemeral, .x, .ui { display: none; }
+	.index { border: solid #fff 0; }
+	body { font-size: 10pt; }
+	td, th { font-size: 10pt; }
+	.ci_title { font-size: 8pt; }
+}
+</STYLE>
+<SCRIPT>
+var root=location.href; root = root.replace(/index.*/, ''); root = root.replace(/list.*/, '');
+function about () { window.open(root+'about.html','about','width=440,height=370,resizable=yes,scrollbars=yes') }
+	// This is a list of XMLHttpRequest-creation factory functions to try
+_factories = [
+    function() { return new XMLHttpRequest(); },
+    function() { return new ActiveXObject("Msxml2.XMLHTTP"); },
+    function() { return new ActiveXObject("Microsoft.XMLHTTP"); }
+];
+
+// When we find a factory that works, store it here.
+_factory = null;
+
+// Create and return a new XMLHttpRequest object.
+//
+// The first time we're called, try the list of factory functions until
+// we find one that returns a non-null value and does not throw an
+// exception. Once we find a working factory, remember it for later use.
+//
+newRequest = function() {
+    if (_factory != null) return _factory();
+
+    for(var i = 0; i < _factories.length; i++) {
+        try {
+            var factory = _factories[i];
+            var request = factory();
+            if (request != null) {
+                _factory = factory;
+                return request;
+            }
+        }
+        catch(e) {
+            continue;
+        }
+    }
+    // If we get here, none of the factory candidates succeeded,
+    // so throw an exception now and for all future calls.
+    _factory = function() {
+        //throw new Error("XMLHttpRequest not supported");
+        alert("XMLHttpRequest not supported");
+    }
+    _factory(); // Throw an error
+}
+
+function gethelp (url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+//    alert('OK');
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+function gettip (ent, url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+		ent.innerHTML = req.responseText;
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+</SCRIPT>
+<STYLE>
+div#tipshade {
+	position: fixed; top: 208px; left: 208px;
+	margin: 0px; width: 420px; height: 180px;
+	border: solid gray 2px;
+	background: gray;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 19; display: none;
+}
+div#tipoday {
+	position: fixed; top: 200px; left: 200px;
+	margin: 0px; width: 420px; height: 180px; padding: 0;
+	background: white;
+	border: solid #e44959 2px;
+	font: 10pt Verdana; cursor: default;
+	z-index: 20; display: none;
+}
+div#tiptitle {
+	background: #e44959; color: white; font-weight: bold;
+	padding-left: 4px;
+}
+div#tiptitle span.x {
+	background: white;
+}
+div#tipbox {
+	position: relative; /* top: 5px; */ margin: 8px;
+	max-height: 120px; overflow: auto;
+}
+div#tipctrl {
+	position: absolute; bottom: 0; margin: 4px;
+}
+div#tipctrl td {
+	font-size: 10px;
+}
+div#tipctrl form { margin: 0; }
+span.nw { white-space: nowrap; }
+</STYLE>
+<div id="tipshade" class="ui"> </div>
+<div id="tipoday" class="ui" align=left>
+<div id="tiptitle">HistCite Tip of the Day<span class="x"><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;" title="Close">X</a></span></div>
+<div id="tipbox">Tip of the day</div>
+<div id="tipctrl">
+<table align=bottom width=100%>
+<tr><td width=40% nowrap><form name=ft><label><input type=checkbox OnChange="nextStart(this);" checked> Show tip at next start</label></form></td>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=-1');>Previous Tip</a>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=1');>Next Tip</a>
+<td align=right><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;">Close</a>&nbsp;</td>
+</tr></table></div></div>
+<SCRIPT> var otip;
+function getit () { otip = document.getElementById('tipbox'); gettip(otip,'/tip.txt?next=0'); }
+function nextStart (start) {
+	if(start.checked == true) {
+		on = 1;
+	} else {
+		on = 0;
+	}
+	gethelp('/tipStart?on=' + on);
+}
+function tip_show () {
+	var W, H;
+	if(window.innerWidth) {
+		W = window.innerWidth; H = window.innerHeight;
+	} else {
+		var dd = document.documentElement;
+		W = dd.clientWidth; H = dd.clientHeight;
+	}
+//	alert(W + ' x ' + H);
+	var left = (W-420)/2;
+	var top = (H-180)/2;
+	var tipB = document.getElementById('tipshade');
+	var tipT = document.getElementById('tipoday');
+	tipB.style.left = left + 8 + 'px';
+	tipB.style.top = top + 8 + 'px';
+	tipT.style.left = left + 'px';
+	tipT.style.top = top + 'px';
+	tipB.style.display='block';
+	tipT.style.display='block';
+	getit();
+}
+</SCRIPT>
+
+<style>
+div#af_boxshado {
+	position: fixed; left:148px; top:128px; width: 460px; height: 110px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 11; display: none;
+}
+div#af_box {
+	position: fixed; left:140px; top:120px; width: 460px; height: 110px;
+	background: white; border: solid #999 2px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+div#af_box input {
+	font: 10px Verdana;
+}
+div#af_box_title {
+	background: #d3d3d3; padding-left: 4px; font-weight: bold;
+}
+div#af_box_title span.x {
+	background: white;
+}
+div#af_form {
+	width: 445px; height: 70px;
+	padding: 8px; overflow: auto;
+}
+div#af_form #sub{
+	display: block; margin: 12px 0 0 0;
+}
+div#starh2 {
+	position: absolute; left: 88px; top: 78px; width: 420px; height: 156px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	padding: 8px;
+	z-index: 12; display: none;
+}
+div#starh {
+	position: absolute; left: 80px; top: 70px; width: 420px; height: 156px; overflow: auto;
+	border: outset gray 2px;
+	padding: 8px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+</style>
+<div id="af_boxshado"> </div>
+<div id="af_box">
+<div id="af_box_title">Add File<span class="x"><a onClick="af_close()" title="Close">X</a></span>
+<!--<a href=javascript:na() onMouseOver="na();" onClick="toggle('starh');" class=helpa style="color:#000">-->
+<a onClick="toggle('starh');" class=helpa style="color:#000"><span class="x" id=mstarh style="top:0;right:14px;">?</span><span class="x" id=lstarh style="top:0;right:14px;display:none">_</span></a>
+</div>
+<div id="af_form">
+<FORM action=/input method=GET OnSubmit="return false" name=af style="margin:0">
+	Use [Browse...] to select a file with bibliography data:<br>
+	<INPUT type=hidden name=inputpath>
+	<INPUT type=file name=inputset size=48 OnChange="af.sub.focus()" value="">
+	<INPUT type=submit value="Add File" OnClick="afSubmit();return false" name=sub id="sub">
+</div><div id=starh2> </div>
+<div id=starh class=helpt>
+Use wildcard '*' to add more than one file at a time.
+For example, if you have <code>file1</code>,
+<code>file2</code>, etc. all in the same folder or directory;
+first, locate one of the files with the [Browse...] button.  Then alter the
+file path in the box above to include '*' character (eg. <code>file*</code>).
+Wildcard '?' to blanket only one character works too.<br>
+<b>Note</b>: In Windows you can select multiple files and "drag and drop" them 
+onto HistCite icon or shortcut.  The program would start and load those files.
+</div>
+</FORM><SCRIPT>
+var af = document.af;
+function afSubmit() {
+	if ("" == af.inputset.value ) { alert("Select a file."); return }
+	af.inputpath.value = af.inputset.value;
+	af.submit();
+}
+function af_show() {
+	document.getElementById('af_boxshado').style.display = 'block';
+	document.getElementById('af_box').style.display = 'block';
+	a = document.af.inputset.value;
+	document.af.inputset.focus();
+}
+function af_close() {
+	document.getElementById('af_boxshado').style.display = 'none';
+	document.getElementById('af_box').style.display = 'none';
+}
+</SCRIPT></div>
+
+<SCRIPT>
+function glossary () { window.open(root+'glossary.html','gloss','width=640,height=570,resizable=yes,scrollbars=yes') }
+function opeNod (a) { window.open(root+'node/'+a+'.html',a,'width=770,height=570,resizable=yes,scrollbars=yes') }
+function opeLod (dp, a) { if(''==dp) d='wd'; else d=dp; var w = d; w = w.replace(/[-\/]/g, '');
+	window.open(root+d+'/'+a+'.html',w+a,'width=640,height=546,resizable=yes,scrollbars=yes') }
+function na(){}
+</SCRIPT>
+<STYLE>
+#head {
+	position: left:0; padding-left:4px; background:#fff;
+	z-index:2; margin:0 0 8px 0; border-bottom:solid #000 1px;
+}
+#title {
+	padding-bottom: 4px; font-size: 1.3em; font-weight: bold;
+	max-width: 600px; /* non default overflow gives odd z-effects in FF */
+}
+#desc {
+	position: absolute; left: 4px; top: 1.8em;
+	padding: 2px 8px 4px 8px; white-space: normal; max-width: 480px;
+	background: #ffffcc; font-weight: normal; font-size: 10pt;
+	border: solid #000 1px;
+	display: none; z-index: 11;
+}
+#atitle { cursor: text;}
+#atitle, #stats {
+	text-decoration: none; color: #000;
+}
+#stats2 {
+	position: absolute; right: 0px; padding: 0;
+	background: white;
+	display: none; z-index: 11;
+}
+#atitle:hover #desc, #stats:hover #stats2 {
+	display: block;
+}
+@media print {
+	#head { position: static; }
+	#menu_pm { line-height: 0; }
+	#back { display: none; }
+}
+</STYLE>
+<!-- FF 3 only? fix -->
+<div id=head style="width:99%">
+<TABLE width=100% cellpadding=0 cellspacing=0 style="margin:0 0 3px 0">
+<TR valign=top><TD align=left width=60%>
+<div id=title><a id=atitle >RESEE: A Bibliographic Database on Balkan – Southeast European Studies<div id=desc>-------Search: Databases searching procedure and formats------
+*| Search query
+"balkan*" OR "southeast* europe*" OR "south east* europe*" (TITLE-ABS-KEY) 
+Web of Science Core Collection (SSCI, A&HCI, ESCI, BKCI-SSH)
+Scopus
+Constellate (JSTOR and Portico)
+
+Note: The earliest publication date from WoS for the articles was 1957 whereas for the books 2003.
+To complement our database with entries before 1957, we search the Constellate (Jstor and Portico) and Scopus database, finding and adding a further 445 articles.
+Characters were normalize, and English translation of the titles were added for entries in other languages than English. And for Constellate data we kept only Articles and Books from Humanities and Social Sciences.
+The Scopus and Constellate metadata files were converted into WoS (.txt) format.
+We also added manually 59 new entries (9 articles and 50 books) that were missing from the search but showed to be among the most cited references (local citation score greater than 10)
+
+---------Merging variants in the same cited references--------
+Given that databases have problems with the completeness of references and linkages (Van Eck and Waltman 2017), we used CRExplorer to clean the data and reduce the problems posed by variants in the same cited references (Thor et al. 2016)
+The cited references (CRs) in our data contained variants, especially the references on books. 
+We use the manual cleaning-up procedure, setting the clustering algorithm with a Levenshtein threshold of 0.75. 
+We also manually checked and unified variants of the same cited references (CRs), especially for books that received a local citation of more than 20 or had different years or editions and translations into other languages. 
+After the cleaning, we unify the variants of the same CRs, about 12% of the initial cited references.</div></a></div>
+<TD align=center><a href=# OnClick="window.open('../graph/list.html','graph','resizable=yes,scrollbars=yes')" class=nonprn>Historiographs</a><TD nowrap align=right rowspan=2 width=5%><div class=nonprn><a href=# OnClick="window.open('../help/wd.html','help','width=690,height=590,resizable=yes,scrollbars=yes')">Help</a>&nbsp;&nbsp;
+<a href=javascript:glossary()>Glossary</a>&nbsp;&nbsp;<a href="http://www.histcite.com/HTMLHelp/guide.html" target=guide>HistCite Guide</a>&nbsp;&nbsp;<a href=# OnClick="about(); return false">About</a></div><a id=stats>
+Grand Totals: LCS 8009, GCS 85894, CR 328237<br>Collection span: 1854 - 2022<br></a><TR><TD colspan=2 width=95%><b>Word(<a href=# title=" Titles " class=helpa>i</a>) List</b> (11723) Word&nbsp;count:&nbsp;64404, All&nbsp;words&nbsp;count:&nbsp;103007</TABLE></div><div align=right>24 December 2022</div>
+<div class="index" style=""><a href=../index-tl.html>Records</a>: 8378, <a href=au-pubs.html>Authors</a>: 10107, <a href=so-pubs.html>Journals</a>: 2650, <a href=or-pubs.html>Cited References</a>: 248863, Words: 11723
+<br><span class=nonprn><a href=py-pubs.html title=' Publication Years: 127 '>Yearly output</a>
+|&nbsp;<a href=dt-pubs.html title=' Document Types: 14 '>Document Type</a>
+|&nbsp;<a href=la-pubs.html title=' Languages: 6 '>Language</a>
+|&nbsp;<a href=in-pubs.html title=' Institutions: 62 '>Institution</a>
+|&nbsp;<a href=i2-pubs.html title=' Institution with Subdivisions: 64 '>Institution with Subdivision</a>
+|&nbsp;<a href=co-pubs.html title=' Countries: 8 '>Country</a></span></div><div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>40</b> of 59 &nbsp;<a href=wd-name.html class=nu>1</a>&nbsp; &nbsp;<a href=wd-name-11.html class=nu>11</a>&nbsp; &nbsp;<a href=wd-name-21.html class=nu>21</a>&nbsp;<span class=nonprn>: [  &nbsp;<a href=wd-name-31.html class=nu>31</a> &nbsp;<a href=wd-name-32.html class=nu>32</a> &nbsp;<a href=wd-name-33.html class=nu>33</a> &nbsp;<a href=wd-name-34.html class=nu>34</a> &nbsp;<a href=wd-name-35.html class=nu>35</a> &nbsp;<a href=wd-name-36.html class=nu>36</a> &nbsp;<a href=wd-name-37.html class=nu>37</a> &nbsp;<a href=wd-name-38.html class=nu>38</a> &nbsp;<a href=wd-name-39.html class=nu>39</a> &nbsp;40 ]</span> &nbsp;<a href=wd-name-41.html class=nu>41</a>&nbsp; &nbsp;<a href=wd-name-51.html class=nu>51</a>&nbsp;</div>
+<TABLE border=0 cellpadding=5 cellspacing=2 style="border: 2px solid #cccccc;margin: 4px 0;">
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="wd-name.html">Word</a></SPAN><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>7801<TD align=left class=sc>PATRONS<TD><a TITLE=" Article ISTORIYA-HISTORY Title: PATRONS AND CLIENTS. BULGARIAN EXAMPLES AND BALKAN PARALLELS OF THE LATE XIX AND EARLY XX CENTURY" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7802<TD align=left class=sc>PATTERN<TD>8<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=odd><TD>7803<TD align=left class=sc>PATTERNS<TD>36<TD><a title=' 0.6%' class=ank>52</a><TD><a title=' 0.5%' class=ank>395</a>
+<TR valign=top align=right class=evn><TD>7804<TD align=left class=sc>PAUL<TD><a TITLE=" Article CONTEMPORARY BRITISH HISTORY Title: Paul Painleve and Franco-British Relations in 1917" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7805<TD align=left class=sc>PAULICIAN<TD><a TITLE=" Article STUDIA CERANEA Title: CONTINUITY BETWEEN EARLY PAULICIANISM AND THE SEVENTEENTH-CENTURY BULGARIAN PAULICIANS: THE PAULICIAN LEGEND OF ROME AND THE RITUAL OF THE BAPTISM BY FIRE" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7806<TD align=left class=sc>PAULICIANISM<TD><a TITLE=" Article STUDIA CERANEA Title: CONTINUITY BETWEEN EARLY PAULICIANISM AND THE SEVENTEENTH-CENTURY BULGARIAN PAULICIANS: THE PAULICIAN LEGEND OF ROME AND THE RITUAL OF THE BAPTISM BY FIRE" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7807<TD align=left class=sc>PAULICIANS<TD>2<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7808<TD align=left class=sc>PAULINUS<TD><a TITLE=" Article BELLETEN Title: THE HONOURING OF THE LEGIO CHIEF PHYSICIAN L. HORTENSIUS PAULINUS" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7809<TD align=left class=sc>PAULOVA<TD><a TITLE=" Article BYZANTINOSLAVICA-REVUE INTERN Title: Milada Paulova and her Byzantine world. Contribution to the relationship between M. Paulova and J. Hussey" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7810<TD align=left class=sc>PAUPERIZATION<TD><a TITLE=" Article JOURNALISM Title: Balkanization and pauperization: Analysis of media capture of public service broadcasters in the Western Balkans" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>7811<TD align=left class=sc>PAVAO<TD>2<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7812<TD align=left class=sc>PAVED<TD><a TITLE=" Article POLITICS AND RELIGION JOURNAL Title: THE ROAD TO PEACE IN THE BALKANS IS PAVED WITH BAD INTENTIONS" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7813<TD align=left class=sc>PAVIC<TD><a TITLE=" Article WORLD LITERATURE STUDIES Title: Balkan identity between the Orient and Europe in Milorad Pavic&#39;s &quot;Dictionary of the Khazars&quot;" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7814<TD align=left class=sc>PAVICH<TD><a TITLE=" Article BALKANISTIC FORUM Title: Object, Word, Dream (&quot;Box of Writing&quot; by Milorad Pavich)" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7815<TD align=left class=sc>PAVLO<TD><a TITLE=" Review LINGUA MONTENEGRINA Title: PAVLO HOLOVCHUK&#39;S OEUVRE: THE CONTEXT OF THE INTERCULTURAL INTERACTIONS OF UKRAINE AND THE BALKAN REGION" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7816<TD align=left class=sc>PAVLOVIC<TD>2<TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7817<TD align=left class=sc>PAX<TD>2<TD>0<TD><a title=' 0.0%' class=ank>13</a>
+<TR valign=top align=right class=evn><TD>7818<TD align=left class=sc>PAYMENT<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7819<TD align=left class=sc>PAYMENTS<TD>3<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=evn><TD>7820<TD align=left class=sc>PAZAR<TD><a TITLE=" Article ACTA HISTRIAE Title: OPERATIONS OF THE MONTENEGRIN ARMY IN THE SANJAK OF NOVI PAZAR 1912" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7821<TD align=left class=sc>PAZIFISTISCHE<TD><a TITLE=" Article DIE FRIEDENS-WARTE Title: Eine pazifistische Balkan-Reise / A Pacifist Balkan trip" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7822<TD align=left class=sc>PAZVANDOGLU<TD><a TITLE=" Article MILLI FOLKLOR Title: &quot;Pazvandoglu Folk Song&quot; As The Oral History Text" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7823<TD align=left class=sc>PEABODY<TD><a TITLE=" Article INTERNATIONAL REVIEW OF SOCIA Title: &quot;Ottoman Street&quot; in America: Turkish Leatherworkers in Peabody, Massachusetts" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7824<TD align=left class=sc>PEACE<TD><a href=# OnClick="opeLod('', '7823', 'PEACE');return false">77</a><TD><a title=' 0.4%' class=ank>35</a><TD><a title=' 0.5%' class=ank>389</a>
+<TR valign=top align=right class=odd><TD>7825<TD align=left class=sc>PEACEBUILDER<TD><a TITLE=" Article ROMANIAN JOURNAL OF EUROPEAN  Title: The Role of the EU as a Peacebuilder in the Western Balkans" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7826<TD align=left class=sc>PEACEBUILDING<TD>11<TD><a title=' 0.1%' class=ank>12</a><TD><a title=' 0.1%' class=ank>52</a>
+<TR valign=top align=right class=odd><TD>7827<TD align=left class=sc>PEACEFUL<TD>2<TD>0<TD><a title=' 0.0%' class=ank>20</a>
+<TR valign=top align=right class=evn><TD>7828<TD align=left class=sc>PEACEKEEPERS<TD>2<TD>0<TD><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=odd><TD>7829<TD align=left class=sc>PEACEKEEPING<TD>4<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7830<TD align=left class=sc>PEACEMAKER<TD><a TITLE=" Article COLD WAR HISTORY Title: Troublemaker or peacemaker? Andreas Papandreou, the Euromissile Crisis, and the policy of peace, 1981-86" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="wd-name.html">Word</a></SPAN><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>7831<TD align=left class=sc>PEACEMAKERS<TD>5<TD>0<TD><a title=' 0.1%' class=ank>93</a>
+<TR valign=top align=right class=evn><TD>7832<TD align=left class=sc>PEACEMAKING<TD>3<TD>0<TD><a title=' 0.1%' class=ank>69</a>
+<TR valign=top align=right class=odd><TD>7833<TD align=left class=sc>PEACHES<TD><a TITLE=" Article JOURNAL OF CONSUMER POLICY Title: Apples and Peaches-Consumer Protection Goes East" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7834<TD align=left class=sc>PEAKS<TD><a TITLE=" Article BALKANISTIC FORUM Title: The Truth about the Peaks of St. Nicholas and Shipka" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7835<TD align=left class=sc>PEAR<TD><a TITLE=" Article JOURNAL OF INDO-EUROPEAN STUD Title: Was there an Indo-European word for &#39;pear&#39;?" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7836<TD align=left class=sc>PEARL<TD><a TITLE=" Article BALKAN STUDIES Title: ARTISTIC DECORATION WITH MOTHER-OF-PEARL IN BALKAN COUNTRIES UNDER OTTOMAN DOMINATION" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7837<TD align=left class=sc>PEASANT<TD>2<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7838<TD align=left class=sc>PEASANTRY<TD><a TITLE=" Article JOURNAL OF BALKAN AND NEAR EA Title: Peasantry in a Well-protected Domain: Wallachian Peasantry and Muslim ciftlik/Kislaks under the Ottoman Rule" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>7839<TD align=left class=sc>PEASANTS<TD>5<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7840<TD align=left class=sc>PECHALBARI<TD><a TITLE=" Article BALKANISTIC FORUM Title: Transborder Exchange of Seasonal Workers (Pechalbari) Among the Central Balkan States" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7841<TD align=left class=sc>PECHENEG<TD><a TITLE=" Article VIZANTIISKII VREMENNIK Title: On the question of dating of the Pecheneg appearance on the Lower Danube region" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7842<TD align=left class=sc>PECHENEGS<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>7843<TD align=left class=sc>PECINA<TD>3<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.1%' class=ank>46</a>
+<TR valign=top align=right class=evn><TD>7844<TD align=left class=sc>PECTORAL<TD><a TITLE=" Article ARCHEOLOGICKE ROZHLEDY Title: Considerations about the meaning and the origin of the pectoral-brooch from Zelenice in Bohemia" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7845<TD align=left class=sc>PECULIARITIES<TD>4<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7846<TD align=left class=sc>PEDAGOGICAL<TD>3<TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>7847<TD align=left class=sc>PEDAGOGY<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7848<TD align=left class=sc>PEDIGREE<TD><a TITLE=" Article MISCELANEA DE ESTUDIOS ARABES Title: PEDIGREE, ERUDITION AND PIETY; INVOLVEMENT AND MOBILITY: THE LIFE STORY OF RIBI DAWID BEN YA&#39;AQOV PARDO A CASE STUDY IN THE MAKING OF TRADITIONAL SEPHARDIC HAKAM" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>7849<TD align=left class=sc>PEDIR<TD><a TITLE=" Article JOURNAL OF SPANISH CULTURAL S Title: &quot;Pedir un cafe puede costarte la vida&quot;: phobias of democracy in alex de la Iglesia&#39;s El bar" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7850<TD align=left class=sc>PEDRETTI<TD><a TITLE=" Article REVISTA DE FILOLOGIA ALEMANA Title: Language, Memory, Country: Return to the Past in Engste Heimat by Erica Pedretti" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7851<TD align=left class=sc>PEERS<TD><a TITLE=" Article ACTA POLONIAE HISTORICA Title: THE VICTORS OF A WAR THAT WAS NOT THEIRS: FIRST-WORLD-WAR-VETERANS IN THE SECOND REPUBLIC OF POLAND AND THEIR EUROPEAN PEERS" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7852<TD align=left class=sc>PEINA<TD>2<TD>0<TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=odd><TD>7853<TD align=left class=sc>PELJESAC<TD><a TITLE=" Article LINGUA MONTENEGRINA Title: LANGUAGE, BELIEFS AND VOWS IN PELJESAC" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7854<TD align=left class=sc>PELLETIER<TD><a TITLE=" Article JOURNAL OF EUROPEAN STUDIES Title: Anti-Latin race-based nationalism in early twentieth-century France: An examination of Robert Pelletier&#39;s pan-Celtic and Slavophile journals" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7855<TD align=left class=sc>PELOPONNESE<TD>3<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>46</a>
+<TR valign=top align=right class=evn><TD>7856<TD align=left class=sc>PEMBERTON<TD><a TITLE=" Article POLITICAL QUARTERLY Title: Bad Piano? Bad Music? A Response to Comments on Lowe and Pemberton, The Official History of the British Civil Service, Volume II: 1982-1997" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7857<TD align=left class=sc>PEN<TD>2<TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>7858<TD align=left class=sc>PENALTY<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=odd><TD>7859<TD align=left class=sc>PENCO<TD><a TITLE=" Article ZEITSCHRIFT FUR SLAWISTIK Title: Penco Slavejkov&#39;s &quot;Work in the Present&quot; Autonomy of Art and social Experience in Bulgarian Modernity" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7860<TD align=left class=sc>PENDANT<TD>5<TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="wd-name.html">Word</a></SPAN><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>7861<TD align=left class=sc>PENDING<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>7862<TD align=left class=sc>PENETRATE<TD><a TITLE=" Article ENTERPRISE &amp; SOCIETY Title: Between Agnelli and Mussolini: Ford&#39;s Unsuccessful Attempt to Penetrate the Italian Automobile Market in the Interwar Period" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>7863<TD align=left class=sc>PENETRATION<TD>3<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=evn><TD>7864<TD align=left class=sc>PENINSULA<TD><a href=# OnClick="opeLod('', '7863', 'PENINSULA');return false">62</a><TD><a title=' 0.2%' class=ank>17</a><TD><a title=' 0.2%' class=ank>193</a>
+<TR valign=top align=right class=odd><TD>7865<TD align=left class=sc>PENINSULE<TD>3<TD><a title=' 0.8%' class=ank>67</a><TD><a title=' 0.4%' class=ank>379</a>
+<TR valign=top align=right class=evn><TD>7866<TD align=left class=sc>PENMANSHIP<TD><a TITLE=" Article GAZI AKADEMIK BAKIS-GAZI ACAD Title: Committee of Union and Progress Through the Penmanship of Filibeli Ahmed Hilmi Effendi: Hikmet (April 21 1910 - September 21 1911)" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7867<TD align=left class=sc>PENSION<TD>4<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>16</a>
+<TR valign=top align=right class=evn><TD>7868<TD align=left class=sc>PENTECOSTALISM<TD><a TITLE=" BOOK CHAPTER EUROPEAN PENTECOSTALISM Title: THE DEVELOPMENT OF PENTECOSTALISM IN SOUTH-EASTERN EUROPEAN NATIONS: ALBANIA, BOSNIA AND HERZEGOVINA, GREECE, MACEDONIA, MONTENEGRO, KOSOVO, SERBIA" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7869<TD align=left class=sc>PENZA<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7870<TD align=left class=sc>PEOPLE<TD>28<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.2%' class=ank>168</a>
+<TR valign=top align=right class=odd><TD>7871<TD align=left class=sc>PEOPLEHOOD<TD><a TITLE=" Article PHILOSOPHY AND SOCIETY-FILOZO Title: Politics of Peoplehood: the Birth of a New Nation?" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7872<TD align=left class=sc>PEOPLES<TD>30<TD><a title=' 0.2%' class=ank>15</a><TD><a title=' 0.1%' class=ank>126</a>
+<TR valign=top align=right class=odd><TD>7873<TD align=left class=sc>PEOPLING<TD>2<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=evn><TD>7874<TD align=left class=sc>PEPERUDA<TD><a TITLE=" Article POETRY REVIEW Title: Dodola and Peperuda: Balkan rainmaking customs" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7875<TD align=left class=sc>PEPPER<TD><a TITLE=" Article HISTORICAL METHODS Title: From &quot;White Christmas&quot; to Sgt. Pepper The Conceptual Revolution in Popular Music" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>7876<TD align=left class=sc>PERCEIVE<TD>2<TD>0<TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=odd><TD>7877<TD align=left class=sc>PERCEIVED<TD>9<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.1%' class=ank>116</a>
+<TR valign=top align=right class=evn><TD>7878<TD align=left class=sc>PERCENTAGES<TD>2<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>30</a>
+<TR valign=top align=right class=odd><TD>7879<TD align=left class=sc>PERCEPTION<TD>35<TD><a title=' 0.2%' class=ank>14</a><TD><a title=' 0.3%' class=ank>262</a>
+<TR valign=top align=right class=evn><TD>7880<TD align=left class=sc>PERCEPTIONS<TD>35<TD><a title=' 0.2%' class=ank>18</a><TD><a title=' 0.1%' class=ank>123</a>
+<TR valign=top align=right class=odd><TD>7881<TD align=left class=sc>PERCEPTUAL<TD><a TITLE=" Article ANNALS OF THE NEW YORK ACADEM Title: Modeling infants&#39; perceptual narrowing to musical rhythms: neural oscillation and Hebbian plasticity" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>7882<TD align=left class=sc>PERCUSSION<TD><a TITLE=" Article EMPIRICAL MUSICOLOGY REVIEW Title: Timing Variations in Two Balkan Percussion Performances" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=odd><TD>7883<TD align=left class=sc>PERENNIAL<TD>2<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>16</a>
+<TR valign=top align=right class=evn><TD>7884<TD align=left class=sc>PERFECT<TD>5<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=odd><TD>7885<TD align=left class=sc>PERFORM<TD><a TITLE=" Article; Proceedings Paper JOURNAL OF BALTIC STUDIES Title: Why did Estonia perform best? The north-south gap in the post-socialist economic transition of the Baltic states" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=evn><TD>7886<TD align=left class=sc>PERFORMANCE<TD><a href=# OnClick="opeLod('', '7885', 'PERFORMANCE');return false">55</a><TD><a title=' 0.2%' class=ank>17</a><TD><a title=' 0.4%' class=ank>315</a>
+<TR valign=top align=right class=odd><TD>7887<TD align=left class=sc>PERFORMANCES<TD>6<TD>0<TD><a title=' 0.0%' class=ank>23</a>
+<TR valign=top align=right class=evn><TD>7888<TD align=left class=sc>PERFORMATIVITY<TD><a TITLE=" Article SLAVIC AND EAST EUROPEAN JOUR Title: I AM BARBAROGENIUS: YUGOSLAV ZENITISM OF THE 1920S AND THE LIMITS OF PERFORMATIVITY" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7889<TD align=left class=sc>PERFORMERS<TD>2<TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>7890<TD align=left class=sc>PERFORMING<TD>7<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>43</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="wd-name.html">Word</a></SPAN><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>7891<TD align=left class=sc>PERHAPS<TD><a TITLE=" Article LINGUISTIC TYPOLOGY Title: Perhaps mirativity is phlogiston, but admirativity is perfect: On Balkan evidential strategies" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>7892<TD align=left class=sc>PERILOUS<TD>2<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=odd><TD>7893<TD align=left class=sc>PERILS<TD><a TITLE=" Article EUROPEAN POLICY ANALYSIS Title: The perils of succor: The European Union&#39;s financial role in the Western Balkans during COVID-19" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>7894<TD align=left class=sc>PERIOD<TD><a href=# OnClick="opeLod('', '7893', 'PERIOD');return false">80</a><TD><a title=' 0.3%' class=ank>21</a><TD><a title=' 0.2%' class=ank>136</a>
+<TR valign=top align=right class=odd><TD>7895<TD align=left class=sc>PERIODICAL<TD>3<TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>7896<TD align=left class=sc>PERIODICALS<TD><a TITLE=" Article OSTERREICHISCHE OSTHEFTE Title: BALKAN PERIODICALS .7." href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7897<TD align=left class=sc>PERIODS<TD>4<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7898<TD align=left class=sc>PERIPHERAL<TD>9<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>23</a>
+<TR valign=top align=right class=odd><TD>7899<TD align=left class=sc>PERIPHERALIZATION<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7900<TD align=left class=sc>PERIPHERIES<TD>6<TD><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.1%' class=ank>51</a>
+<TR valign=top align=right class=odd><TD>7901<TD align=left class=sc>PERIPHERISATION<TD><a TITLE=" Article ESPACE POLITIQUE Title: Neither neighbours nor members. The western Balkans &quot;peripherisation&quot; through the EU membership process" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7902<TD align=left class=sc>PERIPHERY<TD>24<TD><a title=' 0.3%' class=ank>21</a><TD><a title=' 0.1%' class=ank>126</a>
+<TR valign=top align=right class=odd><TD>7903<TD align=left class=sc>PERK<TD><a TITLE=" Article ADALYA Title: Lucius Artorius Marcianus&#39; Votive Offering to Zeus Keraunios from the Haluk Perk Museum" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>7904<TD align=left class=sc>PERKO<TD><a TITLE=" Article BOGOSLOVNI VESTNIK-THEOLOGICA Title: Presentation of Published Works by Franc Perko" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7905<TD align=left class=sc>PERMANENCIES<TD><a TITLE=" Article CAHIERS HISTOIRE MONDIALE-JOU Title: SOUTH-EASTERN EUROPE - PERMANENCIES OF PAST AND PRESENT" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7906<TD align=left class=sc>PERMANENT<TD>2<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>16</a>
+<TR valign=top align=right class=odd><TD>7907<TD align=left class=sc>PERMANENTLY<TD><a TITLE=" Article SUDOSTEUROPA Title: Permanently in Transit. Middle Eastern Migrants and Refugees in Serbia" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>7908<TD align=left class=sc>PERNICIOUS<TD><a TITLE=" Review COOPERATION AND CONFLICT Title: &#39;Pernicious history&#39; as a cause of national misperceptions" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=odd><TD>7909<TD align=left class=sc>PERONALITY<TD><a TITLE=" Article ACTA HISTRIAE Title: PERONALITY AND ILLUMINATORY WORK OF ST. PETAR OF CETINJE" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7910<TD align=left class=sc>PERPERON<TD><a TITLE=" Article VIZANTIISKII VREMENNIK Title: MONEY MARKET ON THE BALKANS IN THE 14TH 15TH CENTURIES: PERPERON AND STAURATON" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7911<TD align=left class=sc>PERPETRATOR<TD><a TITLE=" Article HOLOCAUST-STUDII SI CERCETARI Title: &quot;Balkanization&quot; of National Memories and Identities Trauma: Different Discourses on Holocaust &quot;Victim - Perpetrator&quot; Identity and Its Specific Political Functions in Ex-Yugoslavia States" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7912<TD align=left class=sc>PERPETRATORS<TD><a TITLE=" Article MERKUR-DEUTSCHE ZEITSCHRIFT F Title: Between perpetrators and victims - The Balkan report of a journalist" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7913<TD align=left class=sc>PERPETUAL<TD><a TITLE=" Article EAST EUROPEAN POLITICS AND SO Title: Perpetual Transitions: Contentious Property and Europeanization in South-Eastern Europe" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>7914<TD align=left class=sc>PERPLEXITIES<TD><a TITLE=" Article JOURNAL OF BALKAN AND NEAR EA Title: The Versailles Order and Perplexities of the Comintern&#39;s Policy in the Balkans in the 1930s: Departure from the World Revolution" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7915<TD align=left class=sc>PERSECUTION<TD><a TITLE=" Article AMERICAN BEHAVIORAL SCIENTIST Title: The persecution of gypsies in Europe" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>42</a>
+<TR valign=top align=right class=evn><TD>7916<TD align=left class=sc>PERSIAN<TD>5<TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>7917<TD align=left class=sc>PERSISTENCE<TD>6<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.1%' class=ank>83</a>
+<TR valign=top align=right class=evn><TD>7918<TD align=left class=sc>PERSONAL<TD>13<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.1%' class=ank>55</a>
+<TR valign=top align=right class=odd><TD>7919<TD align=left class=sc>PERSONALITY<TD>5<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>27</a>
+<TR valign=top align=right class=evn><TD>7920<TD align=left class=sc>PERSONS<TD>7<TD>0<TD><a title=' 0.0%' class=ank>40</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="wd-name.html">Word</a></SPAN><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>7921<TD align=left class=sc>PERSPECTIVE<TD><a href=# OnClick="opeLod('', '7920', 'PERSPECTIVE');return false">107</a><TD><a title=' 1.2%' class=ank>100</a><TD><a title=' 3.0%' class=ank>2610</a>
+<TR valign=top align=right class=evn><TD>7922<TD align=left class=sc>PERSPECTIVES<TD><a href=# OnClick="opeLod('', '7921', 'PERSPECTIVES');return false">60</a><TD><a title=' 0.2%' class=ank>18</a><TD><a title=' 0.4%' class=ank>343</a>
+<TR valign=top align=right class=odd><TD>7923<TD align=left class=sc>PERSUADING<TD><a TITLE=" Article TEORIJA IN PRAKSA Title: PREVENTING, PERSUADING AND REGRETTING: THE USA, THE DISSOLUTION OF YUGOSLAVIA AND THE QUESTION OF THE DIPLOMATIC (NON) RECOGNITION OF SLOVENIA (1990-1992)" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7924<TD align=left class=sc>PERVASIVE<TD><a TITLE=" Review STANFORD LAW REVIEW Title: DISCOVERY IN DISARRAY - THE PERVASIVE MYTH OF PERVASIVE DISCOVERY ABUSE AND THE CONSEQUENCES FOR UNFOUNDED RULEMAKING" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.1%' class=ank>57</a>
+<TR valign=top align=right class=odd><TD>7925<TD align=left class=sc>PERVERSION<TD><a TITLE=" Article META-RESEARCH IN HERMENEUTICS Title: Perversion makes happy ? - Barthes in the Balkans, mytheme and pharmakon" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7926<TD align=left class=sc>PERVERTING<TD><a TITLE=" Article MUZIKOLOGIJA-MUSICOLOGY Title: &quot;PERVERTING THE TASTE OF THE PEOPLE&quot;: LAUTARI AND THE BALKAN QUESTION IN ROMANIA" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7927<TD align=left class=sc>PESTER<TD><a TITLE=" Article HUMAN ECOLOGY Title: Cross-Cultural Ethnobiology in the Western Balkans: Medical Ethnobotany and Ethnozoology Among Albanians and Serbs in the Pester Plateau, Sandzak, South-Western Serbia" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.1%' class=ank>86</a>
+<TR valign=top align=right class=evn><TD>7928<TD align=left class=sc>PESTURINA<TD><a TITLE=" Article JOURNAL OF HUMAN EVOLUTION Title: The first Neanderthal specimen from Serbia: Maxillary first molar from the Late Pleistocene of Pesturina Cave" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=odd><TD>7929<TD align=left class=sc>PETAR<TD>3<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7930<TD align=left class=sc>PETER<TD>4<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=odd><TD>7931<TD align=left class=sc>PETERSBERG<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7932<TD align=left class=sc>PETERSBURG<TD>3<TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7933<TD align=left class=sc>PETIT<TD><a TITLE=" Review PRAEHISTORISCHE ZEITSCHRIFT Title: The transformation of Europe in the third millennium BC: the example of &#39;Le Petit-Chasseur I+III&#39; (Sion, Valais, Switzerland)" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.1%' class=ank>44</a>
+<TR valign=top align=right class=evn><TD>7934<TD align=left class=sc>PETKA<TD>2<TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7935<TD align=left class=sc>PETR<TD><a TITLE=" Article ISTORIYA-ELEKTRONNYI NAUCHNO- Title: The Embassy Headed by Petr Mansurov and Semen Samsonov (1615-1619) and the &quot;Greek&quot; Secular Migration" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7936<TD align=left class=sc>PETRIAEV<TD><a TITLE=" Article VOPROSY ISTORII Title: A.M. Petriaev. Contributions" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7937<TD align=left class=sc>PETRO<TD>2<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7938<TD align=left class=sc>PETROGRAPHIC<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: A comparison of chemical and petrographic analyses of Neolithic pottery from South-eastern Europe" href=javascript:na() class=nu>1</a><TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=odd><TD>7939<TD align=left class=sc>PETROV<TD><a TITLE=" Article BALKANISTIC FORUM Title: The Incredible Story of the Book &quot;The Country of White Lilies&quot; of Grigoriy Petrov" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7940<TD align=left class=sc>PETROVIC<TD><a TITLE=" Article LINGUA MONTENEGRINA Title: MONTENEGRIN POETRY AT THE END OF XIX AND BEGINNING OF XX CENTURY FOLLOWING THE WORK OF NIKOLA I PETROVIC. - FOLLOWERS AND EPIGONES -" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7941<TD align=left class=sc>PETROVICH<TD><a TITLE=" Article STORIA CONTEMPORANEA Title: THE BALKAN INTRIGUES OF 1919-1920 IN A MEMORANDUM TO MUSSOLINI FROM PETROVICH-SAXE, IN 1932" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7942<TD align=left class=sc>PETS<TD><a TITLE=" Article AFRICA: JOURNAL OF THE INTERN Title: Die Altesten Beziehungen Zwischen Asien und Afrika nachgewiesen an den Haustieren / The oldest relationships between Asia and Africa proven to the pets" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7943<TD align=left class=sc>PETTY<TD><a TITLE=" Article AMERICAN ETHNOLOGIST Title: Outclassed by former outcasts: petty trading in Varna" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>21</a>
+<TR valign=top align=right class=evn><TD>7944<TD align=left class=sc>PEUT<TD><a TITLE=" Article REVUE DES DEUX MONDES (1829-1 Title: CE QU&#39;ON PEUT FAIRE AVEC UNE MARINE: A PROPOS DE LA GUERRE DES BALKANS / WHAT YOU CAN DO WITH A NAVY: ABOUT THE BALKAN WAR" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7945<TD align=left class=sc>PHALERAE<TD><a TITLE=" BOOK CHAPTER WESTERN-PONTIC CULTURE AMBIEN Title: Figurative Representations on the Phalerae Found between the Ural, the Caucasus and the Balkan Mountains (2nd-1st Century BC)" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=evn><TD>7946<TD align=left class=sc>PHALLIC<TD><a TITLE=" Article MAN Title: 33. A Phallic Design in the Balkans" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7947<TD align=left class=sc>PHANAGOREIA<TD><a TITLE=" Article IRANICA ANTIQUA Title: FROM BOSPORUS ... TO BOSPORUS: A NEW INTERPRETATION AND HISTORICAL CONTEXT OF THE OLD PERSIAN INSCRIPTION FROM PHANAGOREIA" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7948<TD align=left class=sc>PHANARIOT<TD><a TITLE=" Article MGIMO REVIEW OF INTERNATIONAL Title: Berlin Congress 1878 Through the Eyes of Phanariot Alexander Karateodori Pashi" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7949<TD align=left class=sc>PHANTOM<TD><a TITLE=" Article SLAVIC REVIEW Title: Phantom Borders in Eastern Europe: A New Concept for Regional Research" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>7950<TD align=left class=sc>PHARMAKON<TD><a TITLE=" Article META-RESEARCH IN HERMENEUTICS Title: Perversion makes happy ? - Barthes in the Balkans, mytheme and pharmakon" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="wd-name.html">Word</a></SPAN><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>7951<TD align=left class=sc>PHARSAROTES<TD><a TITLE=" Article BULLETIN OF THE AMERICAN ASSO Title: THE PHARSAROTES: A NOMADIC GROUP OF THE SOUTHERN BALKANS" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7952<TD align=left class=sc>PHARYNGEAL<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: Residue analysis and ornament suspension techniques in prehistory: cyprinid pharyngeal teeth beads from Late Mesolithic burials at Vlasac (Serbia)" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=odd><TD>7953<TD align=left class=sc>PHASE<TD>4<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7954<TD align=left class=sc>PHASED<TD><a TITLE=" Article PRILOZI INSTITUTA ZA ARHEOLOG Title: A multi-phased burial mound in Novo Selo near Bijeljina" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7955<TD align=left class=sc>PHASES<TD><a TITLE=" Article METU JOURNAL OF THE FACULTY O Title: REPAIR PHASES OF SULEYMANIYE COMPLEX IN DAMASCUS" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7956<TD align=left class=sc>PHENOMENA<TD>3<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7957<TD align=left class=sc>PHENOMENOLOGICAL<TD>2<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7958<TD align=left class=sc>PHENOMENOLOGY<TD><a TITLE=" Article MONTENEGRIN JOURNAL OF ECONOM Title: Motivation, Methodology, and Phenomenology of Institutional Nihilism in the SEE Countries" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.0%' class=ank>15</a>
+<TR valign=top align=right class=odd><TD>7959<TD align=left class=sc>PHENOMENON<TD>8<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>46</a>
+<TR valign=top align=right class=evn><TD>7960<TD align=left class=sc>PHILANTHROPIC<TD><a TITLE=" BOOK CHAPTER INNOVATION IN STRATEGIC PHILA Title: PHILANTHROPIC FOUNDATIONS&#39; ASSISTANCE IN POST-CONFLICT SITUATIONS: A CASE STUDY OF POST-COMMUNIST SOUTHEAST EUROPE" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7961<TD align=left class=sc>PHILANTHROPY<TD>2<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7962<TD align=left class=sc>PHILHELLENISM<TD><a TITLE=" Article BALKAN STUDIES Title: BALKAN PHILHELLENISM DURING THE STRUGGLE FOR HELLENIC INDEPENDENCE" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7963<TD align=left class=sc>PHILIKI<TD><a TITLE=" Article HISTORICAL REVIEW-LA REVUE HI Title: THE PHILIKI ETAIREIA REVISITED: IN SEARCH OF CONTEXTS, NATIONAL AND INTERNATIONAL" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>7964<TD align=left class=sc>PHILIP<TD><a TITLE=" Article REVUE ROUMAINE D HISTOIRE Title: THE BALKAN TRAVEL OF JACKSON,PHILIP IN 1797" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7965<TD align=left class=sc>PHILOLOGY<TD><a TITLE=" Article CHUZHDOEZIKOVO OBUCHENIE-FORE Title: UNIVERSITY HISTORICAL ARCHIVES AS SOURCES OF RESEARCH OF THE HISTORY OF PHILOLOGY" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7966<TD align=left class=sc>PHILOSOPHER<TD><a TITLE=" Article ZBORNIK RADOVA VIZANTOLOSKOG  Title: Skazanie o pismeneh by Constantine the philosopher Kostenecki as a source of folk culture in the middle ages" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7967<TD align=left class=sc>PHILOSOPHICAL<TD><a TITLE=" Article FILOZOFSKA ISTRAZIVANJA Title: Half a Century of Croatian Philosophical Society as a Research Challenge" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7968<TD align=left class=sc>PHILOSOPHY<TD>10<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7969<TD align=left class=sc>PHLOGERA<TD><a TITLE=" Article INDOGERMANISCHE FORSCHUNGEN Title: HESYCHIAN PHLOGIOS-AULOS AND BALKAN PHLOGERA" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7970<TD align=left class=sc>PHLOGIOS<TD><a TITLE=" Article INDOGERMANISCHE FORSCHUNGEN Title: HESYCHIAN PHLOGIOS-AULOS AND BALKAN PHLOGERA" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7971<TD align=left class=sc>PHLOGISTON<TD><a TITLE=" Article LINGUISTIC TYPOLOGY Title: Perhaps mirativity is phlogiston, but admirativity is perfect: On Balkan evidential strategies" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>7972<TD align=left class=sc>PHOBIAS<TD><a TITLE=" Article JOURNAL OF SPANISH CULTURAL S Title: &quot;Pedir un cafe puede costarte la vida&quot;: phobias of democracy in alex de la Iglesia&#39;s El bar" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7973<TD align=left class=sc>PHOCAS<TD><a TITLE=" Article TRAMES-JOURNAL OF THE HUMANIT Title: A TYRANT ON THE THRONE: PHOCAS THE USURPER, AND THE COLLAPSE OF THE EASTERN FRONTIER" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7974<TD align=left class=sc>PHONE<TD><a TITLE=" Article ZAGREB INTERNATIONAL REVIEW O Title: Mobile phone penetration and its impact on inequality in the Western Balkan countries" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>7975<TD align=left class=sc>PHONES<TD><a TITLE=" Article JOURNAL OF TEACHING ENGLISH F Title: MOBILE PHONES AS LEARNING AND ORGANIZATIONAL TOOLS IN THE ESP CLASSROOM" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7976<TD align=left class=sc>PHONETIC<TD>3<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7977<TD align=left class=sc>PHONETICS<TD>2<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7978<TD align=left class=sc>PHONOLOGY<TD>3<TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=odd><TD>7979<TD align=left class=sc>PHOTO<TD>2<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7980<TD align=left class=sc>PHOTOGRAPHING<TD><a TITLE=" Article ASPASIA Title: Gendering Grief Lamenting and Photographing the Dead in Serbia, 1914-1941" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="wd-name.html">Word</a></SPAN><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>7981<TD align=left class=sc>PHOTOGRAPHS<TD>2<TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>7982<TD align=left class=sc>PHOTOGRAPHY<TD>3<TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>7983<TD align=left class=sc>PHRASES<TD><a TITLE=" Article JEZIKOSLOVLJE Title: Anomalous use of definiteness and gender in some types of noun phrases in Bulgarian" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7984<TD align=left class=sc>PHRYGIAN<TD><a TITLE=" BOOK CHAPTER ARCHAEOLOGY, ARTIFACTS AND AN Title: THE IRON AGE BACKGROUND TO THE FORMATION OF THE PHRYGIAN STATE" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7985<TD align=left class=sc>PHYSICAL<TD>9<TD>0<TD><a title=' 0.1%' class=ank>88</a>
+<TR valign=top align=right class=evn><TD>7986<TD align=left class=sc>PHYSICIAN<TD>2<TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7987<TD align=left class=sc>PHYSICOCHEMICAL<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: Nature and physicochemical features of the incrusted white decoration on pottery from two sites in Bulgaria, dated to the chalcolithic period (IV mill BC)" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>7988<TD align=left class=sc>PHYSIOLOGICAL<TD>3<TD>0<TD><a title=' 0.0%' class=ank>18</a>
+<TR valign=top align=right class=odd><TD>7989<TD align=left class=sc>PIANO<TD><a TITLE=" Article POLITICAL QUARTERLY Title: Bad Piano? Bad Music? A Response to Comments on Lowe and Pemberton, The Official History of the British Civil Service, Volume II: 1982-1997" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7990<TD align=left class=sc>PIATRA<TD><a TITLE=" Article ARCHAEOLOGY ETHNOLOGY AND ANT Title: The Engraved Stone Pendant from Poiana Ciresului-Piatra Neamt, Romania. New Contributions to the Understanding of Symbolic Behavior in Gravettian" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>7991<TD align=left class=sc>PICARESQUE<TD><a TITLE=" Article AMERICAN ETHNOLOGIST Title: Patterns of reinterpretation: Trader-tourism in the Balkans (Bulgaria) as a picaresque metaphorical enactment of post-tolalitarianism" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=evn><TD>7992<TD align=left class=sc>PICOT<TD><a TITLE=" Article TARIH INCELEMELERI DERGISI Title: Istanbul And Sykes-Picot Agreements in the Context of Russian Plans for The Ottoman Geography in World War I" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7993<TD align=left class=sc>PICTURE<TD>9<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=evn><TD>7994<TD align=left class=sc>PICTURES<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7995<TD align=left class=sc>PIECE<TD>3<TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>7996<TD align=left class=sc>PIEDMONT<TD>2<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=odd><TD>7997<TD align=left class=sc>PIERRE<TD>3<TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>7998<TD align=left class=sc>PIERRES<TD><a TITLE=" Article BULLETIN DE LA SOCIETE PREHIS Title: Glanes prehistoriques dans les Balkans. Pierres a cupules / Prehistoric glanes in the Balkans. Cup stones" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7999<TD align=left class=sc>PIERS<TD><a TITLE=" Article VESTNIK SANKT-PETERBURGSKOGO  Title: ON THE BALKAN ORIGIN OF OLD RUSSIAN CROSS-DOMED CHURCHES WITH CORNER PIERS IN THE LATE XIVTH - EARLY XVTH CENTURIES" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>8000<TD align=left class=sc>PIETY<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>3</a>
+</TABLE>
+<div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>40</b> of 59 &nbsp;<a href=wd-name.html class=nu>1</a>&nbsp; &nbsp;<a href=wd-name-11.html class=nu>11</a>&nbsp; &nbsp;<a href=wd-name-21.html class=nu>21</a>&nbsp;<span class=nonprn>: [  &nbsp;<a href=wd-name-31.html class=nu>31</a> &nbsp;<a href=wd-name-32.html class=nu>32</a> &nbsp;<a href=wd-name-33.html class=nu>33</a> &nbsp;<a href=wd-name-34.html class=nu>34</a> &nbsp;<a href=wd-name-35.html class=nu>35</a> &nbsp;<a href=wd-name-36.html class=nu>36</a> &nbsp;<a href=wd-name-37.html class=nu>37</a> &nbsp;<a href=wd-name-38.html class=nu>38</a> &nbsp;<a href=wd-name-39.html class=nu>39</a> &nbsp;40 ]</span> &nbsp;<a href=wd-name-41.html class=nu>41</a>&nbsp; &nbsp;<a href=wd-name-51.html class=nu>51</a>&nbsp;</div>
+</BODY>

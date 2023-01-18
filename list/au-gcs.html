@@ -1,0 +1,591 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><HEAD><TITLE>HistCite - RESEE: A Bibliographic Database on Balkan – Southeast European Studies</TITLE></HEAD>
+<BODY VLINK=blue OnLoad="focus()">
+<STYLE>
+body {
+	margin: 2px 10px; padding: 0;
+	background: #fff;
+}
+body, td, th {
+	font-size: 10pt; font-family: Verdana;
+}
+input, select, textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ui {
+	font-size: 10pt; font-family: Verdana;
+}
+.ui input, .ui select, .ui textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ci_title {
+	font-size: 8pt; font-weight: bold;
+}
+.ci_il {
+	color: black; text-decoration: none;	/* msie6 ! inherit */
+}
+.helpa { text-decoration: none;
+	cursor: help;
+}
+.helpt { background: #ffff77; padding: 4px;
+}
+.nu { text-decoration: none; 
+}
+.sc, .sc a { color: #904644 }
+.fnd { background-color: #beb;
+	padding: 0 3px 2px 2px;
+}
+td div.fndCR {
+	padding-left: 2em;
+//	text-indent: -2em;
+}
+.odd { background-color: #eeeeee }
+.evn { background-color: #dddddd }
+div.odd { padding: 5px; margin-bottom: 2px }
+div.evn { padding: 5px; margin-bottom: 2px }
+.yr { padding: 0; font-weight: bold }
+.ank:hover { cursor: pointer; text-decoration: none; color: inherit; }
+a {
+	text-decoration: none;
+}
+a:hover, a:hover .sc {
+	text-decoration: underline; color: blue;
+}
+.scr:hover, td a.scr:hover { color:#000; text-decoration:none; } /* FF td */
+@media print {
+	.nonprn, .ephemeral, .x, .ui { display: none; }
+	.index { border: solid #fff 0; }
+	body { font-size: 10pt; }
+	td, th { font-size: 10pt; }
+	.ci_title { font-size: 8pt; }
+}
+</STYLE>
+<SCRIPT>
+var root=location.href; root = root.replace(/index.*/, ''); root = root.replace(/list.*/, '');
+function about () { window.open(root+'about.html','about','width=440,height=370,resizable=yes,scrollbars=yes') }
+	// This is a list of XMLHttpRequest-creation factory functions to try
+_factories = [
+    function() { return new XMLHttpRequest(); },
+    function() { return new ActiveXObject("Msxml2.XMLHTTP"); },
+    function() { return new ActiveXObject("Microsoft.XMLHTTP"); }
+];
+
+// When we find a factory that works, store it here.
+_factory = null;
+
+// Create and return a new XMLHttpRequest object.
+//
+// The first time we're called, try the list of factory functions until
+// we find one that returns a non-null value and does not throw an
+// exception. Once we find a working factory, remember it for later use.
+//
+newRequest = function() {
+    if (_factory != null) return _factory();
+
+    for(var i = 0; i < _factories.length; i++) {
+        try {
+            var factory = _factories[i];
+            var request = factory();
+            if (request != null) {
+                _factory = factory;
+                return request;
+            }
+        }
+        catch(e) {
+            continue;
+        }
+    }
+    // If we get here, none of the factory candidates succeeded,
+    // so throw an exception now and for all future calls.
+    _factory = function() {
+        //throw new Error("XMLHttpRequest not supported");
+        alert("XMLHttpRequest not supported");
+    }
+    _factory(); // Throw an error
+}
+
+function gethelp (url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+//    alert('OK');
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+function gettip (ent, url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+		ent.innerHTML = req.responseText;
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+</SCRIPT>
+<STYLE>
+div#tipshade {
+	position: fixed; top: 208px; left: 208px;
+	margin: 0px; width: 420px; height: 180px;
+	border: solid gray 2px;
+	background: gray;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 19; display: none;
+}
+div#tipoday {
+	position: fixed; top: 200px; left: 200px;
+	margin: 0px; width: 420px; height: 180px; padding: 0;
+	background: white;
+	border: solid #e44959 2px;
+	font: 10pt Verdana; cursor: default;
+	z-index: 20; display: none;
+}
+div#tiptitle {
+	background: #e44959; color: white; font-weight: bold;
+	padding-left: 4px;
+}
+div#tiptitle span.x {
+	background: white;
+}
+div#tipbox {
+	position: relative; /* top: 5px; */ margin: 8px;
+	max-height: 120px; overflow: auto;
+}
+div#tipctrl {
+	position: absolute; bottom: 0; margin: 4px;
+}
+div#tipctrl td {
+	font-size: 10px;
+}
+div#tipctrl form { margin: 0; }
+span.nw { white-space: nowrap; }
+</STYLE>
+<div id="tipshade" class="ui"> </div>
+<div id="tipoday" class="ui" align=left>
+<div id="tiptitle">HistCite Tip of the Day<span class="x"><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;" title="Close">X</a></span></div>
+<div id="tipbox">Tip of the day</div>
+<div id="tipctrl">
+<table align=bottom width=100%>
+<tr><td width=40% nowrap><form name=ft><label><input type=checkbox OnChange="nextStart(this);" checked> Show tip at next start</label></form></td>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=-1');>Previous Tip</a>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=1');>Next Tip</a>
+<td align=right><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;">Close</a>&nbsp;</td>
+</tr></table></div></div>
+<SCRIPT> var otip;
+function getit () { otip = document.getElementById('tipbox'); gettip(otip,'/tip.txt?next=0'); }
+function nextStart (start) {
+	if(start.checked == true) {
+		on = 1;
+	} else {
+		on = 0;
+	}
+	gethelp('/tipStart?on=' + on);
+}
+function tip_show () {
+	var W, H;
+	if(window.innerWidth) {
+		W = window.innerWidth; H = window.innerHeight;
+	} else {
+		var dd = document.documentElement;
+		W = dd.clientWidth; H = dd.clientHeight;
+	}
+//	alert(W + ' x ' + H);
+	var left = (W-420)/2;
+	var top = (H-180)/2;
+	var tipB = document.getElementById('tipshade');
+	var tipT = document.getElementById('tipoday');
+	tipB.style.left = left + 8 + 'px';
+	tipB.style.top = top + 8 + 'px';
+	tipT.style.left = left + 'px';
+	tipT.style.top = top + 'px';
+	tipB.style.display='block';
+	tipT.style.display='block';
+	getit();
+}
+</SCRIPT>
+
+<style>
+div#af_boxshado {
+	position: fixed; left:148px; top:128px; width: 460px; height: 110px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 11; display: none;
+}
+div#af_box {
+	position: fixed; left:140px; top:120px; width: 460px; height: 110px;
+	background: white; border: solid #999 2px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+div#af_box input {
+	font: 10px Verdana;
+}
+div#af_box_title {
+	background: #d3d3d3; padding-left: 4px; font-weight: bold;
+}
+div#af_box_title span.x {
+	background: white;
+}
+div#af_form {
+	width: 445px; height: 70px;
+	padding: 8px; overflow: auto;
+}
+div#af_form #sub{
+	display: block; margin: 12px 0 0 0;
+}
+div#starh2 {
+	position: absolute; left: 88px; top: 78px; width: 420px; height: 156px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	padding: 8px;
+	z-index: 12; display: none;
+}
+div#starh {
+	position: absolute; left: 80px; top: 70px; width: 420px; height: 156px; overflow: auto;
+	border: outset gray 2px;
+	padding: 8px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+</style>
+<div id="af_boxshado"> </div>
+<div id="af_box">
+<div id="af_box_title">Add File<span class="x"><a onClick="af_close()" title="Close">X</a></span>
+<!--<a href=javascript:na() onMouseOver="na();" onClick="toggle('starh');" class=helpa style="color:#000">-->
+<a onClick="toggle('starh');" class=helpa style="color:#000"><span class="x" id=mstarh style="top:0;right:14px;">?</span><span class="x" id=lstarh style="top:0;right:14px;display:none">_</span></a>
+</div>
+<div id="af_form">
+<FORM action=/input method=GET OnSubmit="return false" name=af style="margin:0">
+	Use [Browse...] to select a file with bibliography data:<br>
+	<INPUT type=hidden name=inputpath>
+	<INPUT type=file name=inputset size=48 OnChange="af.sub.focus()" value="">
+	<INPUT type=submit value="Add File" OnClick="afSubmit();return false" name=sub id="sub">
+</div><div id=starh2> </div>
+<div id=starh class=helpt>
+Use wildcard '*' to add more than one file at a time.
+For example, if you have <code>file1</code>,
+<code>file2</code>, etc. all in the same folder or directory;
+first, locate one of the files with the [Browse...] button.  Then alter the
+file path in the box above to include '*' character (eg. <code>file*</code>).
+Wildcard '?' to blanket only one character works too.<br>
+<b>Note</b>: In Windows you can select multiple files and "drag and drop" them 
+onto HistCite icon or shortcut.  The program would start and load those files.
+</div>
+</FORM><SCRIPT>
+var af = document.af;
+function afSubmit() {
+	if ("" == af.inputset.value ) { alert("Select a file."); return }
+	af.inputpath.value = af.inputset.value;
+	af.submit();
+}
+function af_show() {
+	document.getElementById('af_boxshado').style.display = 'block';
+	document.getElementById('af_box').style.display = 'block';
+	a = document.af.inputset.value;
+	document.af.inputset.focus();
+}
+function af_close() {
+	document.getElementById('af_boxshado').style.display = 'none';
+	document.getElementById('af_box').style.display = 'none';
+}
+</SCRIPT></div>
+
+<SCRIPT>
+function glossary () { window.open(root+'glossary.html','gloss','width=640,height=570,resizable=yes,scrollbars=yes') }
+function opeNod (a) { window.open(root+'node/'+a+'.html',a,'width=770,height=570,resizable=yes,scrollbars=yes') }
+function opeLod (dp, a) { if(''==dp) d='au'; else d=dp; var w = d; w = w.replace(/[-\/]/g, '');
+	window.open(root+d+'/'+a+'.html',w+a,'width=640,height=546,resizable=yes,scrollbars=yes') }
+function na(){}
+</SCRIPT>
+<STYLE>
+#head {
+	position: left:0; padding-left:4px; background:#fff;
+	z-index:2; margin:0 0 8px 0; border-bottom:solid #000 1px;
+}
+#title {
+	padding-bottom: 4px; font-size: 1.3em; font-weight: bold;
+	max-width: 600px; /* non default overflow gives odd z-effects in FF */
+}
+#desc {
+	position: absolute; left: 4px; top: 1.8em;
+	padding: 2px 8px 4px 8px; white-space: normal; max-width: 480px;
+	background: #ffffcc; font-weight: normal; font-size: 10pt;
+	border: solid #000 1px;
+	display: none; z-index: 11;
+}
+#atitle { cursor: text;}
+#atitle, #stats {
+	text-decoration: none; color: #000;
+}
+#stats2 {
+	position: absolute; right: 0px; padding: 0;
+	background: white;
+	display: none; z-index: 11;
+}
+#atitle:hover #desc, #stats:hover #stats2 {
+	display: block;
+}
+@media print {
+	#head { position: static; }
+	#menu_pm { line-height: 0; }
+	#back { display: none; }
+}
+</STYLE>
+<!-- FF 3 only? fix -->
+<div id=head style="width:99%">
+<TABLE width=100% cellpadding=0 cellspacing=0 style="margin:0 0 3px 0">
+<TR valign=top><TD align=left width=60%>
+<div id=title><a id=atitle >RESEE: A Bibliographic Database on Balkan – Southeast European Studies<div id=desc>-------Search: Databases searching procedure and formats------
+*| Search query
+"balkan*" OR "southeast* europe*" OR "south east* europe*" (TITLE-ABS-KEY) 
+Web of Science Core Collection (SSCI, A&HCI, ESCI, BKCI-SSH)
+Scopus
+Constellate (JSTOR and Portico)
+
+Note: The earliest publication date from WoS for the articles was 1957 whereas for the books 2003.
+To complement our database with entries before 1957, we search the Constellate (Jstor and Portico) and Scopus database, finding and adding a further 445 articles.
+Characters were normalize, and English translation of the titles were added for entries in other languages than English. And for Constellate data we kept only Articles and Books from Humanities and Social Sciences.
+The Scopus and Constellate metadata files were converted into WoS (.txt) format.
+We also added manually 59 new entries (9 articles and 50 books) that were missing from the search but showed to be among the most cited references (local citation score greater than 10)
+
+---------Merging variants in the same cited references--------
+Given that databases have problems with the completeness of references and linkages (Van Eck and Waltman 2017), we used CRExplorer to clean the data and reduce the problems posed by variants in the same cited references (Thor et al. 2016)
+The cited references (CRs) in our data contained variants, especially the references on books. 
+We use the manual cleaning-up procedure, setting the clustering algorithm with a Levenshtein threshold of 0.75. 
+We also manually checked and unified variants of the same cited references (CRs), especially for books that received a local citation of more than 20 or had different years or editions and translations into other languages. 
+After the cleaning, we unify the variants of the same CRs, about 12% of the initial cited references.</div></a></div>
+<TD align=center><a href=# OnClick="window.open('../graph/list.html','graph','resizable=yes,scrollbars=yes')" class=nonprn>Historiographs</a><TD nowrap align=right rowspan=2 width=5%><div class=nonprn><a href=javascript:glossary()>Glossary</a>&nbsp;&nbsp;<a href="http://www.histcite.com/HTMLHelp/guide.html" target=guide>HistCite Guide</a>&nbsp;&nbsp;<a href=# OnClick="about(); return false">About</a></div><a id=stats>
+Grand Totals: LCS 8009, GCS 85894, CR 328237<br>Collection span: 1854 - 2022<br></a><TR><TD colspan=2 width=95%><b>All-Author List</b> (10107)</TABLE></div><div align=right>24 December 2022</div>
+<div class="index" style=""><a href=../index-tl.html>Records</a>: 8378, Authors: 10107, <a href=so-pubs.html>Journals</a>: 2650, <a href=or-pubs.html>Cited References</a>: 248863, <a href=wd-pubs.html>Words</a>: 11723
+<br><span class=nonprn><a href=py-pubs.html title=' Publication Years: 127 '>Yearly output</a>
+|&nbsp;<a href=dt-pubs.html title=' Document Types: 14 '>Document Type</a>
+|&nbsp;<a href=la-pubs.html title=' Languages: 6 '>Language</a>
+|&nbsp;<a href=in-pubs.html title=' Institutions: 62 '>Institution</a>
+|&nbsp;<a href=i2-pubs.html title=' Institution with Subdivisions: 64 '>Institution with Subdivision</a>
+|&nbsp;<a href=co-pubs.html title=' Countries: 8 '>Country</a></span></div><div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>1</b> of 51<span class=nonprn>: [  &nbsp;1 &nbsp;<a href=au-gcs-2.html class=nu>2</a> &nbsp;3 &nbsp;4 &nbsp;5 &nbsp;6 &nbsp;7 &nbsp;8 &nbsp;9 &nbsp;10 ]</span> &nbsp;11&nbsp; &nbsp;21&nbsp; &nbsp;31&nbsp; &nbsp;41&nbsp; &nbsp;51&nbsp;</div>
+<TABLE border=0 cellpadding=5 cellspacing=2 style="border: 2px solid #cccccc;margin: 4px 0;">
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="au-name.html">Author</a><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><SPAN class=sc><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a></SPAN>
+<TR valign=top align=right class=odd><TD>1<TD align=left>Todorova M<TD>29<TD><a title=' 7.3%' class=ank>587</a><TD class=sc><a title=' 6.0%' class=ank>5139</a>
+<TR valign=top align=right class=evn><TD>2<TD align=left>Malcolm N<TD>2<TD><a title=' 1.8%' class=ank>144</a><TD class=sc><a title=' 4.3%' class=ank>3688</a>
+<TR valign=top align=right class=odd><TD>3<TD align=left>Woodward SL<TD>4<TD><a title=' 1.3%' class=ank>102</a><TD class=sc><a title=' 2.8%' class=ank>2365</a>
+<TR valign=top align=right class=evn><TD>4<TD align=left>Holbrooke R<TD><a TITLE=" BOOK END WAR Title: To End a War THE CONFLICT IN YUGOSLAVIA &acirc;&#128;&#147; AMERICA&#39;S INSIDE STORY &acirc;&#128;&#147; NEGOTIATING WITH MILOSEVIC" href=javascript:opeNod(1158)>1</a><TD><a title=' 0.6%' class=ank>47</a><TD class=sc><a title=' 2.1%' class=ank>1834</a>
+<TR valign=top align=right class=odd><TD>5<TD align=left>Kaplan RD<TD>5<TD><a title=' 1.1%' class=ank>92</a><TD class=sc><a title=' 2.1%' class=ank>1811</a>
+<TR valign=top align=right class=evn><TD>6<TD align=left>Brown JS<TD><a TITLE=" Review ORGANIZATION SCIENCE Title: Knowledge and organization: A social-practice perspective" href=javascript:opeNod(1382)>1</a><TD>0<TD class=sc><a title=' 1.9%' class=ank>1636</a>
+<TR valign=top align=right class=odd><TD>7<TD align=left>Duguid P<TD><a TITLE=" Review ORGANIZATION SCIENCE Title: Knowledge and organization: A social-practice perspective" href=javascript:opeNod(1382)>1</a><TD>0<TD class=sc><a title=' 1.9%' class=ank>1636</a>
+<TR valign=top align=right class=evn><TD>8<TD align=left>Inalcik H<TD>2<TD><a title=' 0.8%' class=ank>66</a><TD class=sc><a title=' 1.9%' class=ank>1599</a>
+<TR valign=top align=right class=odd><TD>9<TD align=left>Banac I<TD>4<TD><a title=' 1.2%' class=ank>93</a><TD class=sc><a title=' 1.6%' class=ank>1414</a>
+<TR valign=top align=right class=evn><TD>10<TD align=left>Chandler D<TD>6<TD><a title=' 0.8%' class=ank>62</a><TD class=sc><a title=' 1.6%' class=ank>1338</a>
+<TR valign=top align=right class=odd><TD>11<TD align=left>Bringa T<TD>2<TD><a title=' 0.5%' class=ank>41</a><TD class=sc><a title=' 1.4%' class=ank>1175</a>
+<TR valign=top align=right class=evn><TD>12<TD align=left>Judah T<TD>4<TD><a title=' 0.5%' class=ank>43</a><TD class=sc><a title=' 1.4%' class=ank>1171</a>
+<TR valign=top align=right class=odd><TD>13<TD align=left>Stavrianos LS<TD>3<TD><a title=' 1.3%' class=ank>102</a><TD class=sc><a title=' 1.3%' class=ank>1124</a>
+<TR valign=top align=right class=evn><TD>14<TD align=left>Lampe JR<TD>8<TD><a title=' 1.3%' class=ank>101</a><TD class=sc><a title=' 1.3%' class=ank>1107</a>
+<TR valign=top align=right class=odd><TD>15<TD align=left>Karpat KH<TD><a TITLE=" BOOK OTTOMAN POPULATION 1 Title: Osmanli nufusu, (1830-1914) : demografik ve sosyal ozellikleri - Ottoman population, 1830-1914 : demographic and social characteristics" href=javascript:opeNod(739)>1</a><TD><a title=' 0.5%' class=ank>44</a><TD class=sc><a title=' 1.3%' class=ank>1098</a>
+<TR valign=top align=right class=evn><TD>16<TD align=left>Gagnon VP<TD><a TITLE=" BOOK MYTH ETHNIC WAR SERB Title: The myth of ethnic war : Serbia and Croatia in the 1990s" href=javascript:opeNod(1599)>1</a><TD><a title=' 0.5%' class=ank>43</a><TD class=sc><a title=' 1.2%' class=ank>1014</a>
+<TR valign=top align=right class=odd><TD>17<TD align=left>Mazower M<TD>3<TD><a title=' 1.7%' class=ank>138</a><TD class=sc><a title=' 1.1%' class=ank>945</a>
+<TR valign=top align=right class=evn><TD>18<TD align=left>Antrop M<TD><a TITLE=" Article; Proceedings Paper LANDSCAPE AND URBAN PLANNING Title: Landscape change and the urbanization process in Europe" href=javascript:opeNod(1594)>1</a><TD>0<TD class=sc><a title=' 1.1%' class=ank>925</a>
+<TR valign=top align=right class=odd><TD>19<TD align=left>Anderson MS<TD><a TITLE=" BOOK E QUESTION 1774 1923 Title: The Eastern question, 1774-1923: A study in international relations" href=javascript:opeNod(472)>1</a><TD><a title=' 0.6%' class=ank>47</a><TD class=sc><a title=' 1.1%' class=ank>916</a>
+<TR valign=top align=right class=evn><TD>20<TD align=left>JELAVICH B<TD>3<TD><a title=' 1.9%' class=ank>153</a><TD class=sc><a title=' 1.0%' class=ank>854</a>
+<TR valign=top align=right class=odd><TD>21<TD align=left>Ramet SP<TD>12<TD><a title=' 1.0%' class=ank>79</a><TD class=sc><a title=' 1.0%' class=ank>830</a>
+<TR valign=top align=right class=evn><TD>22<TD align=left>Goldsworthy V<TD><a TITLE=" BOOK INVENTING RURITANIA Title: Inventing Ruritania: the imperialism of the imagination" href=javascript:opeNod(1165)>1</a><TD><a title=' 1.3%' class=ank>104</a><TD class=sc><a title=' 0.9%' class=ank>760</a>
+<TR valign=top align=right class=odd><TD>23<TD align=left>WEST R<TD><a TITLE=" BOOK BLACK LAMB GREY FALC Title: BLACK LAMB AND GREY FALCON" href=javascript:opeNod(368)>1</a><TD><a title=' 0.6%' class=ank>45</a><TD class=sc><a title=' 0.8%' class=ank>709</a>
+<TR valign=top align=right class=evn><TD>24<TD align=left>Glenny M<TD>7<TD><a title=' 1.7%' class=ank>135</a><TD class=sc><a title=' 0.8%' class=ank>692</a>
+<TR valign=top align=right class=odd><TD>25<TD align=left>GLENNY Misha<TD><a TITLE=" BOOK BALKANS NATL WAR GRE Title: The Balkans: Nationalism, War, and the Great Powers 1804-2012" href=javascript:opeNod(1183)>1</a><TD><a title=' 1.0%' class=ank>77</a><TD class=sc><a title=' 0.8%' class=ank>682</a>
+<TR valign=top align=right class=evn><TD>26<TD align=left>Evershed RP<TD>5<TD><a title=' 0.3%' class=ank>23</a><TD class=sc><a title=' 0.8%' class=ank>674</a>
+<TR valign=top align=right class=odd><TD>27<TD align=left>Hayden RM<TD>13<TD><a title=' 1.9%' class=ank>154</a><TD class=sc><a title=' 0.8%' class=ank>663</a>
+<TR valign=top align=right class=evn><TD>28<TD align=left>Owen D<TD>2<TD><a title=' 0.5%' class=ank>38</a><TD class=sc><a title=' 0.8%' class=ank>663</a>
+<TR valign=top align=right class=odd><TD>29<TD align=left>Sandfeld K<TD><a TITLE=" BOOK LINGUISTIQUE BALKANI Title: Linguistique balkanique, problemes et resultats" href=javascript:opeNod(264)>1</a><TD><a title=' 0.4%' class=ank>36</a><TD class=sc><a title=' 0.7%' class=ank>634</a>
+<TR valign=top align=right class=evn><TD>30<TD align=left>BAKICHAYDEN M<TD>2<TD><a title=' 2.9%' class=ank>236</a><TD class=sc><a title=' 0.7%' class=ank>631</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="au-name.html">Author</a><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><SPAN class=sc><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a></SPAN>
+<TR valign=top align=right class=odd><TD>31<TD align=left>McCarthy J<TD><a TITLE=" BOOK DEATH EXILE ETHNIC C Title: Death and Exile: The Ethnic Cleansing of Ottoman Muslims, 1821-1922" href=javascript:opeNod(988)>1</a><TD><a title=' 0.5%' class=ank>41</a><TD class=sc><a title=' 0.7%' class=ank>587</a>
+<TR valign=top align=right class=evn><TD>32<TD align=left>Sugar PF<TD>2<TD><a title=' 0.7%' class=ank>55</a><TD class=sc><a title=' 0.7%' class=ank>572</a>
+<TR valign=top align=right class=odd><TD>33<TD align=left>JACKSON MR<TD>3<TD><a title=' 0.7%' class=ank>55</a><TD class=sc><a title=' 0.6%' class=ank>550</a>
+<TR valign=top align=right class=evn><TD>34<TD align=left>Hall RC<TD>3<TD><a title=' 0.7%' class=ank>59</a><TD class=sc><a title=' 0.6%' class=ank>528</a>
+<TR valign=top align=right class=odd><TD>35<TD align=left>Donia RJ<TD><a TITLE=" BOOK BOSNIA HERCEGOVINA T Title: Bosnia and Hercegovina: A Tradition Betrayed" href=javascript:opeNod(941)>1</a><TD><a title=' 0.5%' class=ank>37</a><TD class=sc><a title=' 0.6%' class=ank>513</a>
+<TR valign=top align=right class=evn><TD>36<TD align=left>Fine JVA<TD><a TITLE=" BOOK BOSNIA HERCEGOVINA T Title: Bosnia and Hercegovina: A Tradition Betrayed" href=javascript:opeNod(941)>1</a><TD><a title=' 0.5%' class=ank>37</a><TD class=sc><a title=' 0.6%' class=ank>513</a>
+<TR valign=top align=right class=odd><TD>37<TD align=left>Lichter DT<TD>3<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.6%' class=ank>476</a>
+<TR valign=top align=right class=evn><TD>38<TD align=left>Ozdogan M<TD>3<TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.5%' class=ank>468</a>
+<TR valign=top align=right class=odd><TD>39<TD align=left>Boric D<TD>13<TD><a title=' 1.0%' class=ank>80</a><TD class=sc><a title=' 0.5%' class=ank>450</a>
+<TR valign=top align=right class=evn><TD>40<TD align=left>Jelavich C<TD><a TITLE=" BOOK ESTABLISHMENT BALKAN Title: The establishment of the Balkan national states, 1804-1920" href=javascript:opeNod(575)>1</a><TD><a title=' 0.5%' class=ank>42</a><TD class=sc><a title=' 0.5%' class=ank>447</a>
+<TR valign=top align=right class=odd><TD>41<TD align=left>Barkey K<TD>2<TD><a title=' 0.3%' class=ank>25</a><TD class=sc><a title=' 0.5%' class=ank>427</a>
+<TR valign=top align=right class=evn><TD>42<TD align=left>Iordanova D<TD>8<TD><a title=' 0.5%' class=ank>43</a><TD class=sc><a title=' 0.5%' class=ank>414</a>
+<TR valign=top align=right class=odd><TD>43<TD align=left>SKENDI S<TD>2<TD><a title=' 0.5%' class=ank>42</a><TD class=sc><a title=' 0.5%' class=ank>414</a>
+<TR valign=top align=right class=evn><TD>44<TD align=left>Keil S<TD>7<TD><a title=' 0.3%' class=ank>28</a><TD class=sc><a title=' 0.5%' class=ank>407</a>
+<TR valign=top align=right class=odd><TD>45<TD align=left>Palairet MR<TD><a TITLE=" BOOK BALKAN EC C 1800 191 Title: The Balkan Economies C. 1800-1914: Evolution without development" href=javascript:opeNod(1087)>1</a><TD><a title=' 0.6%' class=ank>46</a><TD class=sc><a title=' 0.4%' class=ank>381</a>
+<TR valign=top align=right class=evn><TD>46<TD align=left>Cvijic J<TD>4<TD><a title=' 0.9%' class=ank>71</a><TD class=sc><a title=' 0.4%' class=ank>379</a>
+<TR valign=top align=right class=odd><TD>47<TD align=left>Akkermans PMMG<TD>2<TD><a title=' 0.2%' class=ank>19</a><TD class=sc><a title=' 0.4%' class=ank>378</a>
+<TR valign=top align=right class=evn><TD>48<TD align=left>Garfinkel Y<TD>3<TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>378</a>
+<TR valign=top align=right class=odd><TD>49<TD align=left>Bjelic DI<TD>19<TD><a title=' 1.1%' class=ank>87</a><TD class=sc><a title=' 0.4%' class=ank>371</a>
+<TR valign=top align=right class=evn><TD>50<TD align=left>Farid S<TD>2<TD><a title=' 0.2%' class=ank>20</a><TD class=sc><a title=' 0.4%' class=ank>362</a>
+<TR valign=top align=right class=odd><TD>51<TD align=left>Kotsakis K<TD>3<TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>359</a>
+<TR valign=top align=right class=evn><TD>52<TD align=left>Andeescu RR<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=odd><TD>53<TD align=left>Bailey D<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=evn><TD>54<TD align=left>Bicakci E<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=odd><TD>55<TD align=left>Burton MM<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=evn><TD>56<TD align=left>Campbell S<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=odd><TD>57<TD align=left>Coolidge J<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=evn><TD>58<TD align=left>Copley MS<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=odd><TD>59<TD align=left>Hodder I<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=evn><TD>60<TD align=left>Levy T<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="au-name.html">Author</a><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><SPAN class=sc><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a></SPAN>
+<TR valign=top align=right class=odd><TD>61<TD align=left>Nieuwenhuyse O<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=evn><TD>62<TD align=left>Ozbasaran M<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=odd><TD>63<TD align=left>Ozdogan AE<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=evn><TD>64<TD align=left>Payne S<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=odd><TD>65<TD align=left>Sherratt AG<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=evn><TD>66<TD align=left>Urem-Kotsu D<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=odd><TD>67<TD align=left>Yalman N<TD><a TITLE=" Article NATURE Title: Earliest date for milk use in the Near East and southeastern Europe linked to cattle herding" href=javascript:opeNod(2332)>1</a><TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.4%' class=ank>356</a>
+<TR valign=top align=right class=evn><TD>68<TD align=left>Noutcheva G<TD>3<TD><a title=' 1.3%' class=ank>101</a><TD class=sc><a title=' 0.4%' class=ank>340</a>
+<TR valign=top align=right class=odd><TD>69<TD align=left>Aquino VV<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=evn><TD>70<TD align=left>Asmerom Y<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=odd><TD>71<TD align=left>Awe J<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=evn><TD>72<TD align=left>Baldini JUL<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=odd><TD>73<TD align=left>Bartlein P<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=evn><TD>74<TD align=left>Breitenbach SFM<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=odd><TD>75<TD align=left>Culleton BJ<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=evn><TD>76<TD align=left>Ebert C<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=odd><TD>77<TD align=left>Haug GH<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=evn><TD>78<TD align=left>Jazwa C<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=odd><TD>79<TD align=left>Kennett DJ<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=evn><TD>80<TD align=left>Macri MJ<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=odd><TD>81<TD align=left>Marwan N<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=evn><TD>82<TD align=left>Polyak V<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=odd><TD>83<TD align=left>Prufer KM<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=evn><TD>84<TD align=left>Ridley HE<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=odd><TD>85<TD align=left>Sodemann H<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=evn><TD>86<TD align=left>Winterhalder B<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD class=sc><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=odd><TD>87<TD align=left>Reskin BF<TD>2<TD>0<TD class=sc><a title=' 0.4%' class=ank>321</a>
+<TR valign=top align=right class=evn><TD>88<TD align=left>Savic O<TD><a TITLE=" BOOK BALKAN METAPHOR GLOB Title: Balkan as Metaphor: between globalization and fragmentation" href=javascript:opeNod(1415)>1</a><TD><a title=' 0.8%' class=ank>61</a><TD class=sc><a title=' 0.4%' class=ank>321</a>
+<TR valign=top align=right class=odd><TD>89<TD align=left>Elbasani A<TD>9<TD><a title=' 1.5%' class=ank>122</a><TD class=sc><a title=' 0.4%' class=ank>317</a>
+<TR valign=top align=right class=evn><TD>90<TD align=left>Harvati K<TD>6<TD><a title=' 0.2%' class=ank>15</a><TD class=sc><a title=' 0.3%' class=ank>283</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="au-name.html">Author</a><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><SPAN class=sc><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a></SPAN>
+<TR valign=top align=right class=odd><TD>91<TD align=left>Bieber F<TD>20<TD><a title=' 1.1%' class=ank>89</a><TD class=sc><a title=' 0.3%' class=ank>279</a>
+<TR valign=top align=right class=evn><TD>92<TD align=left>Brailsford HN<TD><a TITLE=" BOOK MACEDONIA ITS RACES Title: Macedonia; its races and their future" href=javascript:opeNod(16)>1</a><TD><a title=' 0.5%' class=ank>41</a><TD class=sc><a title=' 0.3%' class=ank>278</a>
+<TR valign=top align=right class=odd><TD>93<TD align=left>Chapman JC<TD>2<TD><a title=' 0.5%' class=ank>43</a><TD class=sc><a title=' 0.3%' class=ank>275</a>
+<TR valign=top align=right class=evn><TD>94<TD align=left>MANIATIS Y<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: TECHNOLOGICAL EXAMINATION OF NEOLITHIC BRONZE-AGE POTTERY FROM CENTRAL AND SOUTHEAST EUROPE AND FROM THE NEAR-EAST" href=javascript:opeNod(655)>1</a><TD><a title=' 0.1%' class=ank>6</a><TD class=sc><a title=' 0.3%' class=ank>271</a>
+<TR valign=top align=right class=odd><TD>95<TD align=left>TITE MS<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: TECHNOLOGICAL EXAMINATION OF NEOLITHIC BRONZE-AGE POTTERY FROM CENTRAL AND SOUTHEAST EUROPE AND FROM THE NEAR-EAST" href=javascript:opeNod(655)>1</a><TD><a title=' 0.1%' class=ank>6</a><TD class=sc><a title=' 0.3%' class=ank>271</a>
+<TR valign=top align=right class=evn><TD>96<TD align=left>Shaw SJ<TD>2<TD><a title=' 0.6%' class=ank>52</a><TD class=sc><a title=' 0.3%' class=ank>270</a>
+<TR valign=top align=right class=odd><TD>97<TD align=left>Frey WH<TD>3<TD><a title=' 0.3%' class=ank>22</a><TD class=sc><a title=' 0.3%' class=ank>268</a>
+<TR valign=top align=right class=evn><TD>98<TD align=left>Karakasidou AN<TD><a TITLE=" BOOK FIELDS WHEAT HILLS B Title: Fields of Wheat, Hills of Blood. Passages to Nationhood in Greek Macedonia, 1870-1990" href=javascript:opeNod(1098)>1</a><TD><a title=' 0.5%' class=ank>41</a><TD class=sc><a title=' 0.3%' class=ank>266</a>
+<TR valign=top align=right class=odd><TD>99<TD align=left>Kennan GQ<TD><a TITLE=" BOOK OTHER BALKAN WARS 19 Title: The Other Balkan Wars: A 1913 Carnegie Endowment Inquiry in Retrospect" href=javascript:opeNod(925)>1</a><TD><a title=' 1.0%' class=ank>77</a><TD class=sc><a title=' 0.3%' class=ank>266</a>
+<TR valign=top align=right class=evn><TD>100<TD align=left>Rehren T<TD>7<TD><a title=' 0.6%' class=ank>52</a><TD class=sc><a title=' 0.3%' class=ank>256</a>
+<TR valign=top align=right class=odd><TD>101<TD align=left>Perles C<TD>3<TD><a title=' 0.6%' class=ank>50</a><TD class=sc><a title=' 0.3%' class=ank>255</a>
+<TR valign=top align=right class=evn><TD>102<TD align=left>Williams CC<TD>22<TD><a title=' 0.6%' class=ank>51</a><TD class=sc><a title=' 0.3%' class=ank>254</a>
+<TR valign=top align=right class=odd><TD>103<TD align=left>Bogucki PI<TD><a TITLE=" Article NATURE Title: Earliest evidence for cheese making in the sixth millennium BC in northern Europe" href=javascript:opeNod(4108)>1</a><TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.3%' class=ank>253</a>
+<TR valign=top align=right class=evn><TD>104<TD align=left>Grygiel R<TD><a TITLE=" Article NATURE Title: Earliest evidence for cheese making in the sixth millennium BC in northern Europe" href=javascript:opeNod(4108)>1</a><TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.3%' class=ank>253</a>
+<TR valign=top align=right class=odd><TD>105<TD align=left>Lindstedt J<TD>3<TD><a title=' 0.3%' class=ank>28</a><TD class=sc><a title=' 0.3%' class=ank>253</a>
+<TR valign=top align=right class=evn><TD>106<TD align=left>Pyzel J<TD><a TITLE=" Article NATURE Title: Earliest evidence for cheese making in the sixth millennium BC in northern Europe" href=javascript:opeNod(4108)>1</a><TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.3%' class=ank>253</a>
+<TR valign=top align=right class=odd><TD>107<TD align=left>Salque M<TD><a TITLE=" Article NATURE Title: Earliest evidence for cheese making in the sixth millennium BC in northern Europe" href=javascript:opeNod(4108)>1</a><TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.3%' class=ank>253</a>
+<TR valign=top align=right class=evn><TD>108<TD align=left>Sobkowiak-Tabaka I<TD><a TITLE=" Article NATURE Title: Earliest evidence for cheese making in the sixth millennium BC in northern Europe" href=javascript:opeNod(4108)>1</a><TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.3%' class=ank>253</a>
+<TR valign=top align=right class=odd><TD>109<TD align=left>Szmyt M<TD><a TITLE=" Article NATURE Title: Earliest evidence for cheese making in the sixth millennium BC in northern Europe" href=javascript:opeNod(4108)>1</a><TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.3%' class=ank>253</a>
+<TR valign=top align=right class=evn><TD>110<TD align=left>Todorova MN<TD><a TITLE=" BOOK BALKAN IDENTITIES NA Title: Balkan Identities: Nation and Memory" href=javascript:opeNod(1549)>1</a><TD><a title=' 0.4%' class=ank>35</a><TD class=sc><a title=' 0.3%' class=ank>243</a>
+<TR valign=top align=right class=odd><TD>111<TD align=left>Radivojevic M<TD>7<TD><a title=' 0.7%' class=ank>53</a><TD class=sc><a title=' 0.3%' class=ank>234</a>
+<TR valign=top align=right class=evn><TD>112<TD align=left>Knaus G<TD>2<TD><a title=' 0.4%' class=ank>36</a><TD class=sc><a title=' 0.2%' class=ank>201</a>
+<TR valign=top align=right class=odd><TD>113<TD align=left>Czisch G<TD><a TITLE=" Article ENERGY POLICY Title: The impact of global change on the hydropower potential of Europe: a model-based analysis" href=javascript:opeNod(1663)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>200</a>
+<TR valign=top align=right class=evn><TD>114<TD align=left>Lehner B<TD><a TITLE=" Article ENERGY POLICY Title: The impact of global change on the hydropower potential of Europe: a model-based analysis" href=javascript:opeNod(1663)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>200</a>
+<TR valign=top align=right class=odd><TD>115<TD align=left>Vassolo S<TD><a TITLE=" Article ENERGY POLICY Title: The impact of global change on the hydropower potential of Europe: a model-based analysis" href=javascript:opeNod(1663)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>200</a>
+<TR valign=top align=right class=evn><TD>116<TD align=left>Crampton RJ<TD>4<TD><a title=' 0.2%' class=ank>20</a><TD class=sc><a title=' 0.2%' class=ank>196</a>
+<TR valign=top align=right class=odd><TD>117<TD align=left>Pernicka E<TD>5<TD><a title=' 0.4%' class=ank>30</a><TD class=sc><a title=' 0.2%' class=ank>196</a>
+<TR valign=top align=right class=evn><TD>118<TD align=left>Elbasani AROLDA<TD><a TITLE=" BOOK EUROPEAN INTEGRATION Title: European integration and transformation in the Western Balkans: Europeanization or business as usual?" href=javascript:opeNod(3975)>1</a><TD><a title=' 0.7%' class=ank>55</a><TD class=sc><a title=' 0.2%' class=ank>194</a>
+<TR valign=top align=right class=odd><TD>119<TD align=left>Cristiani E<TD>9<TD><a title=' 0.3%' class=ank>26</a><TD class=sc><a title=' 0.2%' class=ank>193</a>
+<TR valign=top align=right class=evn><TD>120<TD align=left>Chandra N<TD><a TITLE=" Article JOURNAL OF CHILD PSYCHOLOGY A Title: Risk and resilience for psychological distress amongst unaccompanied asylum seeking adolescents" href=javascript:opeNod(2296)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>190</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="au-name.html">Author</a><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><SPAN class=sc><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a></SPAN>
+<TR valign=top align=right class=odd><TD>121<TD align=left>Cunniff A<TD><a TITLE=" Article JOURNAL OF CHILD PSYCHOLOGY A Title: Risk and resilience for psychological distress amongst unaccompanied asylum seeking adolescents" href=javascript:opeNod(2296)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>190</a>
+<TR valign=top align=right class=evn><TD>122<TD align=left>Hodes M<TD><a TITLE=" Article JOURNAL OF CHILD PSYCHOLOGY A Title: Risk and resilience for psychological distress amongst unaccompanied asylum seeking adolescents" href=javascript:opeNod(2296)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>190</a>
+<TR valign=top align=right class=odd><TD>123<TD align=left>Jagdev D<TD><a TITLE=" Article JOURNAL OF CHILD PSYCHOLOGY A Title: Risk and resilience for psychological distress amongst unaccompanied asylum seeking adolescents" href=javascript:opeNod(2296)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>190</a>
+<TR valign=top align=right class=evn><TD>124<TD align=left>Kaika M<TD><a TITLE=" Review ANNALS OF THE ASSOCIATION OF  Title: Dams as symbols of modernization: The urbanization of nature between geographical imagination and materiality" href=javascript:opeNod(1771)>1</a><TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.2%' class=ank>181</a>
+<TR valign=top align=right class=odd><TD>125<TD align=left>Martin F<TD><a TITLE=" Article JOURNAL OF DEMOCRACY Title: Travails of the European Raj" href=javascript:opeNod(1515)>1</a><TD><a title=' 0.3%' class=ank>26</a><TD class=sc><a title=' 0.2%' class=ank>181</a>
+<TR valign=top align=right class=evn><TD>126<TD align=left>Davutoglu A<TD><a TITLE=" Article INSIGHT TURKEY Title: Turkey&#39;s Foreign Policy Vision: An Assessment of 2007" href=javascript:opeNod(2273)>1</a><TD><a title=' 0.1%' class=ank>11</a><TD class=sc><a title=' 0.2%' class=ank>180</a>
+<TR valign=top align=right class=odd><TD>127<TD align=left>Kocak E<TD><a TITLE=" Article ENERGY POLICY Title: The renewable energy and economic growth nexus in Black Sea and Balkan countries" href=javascript:opeNod(5732)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>178</a>
+<TR valign=top align=right class=evn><TD>128<TD align=left>Sarkgunesi A<TD><a TITLE=" Article ENERGY POLICY Title: The renewable energy and economic growth nexus in Black Sea and Balkan countries" href=javascript:opeNod(5732)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>178</a>
+<TR valign=top align=right class=odd><TD>129<TD align=left>Hansen L<TD>3<TD><a title=' 0.2%' class=ank>15</a><TD class=sc><a title=' 0.2%' class=ank>176</a>
+<TR valign=top align=right class=evn><TD>130<TD align=left>Grice SM<TD><a TITLE=" Article SOCIAL SCIENCE RESEARCH Title: Residential segregation in new Hispanic destinations: Cities, suburbs, and rural communities compared" href=javascript:opeNod(2969)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>170</a>
+<TR valign=top align=right class=odd><TD>131<TD align=left>Landau I<TD><a TITLE=" Article NATURAL LANGUAGE &amp; LINGUISTIC Title: The scale of finiteness and the calculus of control" href=javascript:opeNod(1601)>1</a><TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.2%' class=ank>170</a>
+<TR valign=top align=right class=evn><TD>132<TD align=left>Parisi D<TD><a TITLE=" Article SOCIAL SCIENCE RESEARCH Title: Residential segregation in new Hispanic destinations: Cities, suburbs, and rural communities compared" href=javascript:opeNod(2969)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>170</a>
+<TR valign=top align=right class=odd><TD>133<TD align=left>Taquino MC<TD><a TITLE=" Article SOCIAL SCIENCE RESEARCH Title: Residential segregation in new Hispanic destinations: Cities, suburbs, and rural communities compared" href=javascript:opeNod(2969)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>170</a>
+<TR valign=top align=right class=evn><TD>134<TD align=left>Stevanovic M<TD>4<TD><a title=' 0.2%' class=ank>18</a><TD class=sc><a title=' 0.2%' class=ank>166</a>
+<TR valign=top align=right class=odd><TD>135<TD align=left>Subotic J<TD>7<TD><a title=' 0.4%' class=ank>35</a><TD class=sc><a title=' 0.2%' class=ank>163</a>
+<TR valign=top align=right class=evn><TD>136<TD align=left>Sljivar D<TD>3<TD><a title=' 0.3%' class=ank>26</a><TD class=sc><a title=' 0.2%' class=ank>162</a>
+<TR valign=top align=right class=odd><TD>137<TD align=left>Priebe S<TD>5<TD>0<TD class=sc><a title=' 0.2%' class=ank>161</a>
+<TR valign=top align=right class=evn><TD>138<TD align=left>Kali R<TD><a TITLE=" Article JOURNAL OF INTERNATIONAL BUSI Title: The architecture of globalization: a network approach to international economic integration" href=javascript:opeNod(2060)>1</a><TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.2%' class=ank>160</a>
+<TR valign=top align=right class=odd><TD>139<TD align=left>Reyes J<TD><a TITLE=" Article JOURNAL OF INTERNATIONAL BUSI Title: The architecture of globalization: a network approach to international economic integration" href=javascript:opeNod(2060)>1</a><TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.2%' class=ank>160</a>
+<TR valign=top align=right class=evn><TD>140<TD align=left>Kuperman AJ<TD><a TITLE=" Review INTERNATIONAL STUDIES QUARTER Title: The moral hazard of humanitarian intervention: Lessons from the Balkans" href=javascript:opeNod(2288)>1</a><TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.2%' class=ank>159</a>
+<TR valign=top align=right class=odd><TD>141<TD align=left>Karkanas P<TD>3<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.2%' class=ank>155</a>
+<TR valign=top align=right class=evn><TD>142<TD align=left>Sassler S<TD><a TITLE=" Article JOURNAL OF MARRIAGE AND FAMIL Title: Partnering Across the Life Course: Sex, Relationships, and Mate Selection" href=javascript:opeNod(2886)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>152</a>
+<TR valign=top align=right class=odd><TD>143<TD align=left>Colledge S<TD>2<TD>0<TD class=sc><a title=' 0.2%' class=ank>151</a>
+<TR valign=top align=right class=evn><TD>144<TD align=left>STOIANOVICH T<TD>4<TD><a title=' 0.7%' class=ank>55</a><TD class=sc><a title=' 0.2%' class=ank>149</a>
+<TR valign=top align=right class=odd><TD>145<TD align=left>Ariel E<TD><a TITLE=" Article SOCIAL SCIENCE &amp; MEDICINE Title: Language barriers between nurses and asylum seekers: their impact on symptom reporting and referral" href=javascript:opeNod(1539)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>146</a>
+<TR valign=top align=right class=evn><TD>146<TD align=left>Bischoff A<TD><a TITLE=" Article SOCIAL SCIENCE &amp; MEDICINE Title: Language barriers between nurses and asylum seekers: their impact on symptom reporting and referral" href=javascript:opeNod(1539)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>146</a>
+<TR valign=top align=right class=odd><TD>147<TD align=left>Bovier PA<TD><a TITLE=" Article SOCIAL SCIENCE &amp; MEDICINE Title: Language barriers between nurses and asylum seekers: their impact on symptom reporting and referral" href=javascript:opeNod(1539)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>146</a>
+<TR valign=top align=right class=evn><TD>148<TD align=left>Francoise G<TD><a TITLE=" Article SOCIAL SCIENCE &amp; MEDICINE Title: Language barriers between nurses and asylum seekers: their impact on symptom reporting and referral" href=javascript:opeNod(1539)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>146</a>
+<TR valign=top align=right class=odd><TD>149<TD align=left>Isah R<TD><a TITLE=" Article SOCIAL SCIENCE &amp; MEDICINE Title: Language barriers between nurses and asylum seekers: their impact on symptom reporting and referral" href=javascript:opeNod(1539)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>146</a>
+<TR valign=top align=right class=evn><TD>150<TD align=left>Louis L<TD><a TITLE=" Article SOCIAL SCIENCE &amp; MEDICINE Title: Language barriers between nurses and asylum seekers: their impact on symptom reporting and referral" href=javascript:opeNod(1539)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>146</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="au-name.html">Author</a><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><SPAN class=sc><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a></SPAN>
+<TR valign=top align=right class=odd><TD>151<TD align=left>Richter S<TD>5<TD><a title=' 0.9%' class=ank>74</a><TD class=sc><a title=' 0.2%' class=ank>142</a>
+<TR valign=top align=right class=evn><TD>152<TD align=left>Andreas P<TD>3<TD><a title=' 0.1%' class=ank>12</a><TD class=sc><a title=' 0.2%' class=ank>141</a>
+<TR valign=top align=right class=odd><TD>153<TD align=left>Redzic SS<TD><a TITLE=" Article COLLEGIUM ANTROPOLOGICUM Title: The ecological aspect of ethnobotany and ethnopharmacology of population in Bosnia and Herzegovina" href=javascript:opeNod(1981)>1</a><TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.2%' class=ank>136</a>
+<TR valign=top align=right class=evn><TD>154<TD align=left>Dmitrovic T<TD>4<TD><a title=' 0.1%' class=ank>8</a><TD class=sc><a title=' 0.2%' class=ank>135</a>
+<TR valign=top align=right class=odd><TD>155<TD align=left>Morina N<TD>5<TD>0<TD class=sc><a title=' 0.2%' class=ank>135</a>
+<TR valign=top align=right class=evn><TD>156<TD align=left>Vida I<TD>4<TD><a title=' 0.1%' class=ank>8</a><TD class=sc><a title=' 0.2%' class=ank>135</a>
+<TR valign=top align=right class=odd><TD>157<TD align=left>Brynjolfsson E<TD><a TITLE=" Article MANAGEMENT SCIENCE Title: Global village or cyber-balkans? Modeling and measuring the integration of electronic communities" href=javascript:opeNod(1720)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>133</a>
+<TR valign=top align=right class=evn><TD>158<TD align=left>Conolly J<TD><a TITLE=" Review CURRENT ANTHROPOLOGY Title: Archaeobotanical evidence for the spread of farming in the eastern Mediterranean" href=javascript:opeNod(1559)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>133</a>
+<TR valign=top align=right class=odd><TD>159<TD align=left>Shennan S<TD><a TITLE=" Review CURRENT ANTHROPOLOGY Title: Archaeobotanical evidence for the spread of farming in the eastern Mediterranean" href=javascript:opeNod(1559)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>133</a>
+<TR valign=top align=right class=evn><TD>160<TD align=left>Van Alstyne M<TD><a TITLE=" Article MANAGEMENT SCIENCE Title: Global village or cyber-balkans? Modeling and measuring the integration of electronic communities" href=javascript:opeNod(1720)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>133</a>
+<TR valign=top align=right class=odd><TD>161<TD align=left>[Anon]<TD><a href=# OnClick="opeLod('', '10106', '[Anon]');return false">56</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>131</a>
+<TR valign=top align=right class=evn><TD>162<TD align=left>Coffee JC<TD><a TITLE=" Article COLUMBIA LAW REVIEW Title: Class action accountability: Reconciling exit, voice, and loyalty in representative litigation" href=javascript:opeNod(1265)>1</a><TD>0<TD class=sc><a title=' 0.2%' class=ank>130</a>
+<TR valign=top align=right class=odd><TD>163<TD align=left>Khosravinik M<TD><a TITLE=" Article DISCOURSE &amp; SOCIETY Title: The representation of refugees, asylum seekers and immigrants in British newspapers during the Balkan conflict (1999) and the British general election (2005)" href=javascript:opeNod(2495)>1</a><TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.2%' class=ank>130</a>
+<TR valign=top align=right class=evn><TD>164<TD align=left>RUNNELS CN<TD><a TITLE=" Article ANTIQUITY Title: THE EARLIEST FARMERS IN EUROPE" href=javascript:opeNod(979)>1</a><TD><a title=' 0.2%' class=ank>13</a><TD class=sc><a title=' 0.2%' class=ank>129</a>
+<TR valign=top align=right class=odd><TD>165<TD align=left>van der Plicht J<TD>2<TD>0<TD class=sc><a title=' 0.2%' class=ank>129</a>
+<TR valign=top align=right class=evn><TD>166<TD align=left>VANANDEL TH<TD><a TITLE=" Article ANTIQUITY Title: THE EARLIEST FARMERS IN EUROPE" href=javascript:opeNod(979)>1</a><TD><a title=' 0.2%' class=ank>13</a><TD class=sc><a title=' 0.2%' class=ank>129</a>
+<TR valign=top align=right class=odd><TD>167<TD align=left>Dimitrijevic V<TD>9<TD><a title=' 0.3%' class=ank>25</a><TD class=sc><a title=' 0.1%' class=ank>128</a>
+<TR valign=top align=right class=evn><TD>168<TD align=left>Brauns M<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: On the origins of extractive metallurgy: new evidence from Europe" href=javascript:opeNod(2878)>1</a><TD><a title=' 0.3%' class=ank>22</a><TD class=sc><a title=' 0.1%' class=ank>126</a>
+<TR valign=top align=right class=odd><TD>169<TD align=left>Zivojinovic I<TD>4<TD>0<TD class=sc><a title=' 0.1%' class=ank>124</a>
+<TR valign=top align=right class=evn><TD>170<TD align=left>Stubbs P<TD>7<TD><a title=' 0.2%' class=ank>19</a><TD class=sc><a title=' 0.1%' class=ank>123</a>
+<TR valign=top align=right class=odd><TD>171<TD align=left>Giegerich B<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>122</a>
+<TR valign=top align=right class=evn><TD>172<TD align=left>Vachudova MA<TD>4<TD><a title=' 0.6%' class=ank>46</a><TD class=sc><a title=' 0.1%' class=ank>122</a>
+<TR valign=top align=right class=odd><TD>173<TD align=left>Antonio AL<TD><a TITLE=" Article; Proceedings Paper REVIEW OF HIGHER EDUCATION Title: Diversity and the influence of friendship groups in college" href=javascript:opeNod(1390)>1</a><TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>121</a>
+<TR valign=top align=right class=evn><TD>174<TD align=left>Ellis M<TD>2<TD><a title=' 0.1%' class=ank>9</a><TD class=sc><a title=' 0.1%' class=ank>121</a>
+<TR valign=top align=right class=odd><TD>175<TD align=left>Bartlett W<TD>25<TD><a title=' 0.3%' class=ank>21</a><TD class=sc><a title=' 0.1%' class=ank>120</a>
+<TR valign=top align=right class=evn><TD>176<TD align=left>Greenfield HJ<TD>4<TD><a title=' 0.2%' class=ank>17</a><TD class=sc><a title=' 0.1%' class=ank>119</a>
+<TR valign=top align=right class=odd><TD>177<TD align=left>Hannon EE<TD>2<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.1%' class=ank>119</a>
+<TR valign=top align=right class=evn><TD>178<TD align=left>Johnson KM<TD><a TITLE=" Article; Proceedings Paper RURAL SOCIOLOGY Title: Emerging rural settlement patterns and the geographic redistribution of America&#39;s new immigrants" href=javascript:opeNod(1913)>1</a><TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>119</a>
+<TR valign=top align=right class=odd><TD>179<TD align=left>Pieroni A<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>119</a>
+<TR valign=top align=right class=evn><TD>180<TD align=left>Quave CL<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>119</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="au-name.html">Author</a><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><SPAN class=sc><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a></SPAN>
+<TR valign=top align=right class=odd><TD>181<TD align=left>Lemay-Hebert N<TD><a TITLE=" Article JOURNAL OF INTERVENTION AND S Title: Statebuilding without Nation-building? Legitimacy, State Failure and the Limits of the Institutionalist Approach" href=javascript:opeNod(2573)>1</a><TD>0<TD class=sc><a title=' 0.1%' class=ank>118</a>
+<TR valign=top align=right class=evn><TD>182<TD align=left>Stefanovic S<TD>11<TD><a title=' 0.1%' class=ank>12</a><TD class=sc><a title=' 0.1%' class=ank>118</a>
+<TR valign=top align=right class=odd><TD>183<TD align=left>Kitromilides PM<TD>8<TD><a title=' 0.4%' class=ank>31</a><TD class=sc><a title=' 0.1%' class=ank>117</a>
+<TR valign=top align=right class=evn><TD>184<TD align=left>Gurova M<TD>12<TD><a title=' 0.4%' class=ank>33</a><TD class=sc><a title=' 0.1%' class=ank>116</a>
+<TR valign=top align=right class=odd><TD>185<TD align=left>Ham M<TD><a TITLE=" Article ECONOMIC RESEARCH-EKONOMSKA I Title: The role of subjective norms in forming the intention to purchase green food" href=javascript:opeNod(4778)>1</a><TD>0<TD class=sc><a title=' 0.1%' class=ank>115</a>
+<TR valign=top align=right class=evn><TD>186<TD align=left>Ivkovic AF<TD><a TITLE=" Article ECONOMIC RESEARCH-EKONOMSKA I Title: The role of subjective norms in forming the intention to purchase green food" href=javascript:opeNod(4778)>1</a><TD>0<TD class=sc><a title=' 0.1%' class=ank>115</a>
+<TR valign=top align=right class=odd><TD>187<TD align=left>Jeger M<TD><a TITLE=" Article ECONOMIC RESEARCH-EKONOMSKA I Title: The role of subjective norms in forming the intention to purchase green food" href=javascript:opeNod(4778)>1</a><TD>0<TD class=sc><a title=' 0.1%' class=ank>115</a>
+<TR valign=top align=right class=evn><TD>188<TD align=left>Gray V<TD><a TITLE=" Article; Proceedings Paper JOURNAL OF POLITICS Title: A niche theory of interest representation" href=javascript:opeNod(1059)>1</a><TD>0<TD class=sc><a title=' 0.1%' class=ank>114</a>
+<TR valign=top align=right class=odd><TD>189<TD align=left>Lowery D<TD><a TITLE=" Article; Proceedings Paper JOURNAL OF POLITICS Title: A niche theory of interest representation" href=javascript:opeNod(1059)>1</a><TD>0<TD class=sc><a title=' 0.1%' class=ank>114</a>
+<TR valign=top align=right class=evn><TD>190<TD align=left>Smith A<TD>2<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.1%' class=ank>114</a>
+<TR valign=top align=right class=odd><TD>191<TD align=left>Gaydarska B<TD>6<TD><a title=' 0.2%' class=ank>13</a><TD class=sc><a title=' 0.1%' class=ank>113</a>
+<TR valign=top align=right class=evn><TD>192<TD align=left>Fleming KE<TD><a TITLE=" Article AMERICAN HISTORICAL REVIEW Title: Orientalism, the Balkans, and Balkan historiography" href=javascript:opeNod(1251)>1</a><TD><a title=' 0.8%' class=ank>66</a><TD class=sc><a title=' 0.1%' class=ank>112</a>
+<TR valign=top align=right class=odd><TD>193<TD align=left>Karakayali S<TD><a TITLE=" Article EUROPEAN JOURNAL OF SOCIAL TH Title: Transnational Migration and the Emergence of the European Border Regime: An Ethnographic Analysis" href=javascript:opeNod(2829)>1</a><TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.1%' class=ank>112</a>
+<TR valign=top align=right class=evn><TD>194<TD align=left>Tsianos V<TD><a TITLE=" Article EUROPEAN JOURNAL OF SOCIAL TH Title: Transnational Migration and the Emergence of the European Border Regime: An Ethnographic Analysis" href=javascript:opeNod(2829)>1</a><TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.1%' class=ank>112</a>
+<TR valign=top align=right class=odd><TD>195<TD align=left>Bogaard A<TD>2<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.1%' class=ank>111</a>
+<TR valign=top align=right class=evn><TD>196<TD align=left>Lazard G<TD><a TITLE=" Article JOURNAL OF PRAGMATICS Title: On the grammaticalization of evidentiality" href=javascript:opeNod(1374)>1</a><TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>109</a>
+<TR valign=top align=right class=odd><TD>197<TD align=left>Valladas H<TD>3<TD><a title=' 0.2%' class=ank>13</a><TD class=sc><a title=' 0.1%' class=ank>108</a>
+<TR valign=top align=right class=evn><TD>198<TD align=left>Surtees R<TD>4<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>107</a>
+<TR valign=top align=right class=odd><TD>199<TD align=left>Rudan P<TD>4<TD><a title=' 0.1%' class=ank>6</a><TD class=sc><a title=' 0.1%' class=ank>106</a>
+<TR valign=top align=right class=evn><TD>200<TD align=left>Slaus M<TD>3<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.1%' class=ank>105</a>
+</TABLE>
+<div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>1</b> of 51<span class=nonprn>: [  &nbsp;1 &nbsp;<a href=au-gcs-2.html class=nu>2</a> &nbsp;3 &nbsp;4 &nbsp;5 &nbsp;6 &nbsp;7 &nbsp;8 &nbsp;9 &nbsp;10 ]</span> &nbsp;11&nbsp; &nbsp;21&nbsp; &nbsp;31&nbsp; &nbsp;41&nbsp; &nbsp;51&nbsp;</div>
+</BODY>

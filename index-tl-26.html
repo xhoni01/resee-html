@@ -1,0 +1,665 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><HEAD><TITLE>HistCite - RESEE: A Bibliographic Database on Balkan – Southeast European Studies</TITLE></HEAD>
+<BODY VLINK=blue OnLoad="focus()">
+<STYLE>
+body {
+	margin: 2px 10px; padding: 0;
+	background: #fff;
+}
+body, td, th {
+	font-size: 10pt; font-family: Verdana;
+}
+input, select, textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ui {
+	font-size: 10pt; font-family: Verdana;
+}
+.ui input, .ui select, .ui textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ci_title {
+	font-size: 8pt; font-weight: bold;
+}
+.ci_il {
+	color: black; text-decoration: none;	/* msie6 ! inherit */
+}
+.helpa { text-decoration: none;
+	cursor: help;
+}
+.helpt { background: #ffff77; padding: 4px;
+}
+.nu { text-decoration: none; 
+}
+.sc, .sc a { color: #904644 }
+.fnd { background-color: #beb;
+	padding: 0 3px 2px 2px;
+}
+td div.fndCR {
+	padding-left: 2em;
+//	text-indent: -2em;
+}
+.odd { background-color: #eeeeee }
+.evn { background-color: #dddddd }
+div.odd { padding: 5px; margin-bottom: 2px }
+div.evn { padding: 5px; margin-bottom: 2px }
+.yr { padding: 0; font-weight: bold }
+.ank:hover { cursor: pointer; text-decoration: none; color: inherit; }
+a {
+	text-decoration: none;
+}
+a:hover, a:hover .sc {
+	text-decoration: underline; color: blue;
+}
+.scr:hover, td a.scr:hover { color:#000; text-decoration:none; } /* FF td */
+@media print {
+	.nonprn, .ephemeral, .x, .ui { display: none; }
+	.index { border: solid #fff 0; }
+	body { font-size: 10pt; }
+	td, th { font-size: 10pt; }
+	.ci_title { font-size: 8pt; }
+}
+</STYLE>
+<SCRIPT>
+var root=location.href; root = root.replace(/index.*/, ''); root = root.replace(/list.*/, '');
+function about () { window.open(root+'about.html','about','width=440,height=370,resizable=yes,scrollbars=yes') }
+	// This is a list of XMLHttpRequest-creation factory functions to try
+_factories = [
+    function() { return new XMLHttpRequest(); },
+    function() { return new ActiveXObject("Msxml2.XMLHTTP"); },
+    function() { return new ActiveXObject("Microsoft.XMLHTTP"); }
+];
+
+// When we find a factory that works, store it here.
+_factory = null;
+
+// Create and return a new XMLHttpRequest object.
+//
+// The first time we're called, try the list of factory functions until
+// we find one that returns a non-null value and does not throw an
+// exception. Once we find a working factory, remember it for later use.
+//
+newRequest = function() {
+    if (_factory != null) return _factory();
+
+    for(var i = 0; i < _factories.length; i++) {
+        try {
+            var factory = _factories[i];
+            var request = factory();
+            if (request != null) {
+                _factory = factory;
+                return request;
+            }
+        }
+        catch(e) {
+            continue;
+        }
+    }
+    // If we get here, none of the factory candidates succeeded,
+    // so throw an exception now and for all future calls.
+    _factory = function() {
+        //throw new Error("XMLHttpRequest not supported");
+        alert("XMLHttpRequest not supported");
+    }
+    _factory(); // Throw an error
+}
+
+function gethelp (url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+//    alert('OK');
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+function gettip (ent, url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+		ent.innerHTML = req.responseText;
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+</SCRIPT>
+<STYLE>
+div#tipshade {
+	position: fixed; top: 208px; left: 208px;
+	margin: 0px; width: 420px; height: 180px;
+	border: solid gray 2px;
+	background: gray;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 19; display: none;
+}
+div#tipoday {
+	position: fixed; top: 200px; left: 200px;
+	margin: 0px; width: 420px; height: 180px; padding: 0;
+	background: white;
+	border: solid #e44959 2px;
+	font: 10pt Verdana; cursor: default;
+	z-index: 20; display: none;
+}
+div#tiptitle {
+	background: #e44959; color: white; font-weight: bold;
+	padding-left: 4px;
+}
+div#tiptitle span.x {
+	background: white;
+}
+div#tipbox {
+	position: relative; /* top: 5px; */ margin: 8px;
+	max-height: 120px; overflow: auto;
+}
+div#tipctrl {
+	position: absolute; bottom: 0; margin: 4px;
+}
+div#tipctrl td {
+	font-size: 10px;
+}
+div#tipctrl form { margin: 0; }
+span.nw { white-space: nowrap; }
+</STYLE>
+<div id="tipshade" class="ui"> </div>
+<div id="tipoday" class="ui" align=left>
+<div id="tiptitle">HistCite Tip of the Day<span class="x"><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;" title="Close">X</a></span></div>
+<div id="tipbox">Tip of the day</div>
+<div id="tipctrl">
+<table align=bottom width=100%>
+<tr><td width=40% nowrap><form name=ft><label><input type=checkbox OnChange="nextStart(this);" checked> Show tip at next start</label></form></td>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=-1');>Previous Tip</a>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=1');>Next Tip</a>
+<td align=right><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;">Close</a>&nbsp;</td>
+</tr></table></div></div>
+<SCRIPT> var otip;
+function getit () { otip = document.getElementById('tipbox'); gettip(otip,'/tip.txt?next=0'); }
+function nextStart (start) {
+	if(start.checked == true) {
+		on = 1;
+	} else {
+		on = 0;
+	}
+	gethelp('/tipStart?on=' + on);
+}
+function tip_show () {
+	var W, H;
+	if(window.innerWidth) {
+		W = window.innerWidth; H = window.innerHeight;
+	} else {
+		var dd = document.documentElement;
+		W = dd.clientWidth; H = dd.clientHeight;
+	}
+//	alert(W + ' x ' + H);
+	var left = (W-420)/2;
+	var top = (H-180)/2;
+	var tipB = document.getElementById('tipshade');
+	var tipT = document.getElementById('tipoday');
+	tipB.style.left = left + 8 + 'px';
+	tipB.style.top = top + 8 + 'px';
+	tipT.style.left = left + 'px';
+	tipT.style.top = top + 'px';
+	tipB.style.display='block';
+	tipT.style.display='block';
+	getit();
+}
+</SCRIPT>
+
+<style>
+div#af_boxshado {
+	position: fixed; left:148px; top:128px; width: 460px; height: 110px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 11; display: none;
+}
+div#af_box {
+	position: fixed; left:140px; top:120px; width: 460px; height: 110px;
+	background: white; border: solid #999 2px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+div#af_box input {
+	font: 10px Verdana;
+}
+div#af_box_title {
+	background: #d3d3d3; padding-left: 4px; font-weight: bold;
+}
+div#af_box_title span.x {
+	background: white;
+}
+div#af_form {
+	width: 445px; height: 70px;
+	padding: 8px; overflow: auto;
+}
+div#af_form #sub{
+	display: block; margin: 12px 0 0 0;
+}
+div#starh2 {
+	position: absolute; left: 88px; top: 78px; width: 420px; height: 156px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	padding: 8px;
+	z-index: 12; display: none;
+}
+div#starh {
+	position: absolute; left: 80px; top: 70px; width: 420px; height: 156px; overflow: auto;
+	border: outset gray 2px;
+	padding: 8px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+</style>
+<div id="af_boxshado"> </div>
+<div id="af_box">
+<div id="af_box_title">Add File<span class="x"><a onClick="af_close()" title="Close">X</a></span>
+<!--<a href=javascript:na() onMouseOver="na();" onClick="toggle('starh');" class=helpa style="color:#000">-->
+<a onClick="toggle('starh');" class=helpa style="color:#000"><span class="x" id=mstarh style="top:0;right:14px;">?</span><span class="x" id=lstarh style="top:0;right:14px;display:none">_</span></a>
+</div>
+<div id="af_form">
+<FORM action=/input method=GET OnSubmit="return false" name=af style="margin:0">
+	Use [Browse...] to select a file with bibliography data:<br>
+	<INPUT type=hidden name=inputpath>
+	<INPUT type=file name=inputset size=48 OnChange="af.sub.focus()" value="">
+	<INPUT type=submit value="Add File" OnClick="afSubmit();return false" name=sub id="sub">
+</div><div id=starh2> </div>
+<div id=starh class=helpt>
+Use wildcard '*' to add more than one file at a time.
+For example, if you have <code>file1</code>,
+<code>file2</code>, etc. all in the same folder or directory;
+first, locate one of the files with the [Browse...] button.  Then alter the
+file path in the box above to include '*' character (eg. <code>file*</code>).
+Wildcard '?' to blanket only one character works too.<br>
+<b>Note</b>: In Windows you can select multiple files and "drag and drop" them 
+onto HistCite icon or shortcut.  The program would start and load those files.
+</div>
+</FORM><SCRIPT>
+var af = document.af;
+function afSubmit() {
+	if ("" == af.inputset.value ) { alert("Select a file."); return }
+	af.inputpath.value = af.inputset.value;
+	af.submit();
+}
+function af_show() {
+	document.getElementById('af_boxshado').style.display = 'block';
+	document.getElementById('af_box').style.display = 'block';
+	a = document.af.inputset.value;
+	document.af.inputset.focus();
+}
+function af_close() {
+	document.getElementById('af_boxshado').style.display = 'none';
+	document.getElementById('af_box').style.display = 'none';
+}
+</SCRIPT></div>
+
+<SCRIPT>
+function glossary () { window.open(root+'glossary.html','gloss','width=640,height=570,resizable=yes,scrollbars=yes') }
+function opeNod (a) { window.open(root+'node/'+a+'.html',a,'width=770,height=570,resizable=yes,scrollbars=yes') }
+function opeLod (dp, a) { if(''==dp) d='main'; else d=dp; var w = d; w = w.replace(/[-\/]/g, '');
+	window.open(root+d+'/'+a+'.html',w+a,'width=640,height=546,resizable=yes,scrollbars=yes') }
+function na(){}
+</SCRIPT>
+<STYLE>
+#head {
+	position: left:0; padding-left:4px; background:#fff;
+	z-index:2; margin:0 0 8px 0; border-bottom:solid #000 1px;
+}
+#title {
+	padding-bottom: 4px; font-size: 1.3em; font-weight: bold;
+	max-width: 600px; /* non default overflow gives odd z-effects in FF */
+}
+#desc {
+	position: absolute; left: 4px; top: 1.8em;
+	padding: 2px 8px 4px 8px; white-space: normal; max-width: 480px;
+	background: #ffffcc; font-weight: normal; font-size: 10pt;
+	border: solid #000 1px;
+	display: none; z-index: 11;
+}
+#atitle { cursor: text;}
+#atitle, #stats {
+	text-decoration: none; color: #000;
+}
+#stats2 {
+	position: absolute; right: 0px; padding: 0;
+	background: white;
+	display: none; z-index: 11;
+}
+#atitle:hover #desc, #stats:hover #stats2 {
+	display: block;
+}
+@media print {
+	#head { position: static; }
+	#menu_pm { line-height: 0; }
+	#back { display: none; }
+}
+</STYLE>
+<!-- FF 3 only? fix -->
+<div id=head style="width:99%">
+<TABLE width=100% cellpadding=0 cellspacing=0 style="margin:0 0 3px 0">
+<TR valign=top><TD align=left width=60%>
+<div id=title><a id=atitle >RESEE: A Bibliographic Database on Balkan – Southeast European Studies<div id=desc>-------Search: Databases searching procedure and formats------
+*| Search query
+"balkan*" OR "southeast* europe*" OR "south east* europe*" (TITLE-ABS-KEY) 
+Web of Science Core Collection (SSCI, A&HCI, ESCI, BKCI-SSH)
+Scopus
+Constellate (JSTOR and Portico)
+
+Note: The earliest publication date from WoS for the articles was 1957 whereas for the books 2003.
+To complement our database with entries before 1957, we search the Constellate (Jstor and Portico) and Scopus database, finding and adding a further 445 articles.
+Characters were normalize, and English translation of the titles were added for entries in other languages than English. And for Constellate data we kept only Articles and Books from Humanities and Social Sciences.
+The Scopus and Constellate metadata files were converted into WoS (.txt) format.
+We also added manually 59 new entries (9 articles and 50 books) that were missing from the search but showed to be among the most cited references (local citation score greater than 10)
+
+---------Merging variants in the same cited references--------
+Given that databases have problems with the completeness of references and linkages (Van Eck and Waltman 2017), we used CRExplorer to clean the data and reduce the problems posed by variants in the same cited references (Thor et al. 2016)
+The cited references (CRs) in our data contained variants, especially the references on books. 
+We use the manual cleaning-up procedure, setting the clustering algorithm with a Levenshtein threshold of 0.75. 
+We also manually checked and unified variants of the same cited references (CRs), especially for books that received a local citation of more than 20 or had different years or editions and translations into other languages. 
+After the cleaning, we unify the variants of the same CRs, about 12% of the initial cited references.</div></a></div>
+<TD align=center><a href=# OnClick="window.open('graph/list.html','graph','resizable=yes,scrollbars=yes')" class=nonprn>Historiographs</a><TD nowrap align=right rowspan=2 width=5%><div class=nonprn><a href=javascript:glossary()>Glossary</a>&nbsp;&nbsp;<a href="http://www.histcite.com/HTMLHelp/guide.html" target=guide>HistCite Guide</a>&nbsp;&nbsp;<a href=# OnClick="about(); return false">About</a></div><a id=stats>
+Grand Totals: LCS 8009, GCS 85894, CR 328237<br>Collection span: 1854 - 2022<br></a><TR><TD colspan=2 width=95%><b>List of All Records</b> </TABLE></div><div align=right>24 December 2022</div>
+<div class="index" style="">Records: 8378, <a href=list/au-pubs.html>Authors</a>: 10107, <a href=list/so-pubs.html>Journals</a>: 2650, <a href=list/or-pubs.html>Cited References</a>: 248863, <a href=list/wd-pubs.html>Words</a>: 11723
+<br><span class=nonprn><a href=list/py-pubs.html title=' Publication Years: 127 '>Yearly output</a>
+|&nbsp;<a href=list/dt-pubs.html title=' Document Types: 14 '>Document Type</a>
+|&nbsp;<a href=list/la-pubs.html title=' Languages: 6 '>Language</a>
+|&nbsp;<a href=list/in-pubs.html title=' Institutions: 62 '>Institution</a>
+|&nbsp;<a href=list/i2-pubs.html title=' Institution with Subdivisions: 64 '>Institution with Subdivision</a>
+|&nbsp;<a href=list/co-pubs.html title=' Countries: 8 '>Country</a></span></div><div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>26</b> of 84 &nbsp;<a href=index-tl.html class=nu>1</a>&nbsp; &nbsp;<a href=index-tl-11.html class=nu>11</a>&nbsp;<span class=nonprn>: [  &nbsp;<a href=index-tl-21.html class=nu>21</a> &nbsp;<a href=index-tl-22.html class=nu>22</a> &nbsp;<a href=index-tl-23.html class=nu>23</a> &nbsp;<a href=index-tl-24.html class=nu>24</a> &nbsp;<a href=index-tl-25.html class=nu>25</a> &nbsp;26 &nbsp;<a href=index-tl-27.html class=nu>27</a> &nbsp;<a href=index-tl-28.html class=nu>28</a> &nbsp;<a href=index-tl-29.html class=nu>29</a> &nbsp;<a href=index-tl-30.html class=nu>30</a> ]</span> &nbsp;<a href=index-tl-31.html class=nu>31</a>&nbsp; &nbsp;<a href=index-tl-41.html class=nu>41</a>&nbsp; &nbsp;<a href=index-tl-51.html class=nu>51</a>&nbsp; &nbsp;<a href=index-tl-61.html class=nu>61</a>&nbsp; &nbsp;<a href=index-tl-71.html class=nu>71</a>&nbsp; &nbsp;<a href=index-tl-81.html class=nu>81</a>&nbsp;</div>
+
+<TABLE border=0 width="100%" cellpadding=5 cellspacing=2 style="border: 2px solid #cccccc;margin: 4px 0;">
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="index-tl.html">Date</a></SPAN> / <a href="index-au1.html">Author</a> / <a href="index-so.html">Journal</a><TH><a href="index-lcs.html" TITLE=" Local Citation Score ">LCS</a><TH><a href="index-tc.html" TITLE=" Global Citation Score ">GCS</a><TH><a href="index-lcr.html" TITLE=" Local Cited References ">LCR</a><TH><a href="index-ncr.html" TITLE=" Cited References ">CR</a>
+<TR><TD colspan=6 align=center class=yr>2009
+<TR valign=top align=right class=odd><TD>2501<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2501</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Mamatzakis E</a><div class=ci_title><a  title=" 34 records, TLCS 24, TGCS 239 " class="ci_il">Banking</a> <a  title=" 5 records, TLCS 0, TGCS 4 " class="ci_il">Operational</a> <a  title=" 7 records, TLCS 0, TGCS 124 " class="ci_il">Cost</a> in the <a  title=" 1393 records, TLCS 1586, TGCS 11976 " class="ci_il">Balkan</a> <a  title=" 128 records, TLCS 37, TGCS 487 " class="ci_il">Region</a> under a <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Quadratic</a> <a  title=" 4 records, TLCS 0, TGCS 2 " class="ci_il">Loss</a>
+   <a  title=" 9 records, TLCS 4, TGCS 21 " class="ci_il">Function</a></div><SPAN><a  title=" 3 records, TLCS 0, TGCS 3 " class="ci_il">ECONOMICS BULLETIN</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  29 (2)
+<TD>0<TD>0<TD>0<TD>8
+<TR valign=top align=right class=evn><TD>2502<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2502</a>  <a  title=" 3 records, TLCS 1, TGCS 21 " class="ci_il">Damijan JP</a>, <a  title=" 1 records, TLCS 1, TGCS 17 " class="ci_il">de Sousa J</a>, <a  title=" 1 records, TLCS 1, TGCS 17 " class="ci_il">Lamotte O</a><div class=ci_title>Does <a  title=" 180 records, TLCS 112, TGCS 1779 " class="ci_il">international</a> <a  title=" 5 records, TLCS 3, TGCS 20 " class="ci_il">openness</a> <a  title=" 11 records, TLCS 1, TGCS 118 " class="ci_il">affect</a> the <a  title=" 9 records, TLCS 1, TGCS 45 " class="ci_il">productivity</a> of <a  title=" 71 records, TLCS 33, TGCS 332 " class="ci_il">local</a> <a  title=" 16 records, TLCS 5, TGCS 178 " class="ci_il">firms</a>?
+   <a  title=" 178 records, TLCS 143, TGCS 2399 " class="ci_il">Evidence</a> from <a  title=" 512 records, TLCS 335, TGCS 2876 " class="ci_il">south</a>-<a  title=" 478 records, TLCS 314, TGCS 3496 " class="ci_il">eastern</a> <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a></div><SPAN><a  title=" 9 records, TLCS 32, TGCS 213 " class="ci_il">ECONOMICS OF TRANSITION</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  17 (3): 559-586
+<TD><a TITLE=" Article JOURNAL OF INTERNATIONAL ENTR Title: The impact of FDI on the performance and entrepreneurship of domestic firms" href=javascript:na() class=nu>1</a><TD>17<TD>0<TD>39
+<TR valign=top align=right class=odd><TD>2503<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2503</a>  <a  title=" 7 records, TLCS 2, TGCS 18 " class="ci_il">Zekic S</a>, <a  title=" 3 records, TLCS 0, TGCS 4 " class="ci_il">Lovre K</a>, <a  title=" 4 records, TLCS 0, TGCS 15 " class="ci_il">Gajic M</a><div class=ci_title><a  title=" 22 records, TLCS 4, TGCS 60 " class="ci_il">AGRICULTURAL</a> <a  title=" 39 records, TLCS 64, TGCS 369 " class="ci_il">TRANSFORMATION</a> OF THE <a  title=" 625 records, TLCS 928, TGCS 3363 " class="ci_il">WESTERN</a> <a  title=" 1393 records, TLCS 1586, TGCS 11976 " class="ci_il">BALKAN</a>' S <a  title=" 377 records, TLCS 132, TGCS 1566 " class="ci_il">COUNTRIES</a> IN THE
+   <a  title=" 23 records, TLCS 11, TGCS 200 " class="ci_il">TRANSITIONAL</a> <a  title=" 80 records, TLCS 21, TGCS 136 " class="ci_il">PERIOD</a></div><SPAN><a  title=" 42 records, TLCS 3, TGCS 39 " class="ci_il">EKONOMIKA POLJOPRIVREDA-ECONOMICS OF AGRICULTURE</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  56 (2): 187-200
+<TD>0<TD>4<TD>0<TD>9
+<TR valign=top align=right class=evn><TD>2504<TD align=left><a TITLE=" Review " href=javascript:na() class=nu>2504</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Kandzija V</a>, <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Zivko I</a>, <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Skoko B</a><div class=ci_title><a  title=" 2 records, TLCS 0, TGCS 2 " class="ci_il">TRANSPARENCY</a> AND <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">CONVERGENCY</a> IN THE <a  title=" 20 records, TLCS 3, TGCS 179 " class="ci_il">COMMUNICATION</a> OF <a  title=" 297 records, TLCS 190, TGCS 3196 " class="ci_il">CENTRAL</a> <a  title=" 22 records, TLCS 2, TGCS 80 " class="ci_il">BANKS</a> IN
+   THE <a  title=" 512 records, TLCS 335, TGCS 2876 " class="ci_il">SOUTH</a>-<a  title=" 320 records, TLCS 219, TGCS 2397 " class="ci_il">EAST</a> <a  title=" 584 records, TLCS 532, TGCS 3421 " class="ci_il">EUROPEAN</a> <a  title=" 377 records, TLCS 132, TGCS 1566 " class="ci_il">COUNTRIES</a></div><SPAN><a  title=" 8 records, TLCS 3, TGCS 15 " class="ci_il">EKONOMSKA MISAO I PRAKSA-ECONOMIC THOUGHT AND PRACTICE</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  18 (1): 81-92
+<TD>0<TD>0<TD>0<TD>9
+<TR valign=top align=right class=odd><TD>2505<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2505</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Kusic S</a><div class=ci_title><a  title=" 268 records, TLCS 190, TGCS 2164 " class="ci_il">NEW</a> <a  title=" 241 records, TLCS 144, TGCS 1987 " class="ci_il">ECONOMIC</a> <a  title=" 14 records, TLCS 9, TGCS 60 " class="ci_il">ELITES</a>, <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">SCHUMPETER</a> AND THE <a  title=" 39 records, TLCS 64, TGCS 369 " class="ci_il">TRANSFORMATION</a> <a  title=" 71 records, TLCS 55, TGCS 1258 " class="ci_il">PROCESS</a> IN
+   <a  title=" 512 records, TLCS 335, TGCS 2876 " class="ci_il">SOUTH</a> <a  title=" 320 records, TLCS 219, TGCS 2397 " class="ci_il">EAST</a> <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">EUROPE</a></div><SPAN><a  title=" 10 records, TLCS 5, TGCS 38 " class="ci_il">EKONOMSKI PREGLED</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  60 (11): 593-615
+<TD>0<TD>0<TD>0<TD>50
+<TR valign=top align=right class=evn><TD>2506<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2506</a>  <a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">Toninelli PA</a><div class=ci_title>Between <a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">Agnelli</a> and <a  title=" 3 records, TLCS 0, TGCS 4 " class="ci_il">Mussolini</a>: <a  title=" 2 records, TLCS 0, TGCS 4 " class="ci_il">Ford</a>'s <a  title=" 2 records, TLCS 6, TGCS 12 " class="ci_il">Unsuccessful</a> <a  title=" 14 records, TLCS 3, TGCS 9 " class="ci_il">Attempt</a> to
+   <a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">Penetrate</a> the <a  title=" 42 records, TLCS 25, TGCS 154 " class="ci_il">Italian</a> <a  title=" 2 records, TLCS 0, TGCS 4 " class="ci_il">Automobile</a> <a  title=" 85 records, TLCS 58, TGCS 791 " class="ci_il">Market</a> in the <a  title=" 23 records, TLCS 4, TGCS 39 " class="ci_il">Interwar</a> <a  title=" 80 records, TLCS 21, TGCS 136 " class="ci_il">Period</a></div><SPAN><a  title=" 2 records, TLCS 0, TGCS 9 " class="ci_il">ENTERPRISE & SOCIETY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  10 (2): 335-375
+<TD>0<TD>4<TD>0<TD>39
+<TR valign=top align=right class=odd><TD>2507<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2507</a>  <a  title=" 1 records, TLCS 0, TGCS 15 " class="ci_il">Lianos T</a>, <a  title=" 1 records, TLCS 0, TGCS 15 " class="ci_il">Pseiridis A</a><div class=ci_title>On the <a  title=" 4 records, TLCS 0, TGCS 51 " class="ci_il">occupational</a> <a  title=" 6 records, TLCS 16, TGCS 129 " class="ci_il">choices</a> of <a  title=" 23 records, TLCS 8, TGCS 132 " class="ci_il">return</a> <a  title=" 42 records, TLCS 23, TGCS 299 " class="ci_il">migrants</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 15 " class="ci_il">ENTREPRENEURSHIP AND REGIONAL DEVELOPMENT</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  21 (2): 155-181
+<TD>0<TD>15<TD>0<TD>59
+<TR valign=top align=right class=evn><TD>2508<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2508</a>  <a  title=" 1 records, TLCS 0, TGCS 68 " class="ci_il">Convery FJ</a><div class=ci_title><a  title=" 34 records, TLCS 174, TGCS 2075 " class="ci_il">Origins</a> and <a  title=" 210 records, TLCS 139, TGCS 1746 " class="ci_il">Development</a> of the EU <a  title=" 1 records, TLCS 0, TGCS 68 " class="ci_il">ETS</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 68 " class="ci_il">ENVIRONMENTAL & RESOURCE ECONOMICS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  43 (3): 391-412
+<TD>0<TD>68<TD>0<TD>23
+<TR valign=top align=right class=odd><TD>2509<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2509</a>  <a  title=" 1 records, TLCS 1, TGCS 2 " class="ci_il">Parant A</a>, <a  title=" 1 records, TLCS 1, TGCS 2 " class="ci_il">Penev G</a><div class=ci_title><a  title=" 27 records, TLCS 66, TGCS 1390 " class="ci_il">Demographic</a> <a  title=" 3 records, TLCS 1, TGCS 2 " class="ci_il">Tendencies</a> and <a  title=" 18 records, TLCS 5, TGCS 84 " class="ci_il">Differences</a> in the <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a></div><SPAN><a  title=" 3 records, TLCS 1, TGCS 2 " class="ci_il">ESTUDIOS GEOGRAFICOS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  70 (267): 531-565
+<TD><a TITLE=" Article POPULATION STUDIES-A JOURNAL  Title: Fertility and union formation during crisis and societal consolidation in the Western Balkans" href=javascript:na() class=nu>1</a><TD>2<TD>0<TD>6
+<TR valign=top align=right class=evn><TD>2510<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2510</a>  <a  title=" 1 records, TLCS 6, TGCS 9 " class="ci_il">Gordon C</a><div class=ci_title>The <a  title=" 8 records, TLCS 7, TGCS 11 " class="ci_il">Stabilization</a> and <a  title=" 17 records, TLCS 42, TGCS 136 " class="ci_il">Association</a> <a  title=" 71 records, TLCS 55, TGCS 1258 " class="ci_il">Process</a> in the <a  title=" 625 records, TLCS 928, TGCS 3363 " class="ci_il">Western</a> <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a>: An
+   <a  title=" 5 records, TLCS 6, TGCS 40 " class="ci_il">Effective</a> <a  title=" 5 records, TLCS 7, TGCS 16 " class="ci_il">Instrument</a> of <a  title=" 4 records, TLCS 14, TGCS 37 " class="ci_il">Postconflict</a> <a  title=" 57 records, TLCS 18, TGCS 373 " class="ci_il">Management</a>?</div><SPAN><a  title=" 18 records, TLCS 43, TGCS 154 " class="ci_il">ETHNOPOLITICS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  8 (3-4): 325-340
+<TD>6<TD>9<TD>4<TD>39
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="index-tl.html">Date</a></SPAN> / <a href="index-au1.html">Author</a> / <a href="index-so.html">Journal</a><TH><a href="index-lcs.html" TITLE=" Local Citation Score ">LCS</a><TH><a href="index-tc.html" TITLE=" Global Citation Score ">GCS</a><TH><a href="index-lcr.html" TITLE=" Local Cited References ">LCR</a><TH><a href="index-ncr.html" TITLE=" Cited References ">CR</a>
+<TR valign=top align=right class=odd><TD>2511<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2511</a>  <a  title=" 2 records, TLCS 5, TGCS 27 " class="ci_il">Sebastian S</a><div class=ci_title>The <a  title=" 152 records, TLCS 104, TGCS 936 " class="ci_il">Role</a> of the EU in the <a  title=" 50 records, TLCS 28, TGCS 249 " class="ci_il">Reform</a> of <a  title=" 15 records, TLCS 49, TGCS 1296 " class="ci_il">Dayton</a> in <a  title=" 182 records, TLCS 238, TGCS 4797 " class="ci_il">Bosnia</a>-<a  title=" 137 records, TLCS 84, TGCS 794 " class="ci_il">Herzegovina</a></div><SPAN><a  title=" 18 records, TLCS 43, TGCS 154 " class="ci_il">ETHNOPOLITICS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  8 (3-4): 341-354
+<TD>4<TD>21<TD>0<TD>12
+<TR valign=top align=right class=evn><TD>2512<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2512</a>  <a  title=" 1 records, TLCS 1, TGCS 18 " class="ci_il">Sasse G</a><div class=ci_title>The <a  title=" 584 records, TLCS 532, TGCS 3421 " class="ci_il">European</a> <a  title=" 15 records, TLCS 2, TGCS 73 " class="ci_il">Neighbourhood</a> <a  title=" 286 records, TLCS 229, TGCS 1373 " class="ci_il">Policy</a> and <a  title=" 121 records, TLCS 102, TGCS 2522 " class="ci_il">Conflict</a> <a  title=" 57 records, TLCS 18, TGCS 373 " class="ci_il">Management</a>: A
+   <a  title=" 30 records, TLCS 17, TGCS 297 " class="ci_il">Comparison</a> of <a  title=" 6 records, TLCS 1, TGCS 34 " class="ci_il">Moldova</a> and the <a  title=" 20 records, TLCS 1, TGCS 37 " class="ci_il">Caucasus</a></div><SPAN><a  title=" 18 records, TLCS 43, TGCS 154 " class="ci_il">ETHNOPOLITICS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  8 (3-4): 369-386
+<TD><a TITLE=" Article CIVIL WARS Title: European Union Conflict Management in the Western Balkans" href=javascript:na() class=nu>1</a><TD>18<TD>0<TD>38
+<TR valign=top align=right class=odd><TD>2513<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2513</a>  <a  title=" 1 records, TLCS 0, TGCS 3 " class="ci_il">Krstic M</a><div class=ci_title><a  title=" 19 records, TLCS 5, TGCS 104 " class="ci_il">Serbs</a>, the <a  title=" 1 records, TLCS 0, TGCS 3 " class="ci_il">craziest</a> of all - TV <a  title=" 2 records, TLCS 0, TGCS 3 " class="ci_il">comedy</a> <a  title=" 3 records, TLCS 0, TGCS 3 " class="ci_il">show</a> "<a  title=" 1 records, TLCS 0, TGCS 3 " class="ci_il">KursadZije</a>"</div><SPAN><a  title=" 46 records, TLCS 47, TGCS 126 " class="ci_il">ETNOANTROPOLOSKI PROBLEMI-ISSUES IN ETHNOLOGY AND ANTHROPOLOGY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  4 (1): 87-105
+<TD>0<TD>3<TD><a TITLE=" BOOK IMAGINING BALKANS Title: Imagining the Balkans" href=javascript:opeNod(1103)>1</a><TD>24
+<TR valign=top align=right class=evn><TD>2514<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2514</a>  <a  title=" 5 records, TLCS 9, TGCS 103 " class="ci_il">Pickering PM</a><div class=ci_title><a  title=" 12 records, TLCS 12, TGCS 54 " class="ci_il">Explaining</a> <a  title=" 12 records, TLCS 5, TGCS 127 " class="ci_il">Support</a> for <a  title=" 64 records, TLCS 27, TGCS 224 " class="ci_il">Non</a>-<a  title=" 15 records, TLCS 2, TGCS 31 " class="ci_il">nationalist</a> <a  title=" 14 records, TLCS 2, TGCS 29 " class="ci_il">Parties</a> in <a  title=" 201 records, TLCS 130, TGCS 1094 " class="ci_il">Post</a>-<a  title=" 121 records, TLCS 102, TGCS 2522 " class="ci_il">conflict</a>
+   <a  title=" 27 records, TLCS 14, TGCS 77 " class="ci_il">Societies</a> in the <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a></div><SPAN><a  title=" 17 records, TLCS 85, TGCS 245 " class="ci_il">EUROPE-ASIA STUDIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  61 (4): 565-591
+<TD>0<TD>12<TD>3<TD>83
+<TR valign=top align=right class=odd><TD>2515<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2515</a>  <a  title=" 1 records, TLCS 1, TGCS 7 " class="ci_il">Radosevic S</a><div class=ci_title><a  title=" 83 records, TLCS 23, TGCS 236 " class="ci_il">Research</a> and <a  title=" 210 records, TLCS 139, TGCS 1746 " class="ci_il">Development</a>, <a  title=" 21 records, TLCS 6, TGCS 116 " class="ci_il">Competitiveness</a> and <a  title=" 584 records, TLCS 532, TGCS 3421 " class="ci_il">European</a> <a  title=" 126 records, TLCS 187, TGCS 1301 " class="ci_il">Integration</a> of
+   <a  title=" 512 records, TLCS 335, TGCS 2876 " class="ci_il">South</a> <a  title=" 478 records, TLCS 314, TGCS 3496 " class="ci_il">Eastern</a> <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a></div><SPAN><a  title=" 17 records, TLCS 85, TGCS 245 " class="ci_il">EUROPE-ASIA STUDIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  61 (4): 621-650
+<TD><a TITLE=" Article ZBORNIK RADOVA EKONOMSKOG FAK Title: The impact of national intellectual capital on the economic growth in the South-Eastern European Countries" href=javascript:na() class=nu>1</a><TD>7<TD>0<TD>46
+<TR valign=top align=right class=evn><TD>2516<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2516</a>  <a  title=" 1 records, TLCS 0, TGCS 28 " class="ci_il">Renner S</a><div class=ci_title>The <a  title=" 58 records, TLCS 14, TGCS 586 " class="ci_il">Energy</a> <a  title=" 56 records, TLCS 72, TGCS 1422 " class="ci_il">Community</a> of <a  title=" 245 records, TLCS 132, TGCS 1384 " class="ci_il">Southeast</a> <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a>: A <a  title=" 22 records, TLCS 13, TGCS 138 " class="ci_il">neo</a>-<a  title=" 2 records, TLCS 1, TGCS 30 " class="ci_il">functionalist</a> <a  title=" 28 records, TLCS 20, TGCS 243 " class="ci_il">project</a>
+   of <a  title=" 126 records, TLCS 99, TGCS 540 " class="ci_il">regional</a> <a  title=" 126 records, TLCS 187, TGCS 1301 " class="ci_il">integration</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 28 " class="ci_il">EUROPEAN INTEGRATION ONLINE PAPERS-EIOP</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  13 (1)
+<TD>0<TD>28<TD>0<TD>78
+<TR valign=top align=right class=odd><TD>2517<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2517</a>  <a  title=" 4 records, TLCS 3, TGCS 64 " class="ci_il">Erjavec K</a>, <a  title=" 2 records, TLCS 0, TGCS 8 " class="ci_il">Kovacic MP</a><div class=ci_title>A <a  title=" 8 records, TLCS 8, TGCS 66 " class="ci_il">Discursive</a> <a  title=" 94 records, TLCS 91, TGCS 827 " class="ci_il">Approach</a> to <a  title=" 2 records, TLCS 0, TGCS 8 " class="ci_il">Genre</a> <a  title=" 1 records, TLCS 0, TGCS 8 " class="ci_il">Mobi</a> <a  title=" 12 records, TLCS 3, TGCS 89 " class="ci_il">News</a></div><SPAN><a  title=" 2 records, TLCS 1, TGCS 33 " class="ci_il">EUROPEAN JOURNAL OF COMMUNICATION</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  24 (2): 147-164
+<TD>0<TD>8<TD>0<TD>30
+<TR valign=top align=right class=evn><TD>2518<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2518</a>  <a  title=" 4 records, TLCS 0, TGCS 18 " class="ci_il">El Ouardighi J</a>, <a  title=" 4 records, TLCS 0, TGCS 18 " class="ci_il">Somun-Kapetanovic R</a><div class=ci_title><a  title=" 30 records, TLCS 21, TGCS 104 " class="ci_il">Convergence</a> and <a  title=" 19 records, TLCS 10, TGCS 414 " class="ci_il">Inequality</a> of <a  title=" 16 records, TLCS 1, TGCS 80 " class="ci_il">income</a>: the <a  title=" 285 records, TLCS 259, TGCS 1945 " class="ci_il">case</a> of <a  title=" 625 records, TLCS 928, TGCS 3363 " class="ci_il">Western</a> <a  title=" 1393 records, TLCS 1586, TGCS 11976 " class="ci_il">Balkan</a>
+   <a  title=" 377 records, TLCS 132, TGCS 1566 " class="ci_il">countries</a></div><SPAN><a  title=" 9 records, TLCS 6, TGCS 63 " class="ci_il">EUROPEAN JOURNAL OF COMPARATIVE ECONOMICS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  6 (2): 207-225
+<TD>0<TD>6<TD>0<TD>44
+<TR valign=top align=right class=odd><TD>2519<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2519</a>  <a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">Verstraete G</a><div class=ci_title><a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">Timescapes</a> An <a  title=" 9 records, TLCS 0, TGCS 6 " class="ci_il">artistic</a> <a  title=" 21 records, TLCS 11, TGCS 154 " class="ci_il">challenge</a> to the <a  title=" 584 records, TLCS 532, TGCS 3421 " class="ci_il">European</a> <a  title=" 156 records, TLCS 144, TGCS 749 " class="ci_il">Union</a> <a  title=" 15 records, TLCS 0, TGCS 124 " class="ci_il">paradigm</a></div><SPAN><a  title=" 3 records, TLCS 0, TGCS 4 " class="ci_il">EUROPEAN JOURNAL OF CULTURAL STUDIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  12 (2): 157-172
+<TD>0<TD>4<TD>0<TD>22
+<TR valign=top align=right class=evn><TD>2520<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2520</a>  <a  title=" 4 records, TLCS 3, TGCS 13 " class="ci_il">Zarifis GK</a><div class=ci_title><a  title=" 3 records, TLCS 1, TGCS 6 " class="ci_il">Decisions</a>, <a  title=" 2 records, TLCS 1, TGCS 4 " class="ci_il">Provisions</a> and <a  title=" 1 records, TLCS 1, TGCS 4 " class="ci_il">Disillusionment</a> for <a  title=" 64 records, TLCS 27, TGCS 224 " class="ci_il">Non</a>-<a  title=" 6 records, TLCS 2, TGCS 20 " class="ci_il">vocational</a> <a  title=" 8 records, TLCS 1, TGCS 51 " class="ci_il">Adult</a>
+   <a  title=" 30 records, TLCS 4, TGCS 65 " class="ci_il">Learning</a> (<a  title=" 1 records, TLCS 1, TGCS 4 " class="ci_il">NVAL</a>) <a  title=" 6 records, TLCS 2, TGCS 8 " class="ci_il">Staff</a> in <a  title=" 512 records, TLCS 335, TGCS 2876 " class="ci_il">South</a>-<a  title=" 478 records, TLCS 314, TGCS 3496 " class="ci_il">Eastern</a> <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a>: a <a  title=" 85 records, TLCS 56, TGCS 700 " class="ci_il">comparative</a> <a  title=" 3 records, TLCS 1, TGCS 5 " class="ci_il">appraisal</a>
+   of some <a  title=" 286 records, TLCS 229, TGCS 1373 " class="ci_il">policy</a> <a  title=" 13 records, TLCS 7, TGCS 19 " class="ci_il">developments</a> with <a  title=" 2 records, TLCS 1, TGCS 6 " class="ci_il">diminishing</a> <a  title=" 14 records, TLCS 8, TGCS 56 " class="ci_il">returns</a></div><SPAN><a  title=" 5 records, TLCS 2, TGCS 20 " class="ci_il">EUROPEAN JOURNAL OF EDUCATION</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  44 (2): 163-182
+<TD><a TITLE=" Article ZBORNIK INSTITUTA ZA PEDAGOSK Title: A COMPARATIVE OVERVIEW OF THE STATUS AND THE MAIN CHARACTERISTICS OF VOCATIONAL EDUCATION AND TRAINING (VET) TRAINERS IN SOUTH-EASTERN EUROPE" href=javascript:na() class=nu>1</a><TD>4<TD><a TITLE=" Article INTERNATIONAL JOURNAL OF LIFE Title: &#39;Bringing learning closer to home&#39;: the value and impact of the Lisbon strategy for strengthening the role of local learning centres and partnerships in south-eastern Europe" href=javascript:na() class=nu>1</a><TD>22
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="index-tl.html">Date</a></SPAN> / <a href="index-au1.html">Author</a> / <a href="index-so.html">Journal</a><TH><a href="index-lcs.html" TITLE=" Local Citation Score ">LCS</a><TH><a href="index-tc.html" TITLE=" Global Citation Score ">GCS</a><TH><a href="index-lcr.html" TITLE=" Local Cited References ">LCR</a><TH><a href="index-ncr.html" TITLE=" Cited References ">CR</a>
+<TR valign=top align=right class=odd><TD>2521<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2521</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Stankova L</a>, <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Nenkovska L</a><div class=ci_title>THE <a  title=" 4 records, TLCS 0, TGCS 2 " class="ci_il">MANUSCRIPT</a> <a  title=" 47 records, TLCS 24, TGCS 218 " class="ci_il">HERITAGE</a> OF <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">IOAN</a> <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">KRATOVSKI</a></div><SPAN><a  title=" 6 records, TLCS 0, TGCS 0 " class="ci_il">EUROPEAN JOURNAL OF SCIENCE AND THEOLOGY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  5 (1): 13-24
+<TD>0<TD>0<TD>0<TD>33
+<TR valign=top align=right class=evn><TD>2522<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2522</a>  <a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">Sretenovic S</a><div class=ci_title><a  title=" 37 records, TLCS 9, TGCS 75 " class="ci_il">French</a> <a  title=" 132 records, TLCS 137, TGCS 922 " class="ci_il">cultural</a> <a  title=" 55 records, TLCS 9, TGCS 101 " class="ci_il">diplomacy</a> in the <a  title=" 17 records, TLCS 5, TGCS 51 " class="ci_il">kingdom</a> of <a  title=" 19 records, TLCS 5, TGCS 104 " class="ci_il">Serbs</a>, <a  title=" 9 records, TLCS 2, TGCS 14 " class="ci_il">Croats</a> and
+   <a  title=" 2 records, TLCS 0, TGCS 6 " class="ci_il">Slovenians</a> in the <a  title=" 9 records, TLCS 18, TGCS 38 " class="ci_il">1920s</a></div><SPAN><a  title=" 5 records, TLCS 0, TGCS 5 " class="ci_il">EUROPEAN REVIEW OF HISTORY-REVUE EUROPEENNE D HISTOIRE</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  16 (1): 33-47
+<TD>0<TD>4<TD>0<TD>33
+<TR valign=top align=right class=odd><TD>2523<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2523</a>  <a  title=" 2 records, TLCS 8, TGCS 63 " class="ci_il">Lendvai N</a>, <a  title=" 7 records, TLCS 19, TGCS 123 " class="ci_il">Stubbs P</a><div class=ci_title><a  title=" 9 records, TLCS 12, TGCS 141 " class="ci_il">ASSEMBLAGES</a>, <a  title=" 16 records, TLCS 16, TGCS 108 " class="ci_il">TRANSLATION</a>, AND <a  title=" 1 records, TLCS 4, TGCS 54 " class="ci_il">INTERMEDIARIES</a> IN <a  title=" 512 records, TLCS 335, TGCS 2876 " class="ci_il">SOUTH</a> <a  title=" 320 records, TLCS 219, TGCS 2397 " class="ci_il">EAST</a> <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">EUROPE</a></div><SPAN><a  title=" 1 records, TLCS 4, TGCS 54 " class="ci_il">EUROPEAN SOCIETIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  11 (5): 673-695
+<TD>4<TD>54<TD>2<TD>59
+<TR valign=top align=right class=evn><TD>2524<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2524</a>  <a  title=" 2 records, TLCS 0, TGCS 0 " class="ci_il">Nagy E</a><div class=ci_title><a  title=" 16 records, TLCS 6, TGCS 56 " class="ci_il">CONSTRUCTING</a> AND <a  title=" 4 records, TLCS 4, TGCS 11 " class="ci_il">CROSSING</a> <a  title=" 21 records, TLCS 24, TGCS 107 " class="ci_il">BOUNDARIES</a> IN A <a  title=" 268 records, TLCS 190, TGCS 2164 " class="ci_il">NEW</a> (?) <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">EUROPE</a></div><SPAN><a  title=" 2 records, TLCS 0, TGCS 6 " class="ci_il">EUROPEAN SPATIAL RESEARCH AND POLICY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  16 (2): 49-62
+<TD>0<TD>0<TD>0<TD>28
+<TR valign=top align=right class=odd><TD>2525<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2525</a>  <a  title=" 6 records, TLCS 15, TGCS 283 " class="ci_il">Harvati K</a>, <a  title=" 2 records, TLCS 10, TGCS 93 " class="ci_il">Panagopoulou E</a>, <a  title=" 4 records, TLCS 8, TGCS 94 " class="ci_il">Runnels C</a><div class=ci_title>The <a  title=" 3 records, TLCS 6, TGCS 69 " class="ci_il">Paleoanthropology</a> of <a  title=" 150 records, TLCS 125, TGCS 1240 " class="ci_il">Greece</a></div><SPAN><a  title=" 1 records, TLCS 6, TGCS 58 " class="ci_il">EVOLUTIONARY ANTHROPOLOGY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  18 (4): 131-143
+<TD>6<TD>58<TD>2<TD>89
+<TR valign=top align=right class=evn><TD>2526<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2526</a>  <a  title=" 1 records, TLCS 0, TGCS 6 " class="ci_il">Arvai Z</a>, <a  title=" 1 records, TLCS 0, TGCS 6 " class="ci_il">Driessen K</a>, <a  title=" 1 records, TLCS 0, TGCS 6 " class="ci_il">Otker-Robe I</a><div class=ci_title><a  title=" 126 records, TLCS 99, TGCS 540 " class="ci_il">Regional</a> <a  title=" 73 records, TLCS 41, TGCS 448 " class="ci_il">Financial</a> <a  title=" 1 records, TLCS 0, TGCS 6 " class="ci_il">Interlinkages</a> and <a  title=" 73 records, TLCS 41, TGCS 448 " class="ci_il">Financial</a> <a  title=" 2 records, TLCS 0, TGCS 6 " class="ci_il">Contagion</a> within <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a></div><SPAN><a  title=" 4 records, TLCS 3, TGCS 17 " class="ci_il">FINANCE A UVER-CZECH JOURNAL OF ECONOMICS AND FINANCE</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  59 (6): 522-540
+<TD>0<TD>6<TD>0<TD>19
+<TR valign=top align=right class=odd><TD>2527<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2527</a>  <a  title=" 3 records, TLCS 5, TGCS 95 " class="ci_il">Bojnec S</a>, <a  title=" 2 records, TLCS 2, TGCS 87 " class="ci_il">Ferto I</a><div class=ci_title><a  title=" 3 records, TLCS 2, TGCS 89 " class="ci_il">Agro</a>-<a  title=" 28 records, TLCS 8, TGCS 462 " class="ci_il">food</a> <a  title=" 94 records, TLCS 69, TGCS 428 " class="ci_il">trade</a> <a  title=" 21 records, TLCS 6, TGCS 116 " class="ci_il">competitiveness</a> of <a  title=" 297 records, TLCS 190, TGCS 3196 " class="ci_il">Central</a> <a  title=" 584 records, TLCS 532, TGCS 3421 " class="ci_il">European</a> and <a  title=" 1393 records, TLCS 1586, TGCS 11976 " class="ci_il">Balkan</a>
+   <a  title=" 377 records, TLCS 132, TGCS 1566 " class="ci_il">countries</a></div><SPAN><a  title=" 4 records, TLCS 2, TGCS 63 " class="ci_il">FOOD POLICY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  34 (5): 417-425
+<TD>2<TD>44<TD>0<TD>27
+<TR valign=top align=right class=evn><TD>2528<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2528</a>  <a  title=" 2 records, TLCS 0, TGCS 3 " class="ci_il">Pere E</a><div class=ci_title>The <a  title=" 16 records, TLCS 3, TGCS 40 " class="ci_il">Significance</a> of <a  title=" 241 records, TLCS 144, TGCS 1987 " class="ci_il">Economic</a> <a  title=" 94 records, TLCS 69, TGCS 428 " class="ci_il">Trade</a> <a  title=" 10 records, TLCS 0, TGCS 11 " class="ci_il">Relation</a> for <a  title=" 126 records, TLCS 99, TGCS 540 " class="ci_il">Regional</a> <a  title=" 126 records, TLCS 187, TGCS 1301 " class="ci_il">Integration</a>
+   in the <a  title=" 53 records, TLCS 46, TGCS 300 " class="ci_il">West</a> <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a>'</div><SPAN><a  title=" 10 records, TLCS 1, TGCS 57 " class="ci_il">GEOGRAPHICA PANNONICA</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  13 (4): 159-165
+<TD>0<TD>1<TD>0<TD>11
+<TR valign=top align=right class=odd><TD>2529<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2529</a>  <a  title=" 1 records, TLCS 0, TGCS 16 " class="ci_il">Kranjc A</a><div class=ci_title><a  title=" 189 records, TLCS 701, TGCS 10056 " class="ci_il">History</a> of <a  title=" 1 records, TLCS 0, TGCS 16 " class="ci_il">Deforestation</a> and <a  title=" 1 records, TLCS 0, TGCS 16 " class="ci_il">Reforestation</a> in the <a  title=" 4 records, TLCS 0, TGCS 16 " class="ci_il">Dinaric</a> <a  title=" 3 records, TLCS 0, TGCS 56 " class="ci_il">Karst</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 16 " class="ci_il">GEOGRAPHICAL RESEARCH</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  47 (1): 15-23
+<TD>0<TD>16<TD><a TITLE=" BOOK PENINSULE BALKANIQUE Title: La peninsule balkanique: geographie humaine" href=javascript:opeNod(138)>1</a><TD>25
+<TR valign=top align=right class=evn><TD>2530<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2530</a>  <a  title=" 1 records, TLCS 0, TGCS 25 " class="ci_il">Agnew J</a><div class=ci_title>MAKING THE <a  title=" 5 records, TLCS 0, TGCS 25 " class="ci_il">STRANGE</a> <a  title=" 1 records, TLCS 0, TGCS 25 " class="ci_il">FAMILIAR</a>: <a  title=" 21 records, TLCS 6, TGCS 278 " class="ci_il">GEOGRAPHICAL</a> <a  title=" 4 records, TLCS 0, TGCS 51 " class="ci_il">ANALOGY</a> IN <a  title=" 78 records, TLCS 37, TGCS 790 " class="ci_il">GLOBAL</a>
+   <a  title=" 23 records, TLCS 6, TGCS 196 " class="ci_il">GEOPOLITICS</a></div><SPAN><a  title=" 10 records, TLCS 5, TGCS 58 " class="ci_il">GEOGRAPHICAL REVIEW</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  99 (3): 426-443
+<TD>0<TD>25<TD>6<TD>62
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="index-tl.html">Date</a></SPAN> / <a href="index-au1.html">Author</a> / <a href="index-so.html">Journal</a><TH><a href="index-lcs.html" TITLE=" Local Citation Score ">LCS</a><TH><a href="index-tc.html" TITLE=" Global Citation Score ">GCS</a><TH><a href="index-lcr.html" TITLE=" Local Cited References ">LCR</a><TH><a href="index-ncr.html" TITLE=" Cited References ">CR</a>
+<TR valign=top align=right class=odd><TD>2531<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2531</a>  <a  title=" 1 records, TLCS 0, TGCS 40 " class="ci_il">Calo F</a>, <a  title=" 1 records, TLCS 0, TGCS 40 " class="ci_il">Parise M</a><div class=ci_title><a  title=" 5 records, TLCS 0, TGCS 68 " class="ci_il">Waste</a> <a  title=" 57 records, TLCS 18, TGCS 373 " class="ci_il">management</a> and <a  title=" 41 records, TLCS 13, TGCS 88 " class="ci_il">problems</a> of <a  title=" 1 records, TLCS 0, TGCS 40 " class="ci_il">groundwater</a> <a  title=" 2 records, TLCS 0, TGCS 69 " class="ci_il">pollution</a> in <a  title=" 3 records, TLCS 0, TGCS 56 " class="ci_il">karst</a>
+   <a  title=" 4 records, TLCS 0, TGCS 51 " class="ci_il">environments</a> in the <a  title=" 123 records, TLCS 50, TGCS 382 " class="ci_il">context</a> of a <a  title=" 201 records, TLCS 130, TGCS 1094 " class="ci_il">post</a>-<a  title=" 121 records, TLCS 102, TGCS 2522 " class="ci_il">conflict</a> <a  title=" 5 records, TLCS 7, TGCS 57 " class="ci_il">scenario</a>: The <a  title=" 285 records, TLCS 259, TGCS 1945 " class="ci_il">case</a> of
+   <a  title=" 6 records, TLCS 1, TGCS 51 " class="ci_il">Mostar</a> (<a  title=" 182 records, TLCS 238, TGCS 4797 " class="ci_il">Bosnia</a> <a  title=" 137 records, TLCS 84, TGCS 794 " class="ci_il">Herzegovina</a>)</div><SPAN><a  title=" 3 records, TLCS 2, TGCS 68 " class="ci_il">HABITAT INTERNATIONAL</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  33 (1): 63-72
+<TD>0<TD>40<TD>0<TD>38
+<TR valign=top align=right class=evn><TD>2532<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2532</a>  <a  title=" 1 records, TLCS 0, TGCS 1 " class="ci_il">de Freitas RS</a>, <a  title=" 1 records, TLCS 0, TGCS 1 " class="ci_il">de Figueiredo AM</a><div class=ci_title>Why do <a  title=" 8 records, TLCS 0, TGCS 29 " class="ci_il">efforts</a> toward <a  title=" 11 records, TLCS 3, TGCS 10 " class="ci_il">theoretical</a> <a  title=" 5 records, TLCS 0, TGCS 108 " class="ci_il">synthesis</a> <a  title=" 2 records, TLCS 1, TGCS 2 " class="ci_il">prove</a> so <a  title=" 7 records, TLCS 0, TGCS 18 " class="ci_il">successful</a> in
+   <a  title=" 2 records, TLCS 0, TGCS 1 " class="ci_il">biology</a> but not in <a  title=" 4 records, TLCS 2, TGCS 25 " class="ci_il">sociology</a>?</div><SPAN><a  title=" 1 records, TLCS 0, TGCS 1 " class="ci_il">HISTORIA CIENCIAS SAUDE-MANGUINHOS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  16 (3): 729-745
+<TD>0<TD>1<TD>0<TD>14
+<TR valign=top align=right class=odd><TD>2533<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2533</a>  <a  title=" 1 records, TLCS 0, TGCS 6 " class="ci_il">Galenson DW</a><div class=ci_title>From "<a  title=" 11 records, TLCS 2, TGCS 88 " class="ci_il">White</a> <a  title=" 2 records, TLCS 0, TGCS 6 " class="ci_il">Christmas</a>" to <a  title=" 1 records, TLCS 0, TGCS 6 " class="ci_il">Sgt</a>. <a  title=" 1 records, TLCS 0, TGCS 6 " class="ci_il">Pepper</a> The <a  title=" 6 records, TLCS 4, TGCS 26 " class="ci_il">Conceptual</a> <a  title=" 27 records, TLCS 4, TGCS 114 " class="ci_il">Revolution</a> in
+   <a  title=" 25 records, TLCS 17, TGCS 68 " class="ci_il">Popular</a> <a  title=" 38 records, TLCS 26, TGCS 93 " class="ci_il">Music</a></div><SPAN><a  title=" 2 records, TLCS 2, TGCS 15 " class="ci_il">HISTORICAL METHODS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  42 (1): 17-32
+<TD>0<TD>6<TD>0<TD>66
+<TR valign=top align=right class=evn><TD>2534<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2534</a>  <a  title=" 5 records, TLCS 2, TGCS 6 " class="ci_il">Lory B</a><div class=ci_title>The <a  title=" 1 records, TLCS 1, TGCS 2 " class="ci_il">Vizier</a> ' s <a  title=" 7 records, TLCS 11, TGCS 28 " class="ci_il">Dream</a>: "<a  title=" 6 records, TLCS 9, TGCS 18 " class="ci_il">Seeing</a> St. <a  title=" 1 records, TLCS 1, TGCS 2 " class="ci_il">Dimitar</a>" in <a  title=" 253 records, TLCS 371, TGCS 4809 " class="ci_il">Ottoman</a> <a  title=" 5 records, TLCS 1, TGCS 2 " class="ci_il">Bitola</a></div><SPAN><a  title=" 12 records, TLCS 8, TGCS 65 " class="ci_il">HISTORY AND ANTHROPOLOGY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  20 (3): 309-316
+<TD><a TITLE=" Article JOURNAL OF THE ECONOMIC AND S Title: Communal Boundaries and Confessional Policies in Ottoman Nis" href=javascript:na() class=nu>1</a><TD>2<TD><a TITLE=" BOOK HIST OTTOMAN EMPIRE Title: History of the Ottoman Empire and Modern Turkey: Volume 1 &amp; 2" href=javascript:opeNod(576)>1</a><TD>18
+<TR valign=top align=right class=odd><TD>2535<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2535</a>  <a  title=" 1 records, TLCS 0, TGCS 1 " class="ci_il">Baeva V</a>, <a  title=" 3 records, TLCS 0, TGCS 7 " class="ci_il">Valtchinova G</a><div class=ci_title>A <a  title=" 78 records, TLCS 22, TGCS 376 " class="ci_il">Women</a>'s <a  title=" 57 records, TLCS 31, TGCS 238 " class="ci_il">Religious</a> <a  title=" 17 records, TLCS 1, TGCS 1691 " class="ci_il">Organization</a> in <a  title=" 42 records, TLCS 32, TGCS 294 " class="ci_il">Southern</a> <a  title=" 213 records, TLCS 137, TGCS 997 " class="ci_il">Bulgaria</a>: From <a  title=" 4 records, TLCS 5, TGCS 17 " class="ci_il">Miracle</a>
+   <a  title=" 14 records, TLCS 9, TGCS 47 " class="ci_il">Stories</a> to <a  title=" 189 records, TLCS 701, TGCS 10056 " class="ci_il">History</a></div><SPAN><a  title=" 12 records, TLCS 8, TGCS 65 " class="ci_il">HISTORY AND ANTHROPOLOGY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  20 (3): 317-338
+<TD>0<TD>1<TD>0<TD>26
+<TR valign=top align=right class=evn><TD>2536<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2536</a>  <a  title=" 1 records, TLCS 0, TGCS 3 " class="ci_il">Karamihova M</a>, <a  title=" 3 records, TLCS 0, TGCS 7 " class="ci_il">Valtchinova G</a><div class=ci_title><a  title=" 1 records, TLCS 0, TGCS 3 " class="ci_il">Talking</a> <a  title=" 443 records, TLCS 572, TGCS 9312 " class="ci_il">War</a>, "<a  title=" 6 records, TLCS 9, TGCS 18 " class="ci_il">Seeing</a>" <a  title=" 77 records, TLCS 35, TGCS 389 " class="ci_il">Peace</a>: <a  title=" 3 records, TLCS 2, TGCS 42 " class="ci_il">Approaching</a> the <a  title=" 2 records, TLCS 0, TGCS 6 " class="ci_il">Pilgrimage</a> of <a  title=" 1 records, TLCS 0, TGCS 3 " class="ci_il">Krastova</a>
+   <a  title=" 1 records, TLCS 0, TGCS 3 " class="ci_il">Gora</a> (<a  title=" 213 records, TLCS 137, TGCS 997 " class="ci_il">Bulgaria</a>)</div><SPAN><a  title=" 12 records, TLCS 8, TGCS 65 " class="ci_il">HISTORY AND ANTHROPOLOGY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  20 (3): 339-362
+<TD>0<TD>3<TD>2<TD>56
+<TR valign=top align=right class=odd><TD>2537<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2537</a>  <a  title=" 2 records, TLCS 1, TGCS 8 " class="ci_il">Davis SE</a><div class=ci_title><a  title=" 2 records, TLCS 1, TGCS 6 " class="ci_il">Maintaining</a> a "<a  title=" 63 records, TLCS 21, TGCS 163 " class="ci_il">German</a>" <a  title=" 19 records, TLCS 6, TGCS 145 " class="ci_il">home</a> in <a  title=" 245 records, TLCS 132, TGCS 1384 " class="ci_il">Southeast</a> <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a>: <a  title=" 2 records, TLCS 1, TGCS 8 " class="ci_il">Transylvanian</a> <a  title=" 2 records, TLCS 0, TGCS 5 " class="ci_il">Saxon</a>
+   <a  title=" 98 records, TLCS 210, TGCS 1857 " class="ci_il">nationalism</a> and the <a  title=" 11 records, TLCS 6, TGCS 197 " class="ci_il">metropolitan</a> <a  title=" 54 records, TLCS 31, TGCS 522 " class="ci_il">model</a> of the <a  title=" 29 records, TLCS 12, TGCS 206 " class="ci_il">family</a>, 1918-1933</div><SPAN><a  title=" 5 records, TLCS 2, TGCS 39 " class="ci_il">HISTORY OF THE FAMILY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  14 (4): 386-401
+<TD>0<TD>5<TD>0<TD>62
+<TR valign=top align=right class=evn><TD>2538<TD align=left><a TITLE=" BOOK CHAPTER " href=javascript:na() class=nu>2538</a>  <a  title=" 2 records, TLCS 1, TGCS 6 " class="ci_il">Winton MA</a><div class=ci_title><a  title=" 20 records, TLCS 3, TGCS 40 " class="ci_il">MASS</a> <a  title=" 1 records, TLCS 0, TGCS 1 " class="ci_il">MURDERER</a>, <a  title=" 1 records, TLCS 0, TGCS 1 " class="ci_il">UNWILLING</a> <a  title=" 2 records, TLCS 0, TGCS 4 " class="ci_il">EXECUTIONER</a>, OR <a  title=" 3 records, TLCS 5, TGCS 21 " class="ci_il">SOMETHING</a> <a  title=" 4 records, TLCS 1, TGCS 35 " class="ci_il">ELSE</a>: A <a  title=" 285 records, TLCS 259, TGCS 1945 " class="ci_il">CASE</a> STUDY
+   OF A <a  title=" 102 records, TLCS 30, TGCS 195 " class="ci_il">SERBIAN</a> <a  title=" 3 records, TLCS 0, TGCS 1 " class="ci_il">SOLDIER</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 1 " class="ci_il">HOMICIDE: TRENDS, CAUSES AND PREVENTION</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  : 117-127
+<TD>0<TD>1<TD><a TITLE=" Article AGGRESSION AND VIOLENT BEHAVI Title: Micro-macro dimensions of the Bosnian genocides: The circumplex model and violentization theory" href=javascript:na() class=nu>1</a><TD>18
+<TR valign=top align=right class=odd><TD>2539<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2539</a>  <a  title=" 4 records, TLCS 0, TGCS 1 " class="ci_il">Gossiaux JF</a><div class=ci_title>"There are no <a  title=" 7 records, TLCS 0, TGCS 8 " class="ci_il">poor</a> among us". On the <a  title=" 2 records, TLCS 0, TGCS 1 " class="ci_il">Superiority</a> of <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Nomads</a> over the
+   <a  title=" 2 records, TLCS 0, TGCS 0 " class="ci_il">Sedentary</a>.</div><SPAN><a  title=" 3 records, TLCS 0, TGCS 0 " class="ci_il">HOMME</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;   (189): 115-138
+<TD>0<TD>0<TD>0<TD>13
+<TR valign=top align=right class=evn><TD>2540<TD align=left><a TITLE=" BOOK CHAPTER " href=javascript:na() class=nu>2540</a>  <a  title=" 2 records, TLCS 1, TGCS 24 " class="ci_il">Tsenkova S</a><div class=ci_title><a  title=" 18 records, TLCS 6, TGCS 232 " class="ci_il">Housing</a> <a  title=" 286 records, TLCS 229, TGCS 1373 " class="ci_il">Policy</a> <a  title=" 28 records, TLCS 8, TGCS 71 " class="ci_il">Reforms</a> in <a  title=" 512 records, TLCS 335, TGCS 2876 " class="ci_il">South</a> <a  title=" 320 records, TLCS 219, TGCS 2397 " class="ci_il">East</a> <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 2 " class="ci_il">HOUSING POLICY REFORMS IN POST SOCIALIST EUROPE: LOST IN TRANSITION</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  : 65-90
+<TD>0<TD>2<TD>0<TD>0
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="index-tl.html">Date</a></SPAN> / <a href="index-au1.html">Author</a> / <a href="index-so.html">Journal</a><TH><a href="index-lcs.html" TITLE=" Local Citation Score ">LCS</a><TH><a href="index-tc.html" TITLE=" Global Citation Score ">GCS</a><TH><a href="index-lcr.html" TITLE=" Local Cited References ">LCR</a><TH><a href="index-ncr.html" TITLE=" Cited References ">CR</a>
+<TR valign=top align=right class=odd><TD>2541<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2541</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Bailes AJK</a>, <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Pordisardottir JM</a><div class=ci_title><a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Iceland</a>'s <a  title=" 8 records, TLCS 1, TGCS 10 " class="ci_il">Neighbours</a> in the EU <a  title=" 9 records, TLCS 2, TGCS 83 " class="ci_il">Entry</a> <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Queue</a>: <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Contrasts</a> or <a  title=" 6 records, TLCS 2, TGCS 5 " class="ci_il">Parallels</a> in
+   EU <a  title=" 79 records, TLCS 180, TGCS 568 " class="ci_il">Enlargement</a> to the <a  title=" 31 records, TLCS 2, TGCS 50 " class="ci_il">North</a> and the <a  title=" 512 records, TLCS 335, TGCS 2876 " class="ci_il">South</a>-<a  title=" 320 records, TLCS 219, TGCS 2397 " class="ci_il">East</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">ICELANDIC REVIEW OF POLITICS & ADMINISTRATION</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  5 (2): 225-248
+<TD>0<TD>0<TD><a TITLE=" Article CROATIAN YEARBOOK OF EUROPEAN Title: EU CONDITIONALITY AND TRANSITIONAL JUSTICE IN THE FORMER YUGOSLAVIA" href=javascript:na() class=nu>1</a><TD>25
+<TR valign=top align=right class=evn><TD>2542<TD align=left><a TITLE=" BOOK CHAPTER " href=javascript:na() class=nu>2542</a>  <a  title=" 2 records, TLCS 0, TGCS 24 " class="ci_il">Killias M</a><div class=ci_title><a  title=" 2 records, TLCS 0, TGCS 18 " class="ci_il">PARADISE</a> <a  title=" 16 records, TLCS 3, TGCS 122 " class="ci_il">LOST</a>? <a  title=" 268 records, TLCS 190, TGCS 2164 " class="ci_il">NEW</a> <a  title=" 31 records, TLCS 3, TGCS 84 " class="ci_il">TRENDS</a> IN <a  title=" 27 records, TLCS 6, TGCS 124 " class="ci_il">CRIME</a> AND <a  title=" 113 records, TLCS 77, TGCS 1215 " class="ci_il">MIGRATION</a> IN <a  title=" 12 records, TLCS 4, TGCS 160 " class="ci_il">SWITZERLAND</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 18 " class="ci_il">IMMIGRATION, CRIME AND JUSTICE</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  13: 33-45
+<TD>0<TD>18<TD>0<TD>14
+<TR valign=top align=right class=odd><TD>2543<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2543</a>  <a  title=" 1 records, TLCS 1, TGCS 30 " class="ci_il">Kobayashi T</a>, <a  title=" 1 records, TLCS 1, TGCS 30 " class="ci_il">Ikeda K</a><div class=ci_title><a  title=" 3 records, TLCS 1, TGCS 41 " class="ci_il">SELECTIVE</a> <a  title=" 3 records, TLCS 1, TGCS 39 " class="ci_il">EXPOSURE</a> IN <a  title=" 210 records, TLCS 211, TGCS 1394 " class="ci_il">POLITICAL</a> <a  title=" 3 records, TLCS 1, TGCS 34 " class="ci_il">WEB</a> <a  title=" 2 records, TLCS 1, TGCS 30 " class="ci_il">BROWSING</a> <a  title=" 39 records, TLCS 23, TGCS 378 " class="ci_il">Empirical</a> <a  title=" 1 records, TLCS 1, TGCS 30 " class="ci_il">verification</a> of
+   '<a  title=" 3 records, TLCS 1, TGCS 165 " class="ci_il">cyber</a>-<a  title=" 51 records, TLCS 49, TGCS 599 " class="ci_il">balkanization</a>' in <a  title=" 6 records, TLCS 1, TGCS 35 " class="ci_il">Japan</a> and the <a  title=" 9 records, TLCS 2, TGCS 33 " class="ci_il">USA</a></div><SPAN><a  title=" 2 records, TLCS 1, TGCS 30 " class="ci_il">INFORMATION COMMUNICATION & SOCIETY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  12 (6): 929-953
+<TD><a TITLE=" Article JOURNAL OF ARGUMENTATION IN C Title: The inclusion and exclusion of dissenting voices in an online forum about climate change" href=javascript:na() class=nu>1</a><TD>30<TD>0<TD>32
+<TR valign=top align=right class=evn><TD>2544<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2544</a>  <a  title=" 1 records, TLCS 0, TGCS 43 " class="ci_il">Sperling J</a>, <a  title=" 1 records, TLCS 0, TGCS 43 " class="ci_il">Webber M</a><div class=ci_title><a  title=" 59 records, TLCS 16, TGCS 274 " class="ci_il">NATO</a>: from <a  title=" 158 records, TLCS 227, TGCS 3567 " class="ci_il">Kosovo</a> to <a  title=" 1 records, TLCS 0, TGCS 43 " class="ci_il">Kabul</a></div><SPAN><a  title=" 10 records, TLCS 9, TGCS 235 " class="ci_il">INTERNATIONAL AFFAIRS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  85 (3): 491
+<TD>0<TD>43<TD>0<TD>42
+<TR valign=top align=right class=odd><TD>2545<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2545</a>  <a  title=" 1 records, TLCS 1, TGCS 32 " class="ci_il">Daddow O</a><div class=ci_title>'<a  title=" 1 records, TLCS 1, TGCS 32 " class="ci_il">Tony</a>'s <a  title=" 443 records, TLCS 572, TGCS 9312 " class="ci_il">war</a>'? <a  title=" 1 records, TLCS 1, TGCS 32 " class="ci_il">Blair</a>, <a  title=" 158 records, TLCS 227, TGCS 3567 " class="ci_il">Kosovo</a> and the <a  title=" 1 records, TLCS 1, TGCS 32 " class="ci_il">interventionist</a> <a  title=" 1 records, TLCS 1, TGCS 32 " class="ci_il">impulse</a> in <a  title=" 57 records, TLCS 38, TGCS 367 " class="ci_il">British</a>
+   <a  title=" 184 records, TLCS 173, TGCS 1109 " class="ci_il">foreign</a> <a  title=" 286 records, TLCS 229, TGCS 1373 " class="ci_il">policy</a></div><SPAN><a  title=" 10 records, TLCS 9, TGCS 235 " class="ci_il">INTERNATIONAL AFFAIRS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  85 (3): 547
+<TD><a TITLE=" Article REVUE D ETUDES COMPARATIVES E Title: FROM THE COLD WAR TO THE KOSOVO WAR YUGOSLAVIA AND THE BRITISH LABOUR PARTY" href=javascript:na() class=nu>1</a><TD>32<TD>0<TD>59
+<TR valign=top align=right class=evn><TD>2546<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2546</a>  <a  title=" 3 records, TLCS 2, TGCS 20 " class="ci_il">Cottey A</a><div class=ci_title>The <a  title=" 158 records, TLCS 227, TGCS 3567 " class="ci_il">Kosovo</a> <a  title=" 443 records, TLCS 572, TGCS 9312 " class="ci_il">war</a> in <a  title=" 107 records, TLCS 100, TGCS 2610 " class="ci_il">perspective</a></div><SPAN><a  title=" 10 records, TLCS 9, TGCS 235 " class="ci_il">INTERNATIONAL AFFAIRS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  85 (3): 593
+<TD>0<TD>7<TD>0<TD>41
+<TR valign=top align=right class=odd><TD>2547<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2547</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Chul-Min K</a><div class=ci_title>The <a  title=" 31 records, TLCS 43, TGCS 86 " class="ci_il">View</a> and <a  title=" 26 records, TLCS 7, TGCS 360 " class="ci_il">Understanding</a> of <a  title=" 121 records, TLCS 502, TGCS 5471 " class="ci_il">Yugoslavia</a> on the <a  title=" 3 records, TLCS 0, TGCS 0 " class="ci_il">Korean</a> <a  title=" 443 records, TLCS 572, TGCS 9312 " class="ci_il">War</a>: an
+   <a  title=" 176 records, TLCS 88, TGCS 1576 " class="ci_il">Analysis</a> through <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Illustrations</a></div><SPAN><a  title=" 2 records, TLCS 0, TGCS 4 " class="ci_il">INTERNATIONAL AREA STUDIES REVIEW</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  12 (3): 43-56
+<TD>0<TD>0<TD>0<TD>13
+<TR valign=top align=right class=evn><TD>2548<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2548</a>  <a  title=" 4 records, TLCS 8, TGCS 135 " class="ci_il">Dmitrovic T</a>, <a  title=" 4 records, TLCS 8, TGCS 135 " class="ci_il">Vida I</a>, <a  title=" 1 records, TLCS 4, TGCS 57 " class="ci_il">Reardon J</a><div class=ci_title><a  title=" 4 records, TLCS 5, TGCS 188 " class="ci_il">Purchase</a> <a  title=" 10 records, TLCS 4, TGCS 146 " class="ci_il">behavior</a> in <a  title=" 2 records, TLCS 4, TGCS 57 " class="ci_il">favor</a> of <a  title=" 27 records, TLCS 32, TGCS 378 " class="ci_il">domestic</a> <a  title=" 12 records, TLCS 10, TGCS 137 " class="ci_il">products</a> in the <a  title=" 53 records, TLCS 46, TGCS 300 " class="ci_il">West</a> <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a></div><SPAN><a  title=" 3 records, TLCS 4, TGCS 136 " class="ci_il">INTERNATIONAL BUSINESS REVIEW</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  18 (5): 523-535
+<TD>4<TD>57<TD>0<TD>85
+<TR valign=top align=right class=odd><TD>2549<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2549</a>  <a  title=" 1 records, TLCS 2, TGCS 19 " class="ci_il">Makrides VN</a><div class=ci_title><a  title=" 42 records, TLCS 55, TGCS 195 " class="ci_il">Orthodox</a> <a  title=" 24 records, TLCS 19, TGCS 84 " class="ci_il">Anti</a>-<a  title=" 1 records, TLCS 2, TGCS 19 " class="ci_il">Westernism</a> <a  title=" 13 records, TLCS 17, TGCS 50 " class="ci_il">Today</a>: A <a  title=" 1 records, TLCS 2, TGCS 19 " class="ci_il">Hindrance</a> to <a  title=" 584 records, TLCS 532, TGCS 3421 " class="ci_il">European</a> <a  title=" 126 records, TLCS 187, TGCS 1301 " class="ci_il">Integration</a>?</div><SPAN><a  title=" 2 records, TLCS 2, TGCS 25 " class="ci_il">INTERNATIONAL JOURNAL FOR THE STUDY OF THE CHRISTIAN CHURCH</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  9 (3): 209-224
+<TD>2<TD>19<TD>0<TD>53
+<TR valign=top align=right class=evn><TD>2550<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2550</a>  <a  title=" 1 records, TLCS 0, TGCS 14 " class="ci_il">Apaydin M</a><div class=ci_title><a  title=" 5 records, TLCS 2, TGCS 130 " class="ci_il">Analyzing</a> <a  title=" 31 records, TLCS 45, TGCS 347 " class="ci_il">FDI</a> <a  title=" 31 records, TLCS 3, TGCS 84 " class="ci_il">trends</a> in <a  title=" 39 records, TLCS 35, TGCS 484 " class="ci_il">emerging</a> <a  title=" 48 records, TLCS 34, TGCS 375 " class="ci_il">markets</a>: <a  title=" 137 records, TLCS 121, TGCS 1066 " class="ci_il">Turkey</a> vs <a  title=" 1 records, TLCS 0, TGCS 14 " class="ci_il">CSEE</a> and the
+   <a  title=" 68 records, TLCS 30, TGCS 480 " class="ci_il">Middle</a> <a  title=" 320 records, TLCS 219, TGCS 2397 " class="ci_il">East</a></div><SPAN><a  title=" 3 records, TLCS 0, TGCS 17 " class="ci_il">INTERNATIONAL JOURNAL OF EMERGING MARKETS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  4 (1): 72-97
+<TD>0<TD>14<TD>0<TD>50
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="index-tl.html">Date</a></SPAN> / <a href="index-au1.html">Author</a> / <a href="index-so.html">Journal</a><TH><a href="index-lcs.html" TITLE=" Local Citation Score ">LCS</a><TH><a href="index-tc.html" TITLE=" Global Citation Score ">GCS</a><TH><a href="index-lcr.html" TITLE=" Local Cited References ">LCR</a><TH><a href="index-ncr.html" TITLE=" Cited References ">CR</a>
+<TR valign=top align=right class=odd><TD>2551<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2551</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Lombardi B</a><div class=ci_title><a  title=" 1393 records, TLCS 1586, TGCS 11976 " class="ci_il">Balkan</a> <a  title=" 3 records, TLCS 0, TGCS 0 " class="ci_il">Intrigue</a>: <a  title=" 63 records, TLCS 21, TGCS 163 " class="ci_il">German</a> <a  title=" 11 records, TLCS 2, TGCS 17 " class="ci_il">Intelligence</a> and <a  title=" 158 records, TLCS 227, TGCS 3567 " class="ci_il">Kosovo</a></div><SPAN><a  title=" 2 records, TLCS 1, TGCS 1 " class="ci_il">INTERNATIONAL JOURNAL OF INTELLIGENCE AND COUNTERINTELLIGENCE</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  22 (3): 470-490
+<TD>0<TD>0<TD>0<TD>38
+<TR valign=top align=right class=evn><TD>2552<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2552</a>  <a  title=" 1 records, TLCS 0, TGCS 7 " class="ci_il">Bilodeau A</a><div class=ci_title><a  title=" 5 records, TLCS 0, TGCS 201 " class="ci_il">Residential</a> <a  title=" 5 records, TLCS 1, TGCS 210 " class="ci_il">Segregation</a> and the <a  title=" 13 records, TLCS 0, TGCS 63 " class="ci_il">Electoral</a> <a  title=" 15 records, TLCS 10, TGCS 126 " class="ci_il">Participation</a> of <a  title=" 33 records, TLCS 13, TGCS 409 " class="ci_il">Immigrants</a>
+   in <a  title=" 5 records, TLCS 0, TGCS 25 " class="ci_il">Australia</a></div><SPAN><a  title=" 8 records, TLCS 1, TGCS 260 " class="ci_il">INTERNATIONAL MIGRATION REVIEW</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  43 (1): 134-159
+<TD>0<TD>7<TD>0<TD>32
+<TR valign=top align=right class=odd><TD>2553<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2553</a>  <a  title=" 1 records, TLCS 0, TGCS 3 " class="ci_il">Acehan I</a><div class=ci_title>"<a  title=" 253 records, TLCS 371, TGCS 4809 " class="ci_il">Ottoman</a> <a  title=" 6 records, TLCS 0, TGCS 33 " class="ci_il">Street</a>" in <a  title=" 17 records, TLCS 58, TGCS 2326 " class="ci_il">America</a>: <a  title=" 126 records, TLCS 66, TGCS 280 " class="ci_il">Turkish</a> <a  title=" 1 records, TLCS 0, TGCS 3 " class="ci_il">Leatherworkers</a> in <a  title=" 1 records, TLCS 0, TGCS 3 " class="ci_il">Peabody</a>,
+   <a  title=" 1 records, TLCS 0, TGCS 3 " class="ci_il">Massachusetts</a></div><SPAN><a  title=" 2 records, TLCS 1, TGCS 16 " class="ci_il">INTERNATIONAL REVIEW OF SOCIAL HISTORY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  54: 19-44
+<TD>0<TD>3<TD>0<TD>41
+<TR valign=top align=right class=evn><TD>2554<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2554</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Popescu N</a>, <a  title=" 2 records, TLCS 0, TGCS 0 " class="ci_il">Wilson A</a><div class=ci_title>The "<a  title=" 12 records, TLCS 1, TGCS 26 " class="ci_il">Sovereign</a> <a  title=" 15 records, TLCS 2, TGCS 73 " class="ci_il">Neighbourhood</a>": <a  title=" 6 records, TLCS 1, TGCS 42 " class="ci_il">Weak</a> <a  title=" 15 records, TLCS 11, TGCS 30 " class="ci_il">Statehood</a> <a  title=" 42 records, TLCS 86, TGCS 414 " class="ci_il">Strategies</a> in <a  title=" 478 records, TLCS 314, TGCS 3496 " class="ci_il">Eastern</a>
+   <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a></div><SPAN><a  title=" 9 records, TLCS 5, TGCS 64 " class="ci_il">INTERNATIONAL SPECTATOR</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  44 (1): 7-12
+<TD>0<TD>0<TD>0<TD>4
+<TR valign=top align=right class=odd><TD>2555<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2555</a>  <a  title=" 12 records, TLCS 3, TGCS 91 " class="ci_il">Porcic M</a>, <a  title=" 11 records, TLCS 12, TGCS 118 " class="ci_il">Stefanovic S</a><div class=ci_title><a  title=" 9 records, TLCS 0, TGCS 88 " class="ci_il">Physical</a> <a  title=" 12 records, TLCS 0, TGCS 45 " class="ci_il">activity</a> and <a  title=" 170 records, TLCS 96, TGCS 3715 " class="ci_il">social</a> <a  title=" 19 records, TLCS 9, TGCS 140 " class="ci_il">status</a> in <a  title=" 160 records, TLCS 132, TGCS 1208 " class="ci_il">Early</a> <a  title=" 39 records, TLCS 11, TGCS 492 " class="ci_il">Bronze</a> <a  title=" 95 records, TLCS 109, TGCS 2406 " class="ci_il">Age</a> <a  title=" 57 records, TLCS 73, TGCS 542 " class="ci_il">society</a>: The
+   <a  title=" 1 records, TLCS 0, TGCS 19 " class="ci_il">Mokrin</a> <a  title=" 2 records, TLCS 0, TGCS 25 " class="ci_il">necropolis</a></div><SPAN><a  title=" 6 records, TLCS 21, TGCS 262 " class="ci_il">JOURNAL OF ANTHROPOLOGICAL ARCHAEOLOGY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  28 (3): 259-273
+<TD>0<TD>19<TD>0<TD>92
+<TR valign=top align=right class=evn><TD>2556<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2556</a>  <a  title=" 1 records, TLCS 0, TGCS 7 " class="ci_il">Herbig C</a><div class=ci_title><a  title=" 42 records, TLCS 102, TGCS 251 " class="ci_il">Recent</a> <a  title=" 7 records, TLCS 6, TGCS 177 " class="ci_il">archaeobotanical</a> <a  title=" 7 records, TLCS 2, TGCS 71 " class="ci_il">investigations</a> into the <a  title=" 3 records, TLCS 0, TGCS 10 " class="ci_il">range</a> and <a  title=" 1 records, TLCS 0, TGCS 7 " class="ci_il">abundance</a> of
+   <a  title=" 104 records, TLCS 185, TGCS 1486 " class="ci_il">Neolithic</a> <a  title=" 1 records, TLCS 0, TGCS 7 " class="ci_il">crop</a> <a  title=" 8 records, TLCS 0, TGCS 102 " class="ci_il">plants</a> in <a  title=" 12 records, TLCS 5, TGCS 31 " class="ci_il">settlements</a> around <a  title=" 6 records, TLCS 0, TGCS 10 " class="ci_il">Lake</a> <a  title=" 1 records, TLCS 0, TGCS 7 " class="ci_il">Constance</a> and in
+   <a  title=" 23 records, TLCS 18, TGCS 302 " class="ci_il">Upper</a> <a  title=" 1 records, TLCS 0, TGCS 7 " class="ci_il">Swabia</a> (<a  title=" 512 records, TLCS 335, TGCS 2876 " class="ci_il">south</a>-<a  title=" 53 records, TLCS 46, TGCS 300 " class="ci_il">west</a> <a  title=" 38 records, TLCS 9, TGCS 240 " class="ci_il">Germany</a>) in <a  title=" 10 records, TLCS 0, TGCS 11 " class="ci_il">relation</a> to <a  title=" 132 records, TLCS 137, TGCS 922 " class="ci_il">cultural</a> <a  title=" 21 records, TLCS 4, TGCS 77 " class="ci_il">influences</a></div><SPAN><a  title=" 40 records, TLCS 88, TGCS 1105 " class="ci_il">JOURNAL OF ARCHAEOLOGICAL SCIENCE</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  36 (6): 1277-1285
+<TD>0<TD>7<TD>0<TD>44
+<TR valign=top align=right class=odd><TD>2557<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2557</a>  <a  title=" 2 records, TLCS 2, TGCS 3 " class="ci_il">Stefanova B</a><div class=ci_title><a  title=" 9 records, TLCS 2, TGCS 3 " class="ci_il">OSCE</a> and <a  title=" 1393 records, TLCS 1586, TGCS 11976 " class="ci_il">Balkan</a> <a  title=" 123 records, TLCS 77, TGCS 549 " class="ci_il">security</a></div><SPAN><a  title=" 54 records, TLCS 63, TGCS 210 " class="ci_il">JOURNAL OF BALKAN AND NEAR EASTERN STUDIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  11 (1): 43-60
+<TD>2<TD>2<TD><a TITLE=" BOOK BALKAN TRAGEDY CHAOS Title: Balkan tragedy: Chaos and dissolution after the Cold War" href=javascript:opeNod(983)>1</a><TD>48
+<TR valign=top align=right class=evn><TD>2558<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2558</a>  <a  title=" 1 records, TLCS 3, TGCS 5 " class="ci_il">Andreev SA</a><div class=ci_title><a  title=" 4 records, TLCS 3, TGCS 16 " class="ci_il">Sub</a>-<a  title=" 126 records, TLCS 99, TGCS 540 " class="ci_il">regional</a> <a  title=" 77 records, TLCS 62, TGCS 192 " class="ci_il">cooperation</a> and the <a  title=" 3 records, TLCS 3, TGCS 21 " class="ci_il">expanding</a> EU: the <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a> and the
+   <a  title=" 34 records, TLCS 84, TGCS 1086 " class="ci_il">Black</a> <a  title=" 32 records, TLCS 14, TGCS 236 " class="ci_il">Sea</a> <a  title=" 44 records, TLCS 15, TGCS 104 " class="ci_il">area</a> in a <a  title=" 85 records, TLCS 56, TGCS 700 " class="ci_il">comparative</a> <a  title=" 107 records, TLCS 100, TGCS 2610 " class="ci_il">perspective</a></div><SPAN><a  title=" 54 records, TLCS 63, TGCS 210 " class="ci_il">JOURNAL OF BALKAN AND NEAR EASTERN STUDIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  11 (1): 83-106
+<TD>3<TD>5<TD>3<TD>58
+<TR valign=top align=right class=odd><TD>2559<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2559</a>  <a  title=" 1 records, TLCS 1, TGCS 1 " class="ci_il">Carper M</a>, <a  title=" 2 records, TLCS 2, TGCS 20 " class="ci_il">Staddon C</a><div class=ci_title><a  title=" 1 records, TLCS 1, TGCS 1 " class="ci_il">Alternating</a> <a  title=" 1 records, TLCS 1, TGCS 1 " class="ci_il">currents</a>: EU <a  title=" 24 records, TLCS 4, TGCS 279 " class="ci_il">expansion</a>, <a  title=" 131 records, TLCS 19, TGCS 110 " class="ci_il">Bulgarian</a> <a  title=" 1 records, TLCS 1, TGCS 1 " class="ci_il">capitulation</a> and
+   <a  title=" 2 records, TLCS 1, TGCS 2 " class="ci_il">disruptions</a> in the <a  title=" 15 records, TLCS 4, TGCS 105 " class="ci_il">electricity</a> <a  title=" 60 records, TLCS 25, TGCS 430 " class="ci_il">sector</a> of <a  title=" 512 records, TLCS 335, TGCS 2876 " class="ci_il">South</a>-<a  title=" 320 records, TLCS 219, TGCS 2397 " class="ci_il">east</a> <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a></div><SPAN><a  title=" 54 records, TLCS 63, TGCS 210 " class="ci_il">JOURNAL OF BALKAN AND NEAR EASTERN STUDIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  11 (2): 179-195
+<TD><a TITLE=" BOOK CHAPTER EUROPEAN YEARBOOK OF INTERNAT Title: The Energy Community of South East Europe" href=javascript:na() class=nu>1</a><TD>1<TD>0<TD>69
+<TR valign=top align=right class=evn><TD>2560<TD align=left><a TITLE=" Review " href=javascript:na() class=nu>2560</a>  <a  title=" 2 records, TLCS 7, TGCS 12 " class="ci_il">Tziampiris A</a><div class=ci_title><a  title=" 20 records, TLCS 28, TGCS 138 " class="ci_il">Assessing</a> <a  title=" 30 records, TLCS 27, TGCS 181 " class="ci_il">Islamic</a> <a  title=" 16 records, TLCS 10, TGCS 69 " class="ci_il">terrorism</a> in the <a  title=" 625 records, TLCS 928, TGCS 3363 " class="ci_il">Western</a> <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a>: the <a  title=" 150 records, TLCS 204, TGCS 1283 " class="ci_il">state</a> of the
+   <a  title=" 15 records, TLCS 14, TGCS 65 " class="ci_il">debate</a></div><SPAN><a  title=" 54 records, TLCS 63, TGCS 210 " class="ci_il">JOURNAL OF BALKAN AND NEAR EASTERN STUDIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  11 (2): 209-219
+<TD>7<TD>9<TD>4<TD>32
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="index-tl.html">Date</a></SPAN> / <a href="index-au1.html">Author</a> / <a href="index-so.html">Journal</a><TH><a href="index-lcs.html" TITLE=" Local Citation Score ">LCS</a><TH><a href="index-tc.html" TITLE=" Global Citation Score ">GCS</a><TH><a href="index-lcr.html" TITLE=" Local Cited References ">LCR</a><TH><a href="index-ncr.html" TITLE=" Cited References ">CR</a>
+<TR valign=top align=right class=odd><TD>2561<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2561</a>  <a  title=" 1 records, TLCS 2, TGCS 4 " class="ci_il">Bozhilova D</a><div class=ci_title><a  title=" 58 records, TLCS 14, TGCS 586 " class="ci_il">Energy</a> <a  title=" 123 records, TLCS 77, TGCS 549 " class="ci_il">security</a> and <a  title=" 126 records, TLCS 99, TGCS 540 " class="ci_il">regional</a> <a  title=" 77 records, TLCS 62, TGCS 192 " class="ci_il">cooperation</a> in <a  title=" 512 records, TLCS 335, TGCS 2876 " class="ci_il">South</a>-<a  title=" 320 records, TLCS 219, TGCS 2397 " class="ci_il">East</a> <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a></div><SPAN><a  title=" 54 records, TLCS 63, TGCS 210 " class="ci_il">JOURNAL OF BALKAN AND NEAR EASTERN STUDIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  11 (3): 293-311
+<TD>2<TD>4<TD>0<TD>13
+<TR valign=top align=right class=evn><TD>2562<TD align=left><a TITLE=" Article " href=javascript:opeNod(2561)>2562</a>  <a  title=" 9 records, TLCS 21, TGCS 33 " class="ci_il">Belloni R</a><div class=ci_title><a  title=" 584 records, TLCS 532, TGCS 3421 " class="ci_il">European</a> <a  title=" 126 records, TLCS 187, TGCS 1301 " class="ci_il">integration</a> and the <a  title=" 625 records, TLCS 928, TGCS 3363 " class="ci_il">Western</a> <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a>: <a  title=" 56 records, TLCS 69, TGCS 522 " class="ci_il">lessons</a>, <a  title=" 24 records, TLCS 19, TGCS 76 " class="ci_il">prospects</a> and
+   <a  title=" 11 records, TLCS 31, TGCS 83 " class="ci_il">obstacles</a></div><SPAN><a  title=" 54 records, TLCS 63, TGCS 210 " class="ci_il">JOURNAL OF BALKAN AND NEAR EASTERN STUDIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  11 (3): 313-331
+<TD>13<TD>22<TD>8<TD>70
+<TR valign=top align=right class=odd><TD>2563<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2563</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Fenderson J</a><div class=ci_title>Toward <a  title=" 11 records, TLCS 7, TGCS 210 " class="ci_il">Organizational</a> <a  title=" 9 records, TLCS 1, TGCS 16 " class="ci_il">Dialogue</a> in <a  title=" 34 records, TLCS 84, TGCS 1086 " class="ci_il">Black</a> Studies A <a  title=" 25 records, TLCS 7, TGCS 133 " class="ci_il">Critical</a> <a  title=" 2 records, TLCS 3, TGCS 6 " class="ci_il">Rejoinder</a>
+   to <a  title=" 2 records, TLCS 0, TGCS 0 " class="ci_il">Manning</a> <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Marable</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">JOURNAL OF BLACK STUDIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  39 (4): 497-507
+<TD>0<TD>0<TD>0<TD>18
+<TR valign=top align=right class=evn><TD>2564<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2564</a>  <a  title=" 1 records, TLCS 0, TGCS 16 " class="ci_il">Kamungi PM</a><div class=ci_title>The <a  title=" 173 records, TLCS 284, TGCS 2402 " class="ci_il">politics</a> of <a  title=" 3 records, TLCS 0, TGCS 20 " class="ci_il">displacement</a> in <a  title=" 1 records, TLCS 0, TGCS 16 " class="ci_il">multiparty</a> <a  title=" 1 records, TLCS 0, TGCS 16 " class="ci_il">Kenya</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 16 " class="ci_il">JOURNAL OF CONTEMPORARY AFRICAN STUDIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  27 (3): 345-364
+<TD>0<TD>16<TD>0<TD>39
+<TR valign=top align=right class=odd><TD>2565<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2565</a>  <a  title=" 2 records, TLCS 2, TGCS 53 " class="ci_il">Light D</a>, <a  title=" 2 records, TLCS 2, TGCS 53 " class="ci_il">Young C</a><div class=ci_title><a  title=" 584 records, TLCS 532, TGCS 3421 " class="ci_il">European</a> <a  title=" 156 records, TLCS 144, TGCS 749 " class="ci_il">Union</a> <a  title=" 79 records, TLCS 180, TGCS 568 " class="ci_il">enlargement</a>, <a  title=" 201 records, TLCS 130, TGCS 1094 " class="ci_il">post</a>-<a  title=" 50 records, TLCS 111, TGCS 448 " class="ci_il">accession</a> <a  title=" 113 records, TLCS 77, TGCS 1215 " class="ci_il">migration</a> and <a  title=" 2 records, TLCS 2, TGCS 35 " class="ci_il">imaginative</a>
+   <a  title=" 9 records, TLCS 7, TGCS 147 " class="ci_il">geographies</a> of the ' <a  title=" 268 records, TLCS 190, TGCS 2164 " class="ci_il">New</a> <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a> ': <a  title=" 64 records, TLCS 45, TGCS 591 " class="ci_il">media</a> <a  title=" 18 records, TLCS 14, TGCS 228 " class="ci_il">discourses</a> in <a  title=" 106 records, TLCS 51, TGCS 451 " class="ci_il">Romania</a> and the
+   <a  title=" 25 records, TLCS 11, TGCS 254 " class="ci_il">United</a> <a  title=" 17 records, TLCS 5, TGCS 51 " class="ci_il">Kingdom</a></div><SPAN><a  title=" 1 records, TLCS 2, TGCS 35 " class="ci_il">JOURNAL OF CULTURAL GEOGRAPHY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  26 (3): 281-303
+<TD>2<TD>35<TD>4<TD>69
+<TR valign=top align=right class=evn><TD>2566<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2566</a>  <a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">Halkias D</a>, <a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">Harkiolakis N</a>, <a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">Thurman P</a>, <a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">Rishi M</a>, <a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">Ekonomou L</a>, et al.<div class=ci_title><a  title=" 241 records, TLCS 144, TGCS 1987 " class="ci_il">ECONOMIC</a> AND <a  title=" 170 records, TLCS 96, TGCS 3715 " class="ci_il">SOCIAL</a> <a  title=" 27 records, TLCS 47, TGCS 1223 " class="ci_il">CHARACTERISTICS</a> OF <a  title=" 82 records, TLCS 86, TGCS 613 " class="ci_il">ALBANIAN</a> <a  title=" 14 records, TLCS 5, TGCS 150 " class="ci_il">IMMIGRANT</a>
+   <a  title=" 13 records, TLCS 14, TGCS 94 " class="ci_il">ENTREPRENEURS</a> IN <a  title=" 150 records, TLCS 125, TGCS 1240 " class="ci_il">GREECE</a></div><SPAN><a  title=" 2 records, TLCS 0, TGCS 10 " class="ci_il">JOURNAL OF DEVELOPMENTAL ENTREPRENEURSHIP</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  14 (2): 143-164
+<TD>0<TD>4<TD><a TITLE=" Article JOURNAL OF ETHNIC AND MIGRATI Title: Inflow of migrants and outflow of investment: Aspects of interdependence between Greece and the Balkans" href=javascript:na() class=nu>1</a><TD>51
+<TR valign=top align=right class=odd><TD>2567<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2567</a>  <a  title=" 2 records, TLCS 3, TGCS 28 " class="ci_il">Bitzenis A</a>, <a  title=" 4 records, TLCS 7, TGCS 70 " class="ci_il">Szamosi LT</a><div class=ci_title><a  title=" 9 records, TLCS 2, TGCS 83 " class="ci_il">Entry</a> <a  title=" 4 records, TLCS 7, TGCS 46 " class="ci_il">Modes</a> and the <a  title=" 56 records, TLCS 32, TGCS 396 " class="ci_il">Determinants</a> of <a  title=" 184 records, TLCS 173, TGCS 1109 " class="ci_il">Foreign</a> <a  title=" 64 records, TLCS 49, TGCS 405 " class="ci_il">Direct</a> <a  title=" 58 records, TLCS 45, TGCS 357 " class="ci_il">Investment</a> in a
+   <a  title=" 584 records, TLCS 532, TGCS 3421 " class="ci_il">European</a> <a  title=" 156 records, TLCS 144, TGCS 749 " class="ci_il">Union</a> <a  title=" 50 records, TLCS 111, TGCS 448 " class="ci_il">Accession</a> <a  title=" 40 records, TLCS 47, TGCS 699 " class="ci_il">Country</a>: The <a  title=" 285 records, TLCS 259, TGCS 1945 " class="ci_il">Case</a> of <a  title=" 92 records, TLCS 51, TGCS 415 " class="ci_il">Albania</a></div><SPAN><a  title=" 5 records, TLCS 2, TGCS 18 " class="ci_il">JOURNAL OF EAST-WEST BUSINESS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  15 (3-4): 189-209
+<TD><a TITLE=" Article INTERNATIONAL JOURNAL OF HUMA Title: Developments in HRM in south-eastern Europe" href=javascript:na() class=nu>1</a><TD>12<TD>0<TD>25
+<TR valign=top align=right class=evn><TD>2568<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2568</a>  <a  title=" 2 records, TLCS 16, TGCS 85 " class="ci_il">Kenourgios D</a>, <a  title=" 2 records, TLCS 16, TGCS 85 " class="ci_il">Samitas A</a>, <a  title=" 1 records, TLCS 0, TGCS 9 " class="ci_il">Paltalidis N</a><div class=ci_title><a  title=" 73 records, TLCS 41, TGCS 448 " class="ci_il">Financial</a> <a  title=" 85 records, TLCS 58, TGCS 791 " class="ci_il">Market</a> <a  title=" 38 records, TLCS 30, TGCS 372 " class="ci_il">Dynamics</a> in an <a  title=" 6 records, TLCS 7, TGCS 56 " class="ci_il">Enlarged</a> <a  title=" 584 records, TLCS 532, TGCS 3421 " class="ci_il">European</a> <a  title=" 156 records, TLCS 144, TGCS 749 " class="ci_il">Union</a></div><SPAN><a  title=" 3 records, TLCS 0, TGCS 9 " class="ci_il">JOURNAL OF ECONOMIC INTEGRATION</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  24 (2): 197-221
+<TD>0<TD>9<TD>0<TD>34
+<TR valign=top align=right class=odd><TD>2569<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2569</a>  <a  title=" 1 records, TLCS 0, TGCS 6 " class="ci_il">Fletcher D</a>, <a  title=" 1 records, TLCS 0, TGCS 6 " class="ci_il">Helienek E</a>, <a  title=" 1 records, TLCS 0, TGCS 6 " class="ci_il">Zafirova Z</a><div class=ci_title>THE <a  title=" 152 records, TLCS 104, TGCS 936 " class="ci_il">ROLE</a> OF <a  title=" 29 records, TLCS 12, TGCS 206 " class="ci_il">FAMILY</a> <a  title=" 5 records, TLCS 17, TGCS 71 " class="ci_il">START</a> <a  title=" 2 records, TLCS 0, TGCS 6 " class="ci_il">UPS</a> IN THE <a  title=" 18 records, TLCS 8, TGCS 171 " class="ci_il">EMERGENCE</a> OF A <a  title=" 36 records, TLCS 6, TGCS 138 " class="ci_il">SMALL</a> <a  title=" 36 records, TLCS 73, TGCS 390 " class="ci_il">BUSINESS</a>
+   <a  title=" 60 records, TLCS 25, TGCS 430 " class="ci_il">SECTOR</a> IN <a  title=" 213 records, TLCS 137, TGCS 997 " class="ci_il">BULGARIA</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 6 " class="ci_il">JOURNAL OF ENTERPRISING CULTURE</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  17 (3): 351-375
+<TD>0<TD>6<TD>0<TD>72
+<TR valign=top align=right class=evn><TD>2570<TD align=left><a TITLE=" Article " href=javascript:opeNod(2569)>2570</a>  <a  title=" 3 records, TLCS 30, TGCS 56 " class="ci_il">Trauner F</a><div class=ci_title>From <a  title=" 19 records, TLCS 79, TGCS 156 " class="ci_il">membership</a> <a  title=" 42 records, TLCS 264, TGCS 572 " class="ci_il">conditionality</a> to <a  title=" 286 records, TLCS 229, TGCS 1373 " class="ci_il">policy</a> <a  title=" 42 records, TLCS 264, TGCS 572 " class="ci_il">conditionality</a>: EU <a  title=" 36 records, TLCS 81, TGCS 358 " class="ci_il">external</a>
+   <a  title=" 53 records, TLCS 80, TGCS 522 " class="ci_il">governance</a> in <a  title=" 512 records, TLCS 335, TGCS 2876 " class="ci_il">South</a> <a  title=" 478 records, TLCS 314, TGCS 3496 " class="ci_il">Eastern</a> <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a></div><SPAN><a  title=" 10 records, TLCS 183, TGCS 417 " class="ci_il">JOURNAL OF EUROPEAN PUBLIC POLICY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  16 (5): 774-790
+<TD>27<TD>43<TD>2<TD>46
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="index-tl.html">Date</a></SPAN> / <a href="index-au1.html">Author</a> / <a href="index-so.html">Journal</a><TH><a href="index-lcs.html" TITLE=" Local Citation Score ">LCS</a><TH><a href="index-tc.html" TITLE=" Global Citation Score ">GCS</a><TH><a href="index-lcr.html" TITLE=" Local Cited References ">LCR</a><TH><a href="index-ncr.html" TITLE=" Cited References ">CR</a>
+<TR valign=top align=right class=odd><TD>2571<TD align=left><a TITLE=" Article " href=javascript:opeNod(2570)>2571</a>  <a  title=" 3 records, TLCS 101, TGCS 340 " class="ci_il">Noutcheva G</a><div class=ci_title><a  title=" 1 records, TLCS 49, TGCS 102 " class="ci_il">Fake</a>, <a  title=" 2 records, TLCS 49, TGCS 102 " class="ci_il">partial</a> and <a  title=" 2 records, TLCS 49, TGCS 110 " class="ci_il">imposed</a> <a  title=" 10 records, TLCS 106, TGCS 311 " class="ci_il">compliance</a>: the <a  title=" 24 records, TLCS 68, TGCS 349 " class="ci_il">limits</a> of the EU's <a  title=" 4 records, TLCS 52, TGCS 124 " class="ci_il">normative</a>
+   <a  title=" 87 records, TLCS 122, TGCS 752 " class="ci_il">power</a> in the <a  title=" 625 records, TLCS 928, TGCS 3363 " class="ci_il">Western</a> <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a></div><SPAN><a  title=" 10 records, TLCS 183, TGCS 417 " class="ci_il">JOURNAL OF EUROPEAN PUBLIC POLICY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  16 (7): 1065-1084
+<TD><a href=# OnClick="opeLod('citers', '2570', '');return false">49</a><TD>102<TD>0<TD>30
+<TR valign=top align=right class=evn><TD>2572<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2572</a>  <a  title=" 1 records, TLCS 0, TGCS 10 " class="ci_il">Schroeder UC</a>, <a  title=" 3 records, TLCS 0, TGCS 38 " class="ci_il">Friesendorf C</a><div class=ci_title><a  title=" 150 records, TLCS 204, TGCS 1283 " class="ci_il">State</a>-<a  title=" 81 records, TLCS 145, TGCS 912 " class="ci_il">building</a> and <a  title=" 16 records, TLCS 5, TGCS 61 " class="ci_il">organized</a> <a  title=" 27 records, TLCS 6, TGCS 124 " class="ci_il">crime</a>: <a  title=" 5 records, TLCS 0, TGCS 24 " class="ci_il">implementing</a> the <a  title=" 180 records, TLCS 112, TGCS 1779 " class="ci_il">international</a> <a  title=" 53 records, TLCS 69, TGCS 230 " class="ci_il">law</a>
+   <a  title=" 4 records, TLCS 1, TGCS 13 " class="ci_il">enforcement</a> <a  title=" 10 records, TLCS 11, TGCS 92 " class="ci_il">agenda</a> in <a  title=" 182 records, TLCS 238, TGCS 4797 " class="ci_il">Bosnia</a></div><SPAN><a  title=" 10 records, TLCS 9, TGCS 78 " class="ci_il">JOURNAL OF INTERNATIONAL RELATIONS AND DEVELOPMENT</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  12 (2): 137-167
+<TD>0<TD>10<TD>2<TD>68
+<TR valign=top align=right class=odd><TD>2573<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2573</a>  <a  title=" 4 records, TLCS 6, TGCS 7 " class="ci_il">Drakulic S</a><div class=ci_title>The <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a> - from <a  title=" 4 records, TLCS 2, TGCS 13 " class="ci_il">noun</a> to <a  title=" 4 records, TLCS 0, TGCS 17 " class="ci_il">verb</a> (and <a  title=" 14 records, TLCS 3, TGCS 55 " class="ci_il">back</a>)</div><SPAN><a  title=" 10 records, TLCS 9, TGCS 78 " class="ci_il">JOURNAL OF INTERNATIONAL RELATIONS AND DEVELOPMENT</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  12 (4): 364-370
+<TD>0<TD>1<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>2574<TD align=left><a TITLE=" Article " href=javascript:opeNod(2573)>2574</a>  <a  title=" 1 records, TLCS 0, TGCS 118 " class="ci_il">Lemay-Hebert N</a><div class=ci_title><a  title=" 7 records, TLCS 9, TGCS 156 " class="ci_il">Statebuilding</a> without <a  title=" 88 records, TLCS 126, TGCS 752 " class="ci_il">Nation</a>-<a  title=" 81 records, TLCS 145, TGCS 912 " class="ci_il">building</a>? <a  title=" 8 records, TLCS 53, TGCS 292 " class="ci_il">Legitimacy</a>, <a  title=" 150 records, TLCS 204, TGCS 1283 " class="ci_il">State</a> <a  title=" 15 records, TLCS 12, TGCS 234 " class="ci_il">Failure</a> and
+   the <a  title=" 24 records, TLCS 68, TGCS 349 " class="ci_il">Limits</a> of the <a  title=" 5 records, TLCS 1, TGCS 128 " class="ci_il">Institutionalist</a> <a  title=" 94 records, TLCS 91, TGCS 827 " class="ci_il">Approach</a></div><SPAN><a  title=" 10 records, TLCS 16, TGCS 180 " class="ci_il">JOURNAL OF INTERVENTION AND STATEBUILDING</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  3 (1): 21-45
+<TD>0<TD>118<TD>0<TD>88
+<TR valign=top align=right class=odd><TD>2575<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2575</a>  <a  title=" 3 records, TLCS 5, TGCS 38 " class="ci_il">Fawn R</a>, <a  title=" 1 records, TLCS 2, TGCS 11 " class="ci_il">Richmond OP</a><div class=ci_title>De <a  title=" 2 records, TLCS 6, TGCS 41 " class="ci_il">Facto</a> <a  title=" 147 records, TLCS 179, TGCS 1294 " class="ci_il">States</a> in the <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a>: <a  title=" 11 records, TLCS 3, TGCS 13 " class="ci_il">Shared</a> <a  title=" 53 records, TLCS 80, TGCS 522 " class="ci_il">Governance</a> versus <a  title=" 125 records, TLCS 210, TGCS 2724 " class="ci_il">Ethnic</a>
+   <a  title=" 13 records, TLCS 16, TGCS 135 " class="ci_il">Sovereignty</a> in <a  title=" 2 records, TLCS 2, TGCS 21 " class="ci_il">Republika</a> <a  title=" 3 records, TLCS 2, TGCS 21 " class="ci_il">Srpska</a> and <a  title=" 158 records, TLCS 227, TGCS 3567 " class="ci_il">Kosovo</a></div><SPAN><a  title=" 10 records, TLCS 16, TGCS 180 " class="ci_il">JOURNAL OF INTERVENTION AND STATEBUILDING</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  3 (2): 205-238
+<TD>2<TD>11<TD>4<TD>55
+<TR valign=top align=right class=evn><TD>2576<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2576</a>  <a  title=" 4 records, TLCS 8, TGCS 94 " class="ci_il">Runnels C</a>, <a  title=" 1 records, TLCS 2, TGCS 12 " class="ci_il">Korkuti M</a>, <a  title=" 2 records, TLCS 2, TGCS 26 " class="ci_il">Galaty ML</a>, <a  title=" 1 records, TLCS 2, TGCS 12 " class="ci_il">Timpson ME</a>, <a  title=" 1 records, TLCS 2, TGCS 12 " class="ci_il">Stocker SR</a>, et al.<div class=ci_title><a  title=" 160 records, TLCS 132, TGCS 1208 " class="ci_il">Early</a> <a  title=" 19 records, TLCS 16, TGCS 183 " class="ci_il">Prehistoric</a> <a  title=" 15 records, TLCS 8, TGCS 963 " class="ci_il">Landscape</a> and <a  title=" 1 records, TLCS 2, TGCS 12 " class="ci_il">Landuse</a> in the <a  title=" 1 records, TLCS 2, TGCS 12 " class="ci_il">Fier</a> <a  title=" 128 records, TLCS 37, TGCS 487 " class="ci_il">Region</a> of <a  title=" 92 records, TLCS 51, TGCS 415 " class="ci_il">Albania</a></div><SPAN><a  title=" 1 records, TLCS 2, TGCS 12 " class="ci_il">JOURNAL OF MEDITERRANEAN ARCHAEOLOGY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  22 (2): 151-182
+<TD>2<TD>12<TD>2<TD>65
+<TR valign=top align=right class=odd><TD>2577<TD align=left><a TITLE=" Article; Proceedings Paper " href=javascript:na() class=nu>2577</a>  <a  title=" 1 records, TLCS 0, TGCS 11 " class="ci_il">Romano S</a><div class=ci_title><a  title=" 42 records, TLCS 25, TGCS 154 " class="ci_il">Italian</a> <a  title=" 184 records, TLCS 173, TGCS 1109 " class="ci_il">foreign</a> <a  title=" 286 records, TLCS 229, TGCS 1373 " class="ci_il">policy</a> after the <a  title=" 48 records, TLCS 87, TGCS 2156 " class="ci_il">end</a> of the <a  title=" 34 records, TLCS 102, TGCS 2483 " class="ci_il">Cold</a> <a  title=" 443 records, TLCS 572, TGCS 9312 " class="ci_il">War</a></div><SPAN><a  title=" 4 records, TLCS 0, TGCS 19 " class="ci_il">JOURNAL OF MODERN ITALIAN STUDIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  14 (1): 8-14
+<TD>0<TD>11<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>2578<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2578</a>  <a  title=" 1 records, TLCS 1, TGCS 2 " class="ci_il">Frantz EA</a><div class=ci_title><a  title=" 64 records, TLCS 17, TGCS 255 " class="ci_il">Violence</a> and its <a  title=" 145 records, TLCS 113, TGCS 1343 " class="ci_il">Impact</a> on <a  title=" 7 records, TLCS 1, TGCS 182 " class="ci_il">Loyalty</a> and <a  title=" 140 records, TLCS 203, TGCS 1783 " class="ci_il">Identity</a> <a  title=" 49 records, TLCS 14, TGCS 225 " class="ci_il">Formation</a> in <a  title=" 107 records, TLCS 61, TGCS 593 " class="ci_il">Late</a>
+   <a  title=" 253 records, TLCS 371, TGCS 4809 " class="ci_il">Ottoman</a> <a  title=" 158 records, TLCS 227, TGCS 3567 " class="ci_il">Kosovo</a>: <a  title=" 29 records, TLCS 111, TGCS 659 " class="ci_il">Muslims</a> and <a  title=" 6 records, TLCS 50, TGCS 14 " class="ci_il">Christians</a> in a <a  title=" 80 records, TLCS 21, TGCS 136 " class="ci_il">Period</a> of <a  title=" 50 records, TLCS 28, TGCS 249 " class="ci_il">Reform</a> and
+   <a  title=" 39 records, TLCS 64, TGCS 369 " class="ci_il">Transformation</a></div><SPAN><a  title=" 17 records, TLCS 6, TGCS 33 " class="ci_il">JOURNAL OF MUSLIM MINORITY AFFAIRS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  29 (4): 455-468
+<TD><a TITLE=" BOOK CHAPTER RELATIONSHIP BETWEEN ART AND  Title: CHURCH ARCHITECTURE AND POLITICS IN THE LAST CENTURY OF OTTOMAN RULE: THE CASE OF THE DIOCESE OF RASKA AND PRIZREN" href=javascript:na() class=nu>1</a><TD>2<TD>3<TD>103
+<TR valign=top align=right class=odd><TD>2579<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2579</a>  <a  title=" 3 records, TLCS 7, TGCS 10 " class="ci_il">Clayer N</a><div class=ci_title>The <a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">Tijaniyya</a>: <a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">Reformism</a> and <a  title=" 30 records, TLCS 27, TGCS 181 " class="ci_il">Islamic</a> <a  title=" 10 records, TLCS 4, TGCS 13 " class="ci_il">Revival</a> in <a  title=" 23 records, TLCS 4, TGCS 39 " class="ci_il">Interwar</a> <a  title=" 92 records, TLCS 51, TGCS 415 " class="ci_il">Albania</a></div><SPAN><a  title=" 17 records, TLCS 6, TGCS 33 " class="ci_il">JOURNAL OF MUSLIM MINORITY AFFAIRS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  29 (4): 483-493
+<TD>0<TD>4<TD>0<TD>18
+<TR valign=top align=right class=evn><TD>2580<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2580</a>  <a  title=" 1 records, TLCS 2, TGCS 4 " class="ci_il">Immig N</a><div class=ci_title>The "<a  title=" 268 records, TLCS 190, TGCS 2164 " class="ci_il">New</a>" <a  title=" 45 records, TLCS 83, TGCS 1314 " class="ci_il">Muslim</a> <a  title=" 32 records, TLCS 4, TGCS 45 " class="ci_il">Minorities</a> in <a  title=" 150 records, TLCS 125, TGCS 1240 " class="ci_il">Greece</a>: Between <a  title=" 14 records, TLCS 16, TGCS 126 " class="ci_il">Emigration</a> and
+   <a  title=" 210 records, TLCS 211, TGCS 1394 " class="ci_il">Political</a> <a  title=" 15 records, TLCS 10, TGCS 126 " class="ci_il">Participation</a>, 1881-1886</div><SPAN><a  title=" 17 records, TLCS 6, TGCS 33 " class="ci_il">JOURNAL OF MUSLIM MINORITY AFFAIRS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  29 (4): 511-522
+<TD>2<TD>4<TD>3<TD>24
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="index-tl.html">Date</a></SPAN> / <a href="index-au1.html">Author</a> / <a href="index-so.html">Journal</a><TH><a href="index-lcs.html" TITLE=" Local Citation Score ">LCS</a><TH><a href="index-tc.html" TITLE=" Global Citation Score ">GCS</a><TH><a href="index-lcr.html" TITLE=" Local Cited References ">LCR</a><TH><a href="index-ncr.html" TITLE=" Cited References ">CR</a>
+<TR valign=top align=right class=odd><TD>2581<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2581</a>  <a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">Pendergast WR</a><div class=ci_title><a  title=" 87 records, TLCS 77, TGCS 369 " class="ci_il">Challenges</a> and <a  title=" 21 records, TLCS 15, TGCS 106 " class="ci_il">Opportunities</a> of <a  title=" 36 records, TLCS 73, TGCS 390 " class="ci_il">Business</a> <a  title=" 98 records, TLCS 11, TGCS 482 " class="ci_il">Education</a> in <a  title=" 245 records, TLCS 132, TGCS 1384 " class="ci_il">Southeast</a>
+   <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a>: The <a  title=" 285 records, TLCS 259, TGCS 1945 " class="ci_il">Case</a> of a <a  title=" 1393 records, TLCS 1586, TGCS 11976 " class="ci_il">Balkan</a> <a  title=" 36 records, TLCS 73, TGCS 390 " class="ci_il">Business</a> <a  title=" 19 records, TLCS 2, TGCS 115 " class="ci_il">School</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 4 " class="ci_il">JOURNAL OF TEACHING IN INTERNATIONAL BUSINESS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  20 (3): 244-267
+<TD>0<TD>4<TD>0<TD>21
+<TR valign=top align=right class=evn><TD>2582<TD align=left><a TITLE=" Review " href=javascript:na() class=nu>2582</a>  <a  title=" 1 records, TLCS 0, TGCS 12 " class="ci_il">Canbakal H</a><div class=ci_title>The <a  title=" 253 records, TLCS 371, TGCS 4809 " class="ci_il">Ottoman</a> <a  title=" 150 records, TLCS 204, TGCS 1283 " class="ci_il">State</a> and <a  title=" 1 records, TLCS 0, TGCS 12 " class="ci_il">Descendants</a> of the <a  title=" 3 records, TLCS 0, TGCS 12 " class="ci_il">Prophet</a> in <a  title=" 38 records, TLCS 29, TGCS 337 " class="ci_il">Anatolia</a> and the
+   <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a> (c. 1500-1700)</div><SPAN><a  title=" 4 records, TLCS 0, TGCS 25 " class="ci_il">JOURNAL OF THE ECONOMIC AND SOCIAL HISTORY OF THE ORIENT</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  52: 542-578
+<TD>0<TD>12<TD><a TITLE=" BOOK CHRISTIANITY ISLAM S Title: Christianity and Islam Under the Sultans" href=javascript:opeNod(260)>1</a><TD>100
+<TR valign=top align=right class=odd><TD>2583<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2583</a>  <a  title=" 2 records, TLCS 0, TGCS 26 " class="ci_il">Radovanovic M</a>, <a  title=" 1 records, TLCS 0, TGCS 7 " class="ci_il">Milovanovic B</a>, <a  title=" 1 records, TLCS 0, TGCS 7 " class="ci_il">Gomes JFP</a><div class=ci_title><a  title=" 1 records, TLCS 0, TGCS 7 " class="ci_il">ENDARGEMENT</a> OF <a  title=" 1 records, TLCS 0, TGCS 7 " class="ci_il">UNDEVELOPED</a> <a  title=" 21 records, TLCS 13, TGCS 209 " class="ci_il">AREAS</a> OF <a  title=" 251 records, TLCS 192, TGCS 2048 " class="ci_il">SERBIA</a> BY <a  title=" 12 records, TLCS 1, TGCS 146 " class="ci_il">FOREST</a> <a  title=" 4 records, TLCS 0, TGCS 7 " class="ci_il">FIRES</a></div><SPAN><a  title=" 22 records, TLCS 1, TGCS 24 " class="ci_il">JOURNAL OF THE GEOGRAPHICAL INSTITUTE JOVAN CVIJIC SASA</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  59 (2): 17-35
+<TD>0<TD>7<TD>0<TD>16
+<TR valign=top align=right class=evn><TD>2584<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2584</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Macklin C</a><div class=ci_title><a  title=" 61 records, TLCS 25, TGCS 354 " class="ci_il">Cross</a>-<a  title=" 132 records, TLCS 137, TGCS 922 " class="ci_il">Cultural</a> <a  title=" 60 records, TLCS 18, TGCS 343 " class="ci_il">Perspectives</a> on <a  title=" 7 records, TLCS 4, TGCS 19 " class="ci_il">Secular</a> <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Vocal</a> <a  title=" 55 records, TLCS 17, TGCS 315 " class="ci_il">Performance</a> in <a  title=" 160 records, TLCS 132, TGCS 1208 " class="ci_il">Early</a>
+   <a  title=" 2 records, TLCS 0, TGCS 5 " class="ci_il">Wales</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">JOURNAL OF THE ROYAL MUSICAL ASSOCIATION</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  134: 167-183
+<TD>0<TD>0<TD>0<TD>74
+<TR valign=top align=right class=odd><TD>2585<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2585</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Krasniqi K</a><div class=ci_title><a  title=" 16 records, TLCS 5, TGCS 61 " class="ci_il">Organized</a> <a  title=" 27 records, TLCS 6, TGCS 124 " class="ci_il">Crime</a> in <a  title=" 158 records, TLCS 227, TGCS 3567 " class="ci_il">Kosovo</a> and the <a  title=" 4 records, TLCS 2, TGCS 8 " class="ci_il">Remaining</a> <a  title=" 1393 records, TLCS 1586, TGCS 11976 " class="ci_il">Balkan</a> <a  title=" 377 records, TLCS 132, TGCS 1566 " class="ci_il">Countries</a>.</div><SPAN><a  title=" 4 records, TLCS 0, TGCS 0 " class="ci_il">KRIMINALISTIK</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  63 (10): 566-572
+<TD>0<TD>0<TD>0<TD>3
+<TR valign=top align=right class=evn><TD>2586<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2586</a>  <a  title=" 1 records, TLCS 1, TGCS 17 " class="ci_il">Siegel L</a><div class=ci_title><a  title=" 2 records, TLCS 1, TGCS 17 " class="ci_il">Mood</a> <a  title=" 10 records, TLCS 2, TGCS 211 " class="ci_il">selection</a> in <a  title=" 18 records, TLCS 13, TGCS 31 " class="ci_il">Romance</a> and <a  title=" 1393 records, TLCS 1586, TGCS 11976 " class="ci_il">Balkan</a></div><SPAN><a  title=" 7 records, TLCS 9, TGCS 70 " class="ci_il">LINGUA</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  119 (12): 1859-1882
+<TD><a TITLE=" Article LINGUA Title: Syntax and semantics of subjunctive clauses in Persian" href=javascript:na() class=nu>1</a><TD>17<TD>0<TD>61
+<TR valign=top align=right class=odd><TD>2587<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2587</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Kovacevic B</a><div class=ci_title>A STUDY <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">PREVALITANA</a> AND THE <a  title=" 17 records, TLCS 5, TGCS 51 " class="ci_il">KINGDOM</a> OF <a  title=" 26 records, TLCS 1, TGCS 19 " class="ci_il">SLAVS</a> (FROM <a  title=" 4 records, TLCS 7, TGCS 16 " class="ci_il">FIFTH</a> <a  title=" 291 records, TLCS 184, TGCS 829 " class="ci_il">CENTURY</a> BC TO
+   <a  title=" 4 records, TLCS 0, TGCS 1 " class="ci_il">12TH</a> <a  title=" 291 records, TLCS 184, TGCS 829 " class="ci_il">CENTURY</a>) BY <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">VOJISLAV</a> D. <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">NIKCEVIC</a></div><SPAN><a  title=" 16 records, TLCS 2, TGCS 1 " class="ci_il">LINGUA MONTENEGRINA</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  4: 539-544
+<TD>0<TD>0<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>2588<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2588</a>  <a  title=" 1 records, TLCS 1, TGCS 12 " class="ci_il">Powers S</a>, <a  title=" 1 records, TLCS 1, TGCS 12 " class="ci_il">el-Nawawy M</a><div class=ci_title>Al-<a  title=" 1 records, TLCS 1, TGCS 12 " class="ci_il">Jazeera</a> <a  title=" 12 records, TLCS 3, TGCS 16 " class="ci_il">English</a> and <a  title=" 78 records, TLCS 37, TGCS 790 " class="ci_il">global</a> <a  title=" 12 records, TLCS 3, TGCS 89 " class="ci_il">news</a> <a  title=" 44 records, TLCS 22, TGCS 267 " class="ci_il">networks</a>: <a  title=" 6 records, TLCS 1, TGCS 13 " class="ci_il">clash</a> of <a  title=" 4 records, TLCS 1, TGCS 12 " class="ci_il">civilizations</a> or
+   <a  title=" 61 records, TLCS 25, TGCS 354 " class="ci_il">cross</a>-<a  title=" 132 records, TLCS 137, TGCS 922 " class="ci_il">cultural</a> <a  title=" 9 records, TLCS 1, TGCS 16 " class="ci_il">dialogue</a>?</div><SPAN><a  title=" 2 records, TLCS 1, TGCS 20 " class="ci_il">MEDIA WAR AND CONFLICT</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  2 (3): 263-284
+<TD><a TITLE=" Article REVIEW &amp; EXPOSITOR Title: Likes, retweets, and polarization" href=javascript:na() class=nu>1</a><TD>12<TD>0<TD>38
+<TR valign=top align=right class=odd><TD>2589<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2589</a>  <a  title=" 1 records, TLCS 0, TGCS 9 " class="ci_il">Miletic A</a>, <a  title=" 1 records, TLCS 0, TGCS 9 " class="ci_il">Kostic R</a>, <a  title=" 1 records, TLCS 0, TGCS 9 " class="ci_il">Bozanic A</a>, <a  title=" 1 records, TLCS 0, TGCS 9 " class="ci_il">Miletic D</a><div class=ci_title><a  title=" 2 records, TLCS 0, TGCS 12 " class="ci_il">Pain</a> <a  title=" 19 records, TLCS 9, TGCS 140 " class="ci_il">Status</a> <a  title=" 7 records, TLCS 1, TGCS 43 " class="ci_il">Monitoring</a> in <a  title=" 3 records, TLCS 0, TGCS 22 " class="ci_il">Adolescent</a> <a  title=" 1 records, TLCS 0, TGCS 9 " class="ci_il">Dancers</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 9 " class="ci_il">MEDICAL PROBLEMS OF PERFORMING ARTISTS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  24 (3): 119-123
+<TD>0<TD>9<TD>0<TD>23
+<TR valign=top align=right class=evn><TD>2590<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2590</a>  <a  title=" 3 records, TLCS 0, TGCS 11 " class="ci_il">Nerantzis N</a><div class=ci_title><a  title=" 1 records, TLCS 0, TGCS 6 " class="ci_il">PILLARS</a> OF <a  title=" 87 records, TLCS 122, TGCS 752 " class="ci_il">POWER</a>: <a  title=" 7 records, TLCS 1, TGCS 13 " class="ci_il">SILVER</a> AND <a  title=" 2 records, TLCS 5, TGCS 16 " class="ci_il">STEEL</a> OF THE <a  title=" 253 records, TLCS 371, TGCS 4809 " class="ci_il">OTTOMAN</a> <a  title=" 102 records, TLCS 167, TGCS 2591 " class="ci_il">EMPIRE</a></div><SPAN><a  title=" 4 records, TLCS 0, TGCS 8 " class="ci_il">MEDITERRANEAN ARCHAEOLOGY & ARCHAEOMETRY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  9 (2): 71-85
+<TD>0<TD>6<TD><a TITLE=" BOOK OTTOMAN EMPIRE CLASS Title: The Ottoman Empire : the classical age, 1300-1600" href=javascript:opeNod(516)>1</a><TD>37
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="index-tl.html">Date</a></SPAN> / <a href="index-au1.html">Author</a> / <a href="index-so.html">Journal</a><TH><a href="index-lcs.html" TITLE=" Local Citation Score ">LCS</a><TH><a href="index-tc.html" TITLE=" Global Citation Score ">GCS</a><TH><a href="index-lcr.html" TITLE=" Local Cited References ">LCR</a><TH><a href="index-ncr.html" TITLE=" Cited References ">CR</a>
+<TR valign=top align=right class=odd><TD>2591<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2591</a>  <a  title=" 1 records, TLCS 0, TGCS 1 " class="ci_il">Bandow D</a><div class=ci_title>US <a  title=" 286 records, TLCS 229, TGCS 1373 " class="ci_il">Policy</a> toward <a  title=" 158 records, TLCS 227, TGCS 3567 " class="ci_il">Kosovo</a>: <a  title=" 1 records, TLCS 0, TGCS 1 " class="ci_il">Sowing</a> the <a  title=" 6 records, TLCS 3, TGCS 115 " class="ci_il">Wind</a> in the <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a>, <a  title=" 1 records, TLCS 0, TGCS 1 " class="ci_il">Reaping</a> the
+   <a  title=" 2 records, TLCS 0, TGCS 2 " class="ci_il">Whirlwind</a> in the <a  title=" 20 records, TLCS 1, TGCS 37 " class="ci_il">Caucasus</a></div><SPAN><a  title=" 18 records, TLCS 18, TGCS 58 " class="ci_il">MEDITERRANEAN QUARTERLY-A JOURNAL OF GLOBAL ISSUES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  20 (1): 15-30
+<TD>0<TD>1<TD>0<TD>12
+<TR valign=top align=right class=evn><TD>2592<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2592</a>  <a  title=" 2 records, TLCS 0, TGCS 23 " class="ci_il">Binder D</a><div class=ci_title>Has "<a  title=" 12 records, TLCS 21, TGCS 92 " class="ci_il">Greater</a>" <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Vanished</a> from the <a  title=" 1393 records, TLCS 1586, TGCS 11976 " class="ci_il">Balkan</a> <a  title=" 3 records, TLCS 0, TGCS 4 " class="ci_il">Vocabulary</a> ? <a  title=" 7 records, TLCS 64, TGCS 334 " class="ci_il">Fragmentation</a> and
+   <a  title=" 6 records, TLCS 7, TGCS 72 " class="ci_il">Cohesion</a> in <a  title=" 296 records, TLCS 196, TGCS 1899 " class="ci_il">Southeastern</a> <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a></div><SPAN><a  title=" 18 records, TLCS 18, TGCS 58 " class="ci_il">MEDITERRANEAN QUARTERLY-A JOURNAL OF GLOBAL ISSUES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  20 (3): 40-50
+<TD>0<TD>0<TD>0<TD>7
+<TR valign=top align=right class=odd><TD>2593<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2593</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Hassid L</a><div class=ci_title>The <a  title=" 4 records, TLCS 0, TGCS 17 " class="ci_il">notion</a> of <a  title=" 5 records, TLCS 2, TGCS 21 " class="ci_il">wall</a> in <a  title=" 30 records, TLCS 12, TGCS 116 " class="ci_il">Slovenia</a>: from <a  title=" 121 records, TLCS 502, TGCS 5471 " class="ci_il">Yugoslavia</a> to the <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Schengen</a>
+   <a  title=" 10 records, TLCS 2, TGCS 14 " class="ci_il">boundary</a></div><SPAN><a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">MEMOIRES IDENTITES MARGINALITES DANS LE MONDE OCCIDENTAL CONTEMPORAIN</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  5
+<TD>0<TD>0<TD>0<TD>1
+<TR valign=top align=right class=evn><TD>2594<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2594</a>  <a  title=" 1 records, TLCS 1, TGCS 1 " class="ci_il">Milisavljevic V</a><div class=ci_title><a  title=" 37 records, TLCS 28, TGCS 248 " class="ci_il">Present</a> <a  title=" 33 records, TLCS 15, TGCS 94 " class="ci_il">Reflections</a> on the <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a>: <a  title=" 18 records, TLCS 89, TGCS 197 " class="ci_il">Orientalism</a>, <a  title=" 26 records, TLCS 90, TGCS 180 " class="ci_il">Balkanism</a> and the
+   <a  title=" 22 records, TLCS 5, TGCS 58 " class="ci_il">Issue</a> of <a  title=" 18 records, TLCS 26, TGCS 119 " class="ci_il">Modernity</a></div><SPAN><a  title=" 2 records, TLCS 1, TGCS 2 " class="ci_il">META-RESEARCH IN HERMENEUTICS PHENOMENOLOGY AND PRACTICAL PHILOSOPHY</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  1 (2): 249-271
+<TD><a TITLE=" Article SLAVIC AND EAST EUROPEAN JOUR Title: I AM BARBAROGENIUS: YUGOSLAV ZENITISM OF THE 1920S AND THE LIMITS OF PERFORMATIVITY" href=javascript:na() class=nu>1</a><TD>1<TD>5<TD>30
+<TR valign=top align=right class=odd><TD>2595<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2595</a>  <a  title=" 7 records, TLCS 5, TGCS 4 " class="ci_il">Ponomareva EG</a><div class=ci_title><a  title=" 5 records, TLCS 1, TGCS 35 " class="ci_il">Authoritarian</a> <a  title=" 121 records, TLCS 115, TGCS 1064 " class="ci_il">Transition</a> of <a  title=" 9 records, TLCS 7, TGCS 23 " class="ci_il">Peripheral</a> <a  title=" 377 records, TLCS 132, TGCS 1566 " class="ci_il">Countries</a> of <a  title=" 23 records, TLCS 4, TGCS 39 " class="ci_il">Interwar</a> <a  title=" 1187 records, TLCS 896, TGCS 9841 " class="ci_il">Europe</a>:
+   <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Politological</a> <a  title=" 176 records, TLCS 88, TGCS 1576 " class="ci_il">Analysis</a></div><SPAN><a  title=" 22 records, TLCS 5, TGCS 8 " class="ci_il">MGIMO REVIEW OF INTERNATIONAL RELATIONS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;   (6)
+<TD>0<TD>0<TD>0<TD>20
+<TR valign=top align=right class=evn><TD>2596<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2596</a>  <a  title=" 3 records, TLCS 3, TGCS 10 " class="ci_il">Wasti ST</a><div class=ci_title>The <a  title=" 4 records, TLCS 0, TGCS 6 " class="ci_il">Indian</a> <a  title=" 22 records, TLCS 4, TGCS 79 " class="ci_il">Red</a> <a  title=" 6 records, TLCS 0, TGCS 6 " class="ci_il">Crescent</a> <a  title=" 19 records, TLCS 1, TGCS 29 " class="ci_il">Mission</a> to the <a  title=" 1393 records, TLCS 1586, TGCS 11976 " class="ci_il">Balkan</a> <a  title=" 127 records, TLCS 207, TGCS 1006 " class="ci_il">Wars</a></div><SPAN><a  title=" 17 records, TLCS 28, TGCS 84 " class="ci_il">MIDDLE EASTERN STUDIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  45 (3): 393-406
+<TD>0<TD>3<TD><a TITLE=" Article MIDDLE EASTERN STUDIES Title: The 1912-13 Balkan wars and the siege of Edirne" href=javascript:na() class=nu>1</a><TD>24
+<TR valign=top align=right class=odd><TD>2597<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2597</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Genis S</a>, <a  title=" 2 records, TLCS 0, TGCS 0 " class="ci_il">Maynard KL</a><div class=ci_title><a  title=" 49 records, TLCS 14, TGCS 225 " class="ci_il">Formation</a> of a <a  title=" 2 records, TLCS 0, TGCS 12 " class="ci_il">Diasporic</a> <a  title=" 56 records, TLCS 72, TGCS 1422 " class="ci_il">Community</a>: The <a  title=" 189 records, TLCS 701, TGCS 10056 " class="ci_il">History</a> of <a  title=" 113 records, TLCS 77, TGCS 1215 " class="ci_il">Migration</a> and
+   <a  title=" 3 records, TLCS 0, TGCS 2 " class="ci_il">Resettlement</a> of <a  title=" 45 records, TLCS 83, TGCS 1314 " class="ci_il">Muslim</a> <a  title=" 19 records, TLCS 23, TGCS 132 " class="ci_il">Albanians</a> in the <a  title=" 34 records, TLCS 84, TGCS 1086 " class="ci_il">Black</a> <a  title=" 32 records, TLCS 14, TGCS 236 " class="ci_il">Sea</a> <a  title=" 128 records, TLCS 37, TGCS 487 " class="ci_il">Region</a> of <a  title=" 137 records, TLCS 121, TGCS 1066 " class="ci_il">Turkey</a></div><SPAN><a  title=" 17 records, TLCS 28, TGCS 84 " class="ci_il">MIDDLE EASTERN STUDIES</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  45 (4): 553-569
+<TD>0<TD>0<TD>5<TD>29
+<TR valign=top align=right class=evn><TD>2598<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2598</a>  <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">Verropoulou G</a><div class=ci_title><a  title=" 2 records, TLCS 2, TGCS 6 " class="ci_il">Discerning</a> <a  title=" 7 records, TLCS 3, TGCS 48 " class="ci_il">adaptation</a> and <a  title=" 2 records, TLCS 0, TGCS 0 " class="ci_il">disruption</a> in the <a  title=" 1 records, TLCS 0, TGCS 0 " class="ci_il">childbearing</a> <a  title=" 17 records, TLCS 8, TGCS 235 " class="ci_il">behaviour</a> of
+   <a  title=" 33 records, TLCS 13, TGCS 409 " class="ci_il">immigrants</a> in <a  title=" 150 records, TLCS 125, TGCS 1240 " class="ci_il">Greece</a>: an <a  title=" 176 records, TLCS 88, TGCS 1576 " class="ci_il">analysis</a> <a  title=" 26 records, TLCS 1, TGCS 157 " class="ci_il">using</a> <a  title=" 10 records, TLCS 1, TGCS 54 " class="ci_il">micro</a>-<a  title=" 7 records, TLCS 5, TGCS 29 " class="ci_il">census</a> <a  title=" 31 records, TLCS 5, TGCS 210 " class="ci_il">data</a></div><SPAN><a  title=" 7 records, TLCS 0, TGCS 8 " class="ci_il">MIGRATION LETTERS</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;  6 (2): 194-204
+<TD>0<TD>0<TD>0<TD>30
+<TR valign=top align=right class=odd><TD>2599<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2599</a>  <a  title=" 1 records, TLCS 0, TGCS 1 " class="ci_il">Erdal I</a><div class=ci_title><a  title=" 140 records, TLCS 203, TGCS 1783 " class="ci_il">Identity</a> and <a  title=" 8 records, TLCS 2, TGCS 29 " class="ci_il">Homeland</a> <a  title=" 7 records, TLCS 1, TGCS 17 " class="ci_il">Sense</a> of <a  title=" 2 records, TLCS 3, TGCS 7 " class="ci_il">Anatolian</a> and <a  title=" 1 records, TLCS 0, TGCS 1 " class="ci_il">Rumellan</a> <a  title=" 35 records, TLCS 17, TGCS 191 " class="ci_il">Refugees</a></div><SPAN><a  title=" 20 records, TLCS 0, TGCS 6 " class="ci_il">MILLI FOLKLOR</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;   (81): 78-82
+<TD>0<TD>1<TD>0<TD>9
+<TR valign=top align=right class=evn><TD>2600<TD align=left><a TITLE=" Article " href=javascript:na() class=nu>2600</a>  <a  title=" 1 records, TLCS 0, TGCS 1 " class="ci_il">Alp S</a><div class=ci_title>The <a  title=" 2 records, TLCS 0, TGCS 5 " class="ci_il">Universe</a> of the <a  title=" 10 records, TLCS 4, TGCS 32 " class="ci_il">Material</a> <a  title=" 132 records, TLCS 137, TGCS 922 " class="ci_il">Cultural</a> <a  title=" 47 records, TLCS 24, TGCS 218 " class="ci_il">Heritage</a> of the <a  title=" 253 records, TLCS 371, TGCS 4809 " class="ci_il">Ottoman</a> <a  title=" 80 records, TLCS 21, TGCS 136 " class="ci_il">Period</a>
+   in the <a  title=" 1848 records, TLCS 2770, TGCS 15812 " class="ci_il">Balkans</a></div><SPAN><a  title=" 20 records, TLCS 0, TGCS 6 " class="ci_il">MILLI FOLKLOR</a></SPAN>. <SPAN class=sc><a  title=" 283 records, TLCS 244, TGCS 2559 " class="ci_il">2009</a></SPAN>;   (84): 151-161
+<TD>0<TD>1<TD>2<TD>26
+</TABLE>
+<style>b.ind {font-size: .8em;}</style><div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>26</b> of 84 &nbsp;<a href=index-tl.html class=nu>1</a>&nbsp; &nbsp;<a href=index-tl-11.html class=nu>11</a>&nbsp;<span class=nonprn>: [  &nbsp;<a href=index-tl-21.html class=nu>21</a> &nbsp;<a href=index-tl-22.html class=nu>22</a> &nbsp;<a href=index-tl-23.html class=nu>23</a> &nbsp;<a href=index-tl-24.html class=nu>24</a> &nbsp;<a href=index-tl-25.html class=nu>25</a> &nbsp;26 &nbsp;<a href=index-tl-27.html class=nu>27</a> &nbsp;<a href=index-tl-28.html class=nu>28</a> &nbsp;<a href=index-tl-29.html class=nu>29</a> &nbsp;<a href=index-tl-30.html class=nu>30</a> ]</span> &nbsp;<a href=index-tl-31.html class=nu>31</a>&nbsp; &nbsp;<a href=index-tl-41.html class=nu>41</a>&nbsp; &nbsp;<a href=index-tl-51.html class=nu>51</a>&nbsp; &nbsp;<a href=index-tl-61.html class=nu>61</a>&nbsp; &nbsp;<a href=index-tl-71.html class=nu>71</a>&nbsp; &nbsp;<a href=index-tl-81.html class=nu>81</a>&nbsp;</div>
+</BODY>

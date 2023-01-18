@@ -1,0 +1,591 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><HEAD><TITLE>HistCite - RESEE: A Bibliographic Database on Balkan – Southeast European Studies</TITLE></HEAD>
+<BODY VLINK=blue OnLoad="focus()">
+<STYLE>
+body {
+	margin: 2px 10px; padding: 0;
+	background: #fff;
+}
+body, td, th {
+	font-size: 10pt; font-family: Verdana;
+}
+input, select, textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ui {
+	font-size: 10pt; font-family: Verdana;
+}
+.ui input, .ui select, .ui textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ci_title {
+	font-size: 8pt; font-weight: bold;
+}
+.ci_il {
+	color: black; text-decoration: none;	/* msie6 ! inherit */
+}
+.helpa { text-decoration: none;
+	cursor: help;
+}
+.helpt { background: #ffff77; padding: 4px;
+}
+.nu { text-decoration: none; 
+}
+.sc, .sc a { color: #904644 }
+.fnd { background-color: #beb;
+	padding: 0 3px 2px 2px;
+}
+td div.fndCR {
+	padding-left: 2em;
+//	text-indent: -2em;
+}
+.odd { background-color: #eeeeee }
+.evn { background-color: #dddddd }
+div.odd { padding: 5px; margin-bottom: 2px }
+div.evn { padding: 5px; margin-bottom: 2px }
+.yr { padding: 0; font-weight: bold }
+.ank:hover { cursor: pointer; text-decoration: none; color: inherit; }
+a {
+	text-decoration: none;
+}
+a:hover, a:hover .sc {
+	text-decoration: underline; color: blue;
+}
+.scr:hover, td a.scr:hover { color:#000; text-decoration:none; } /* FF td */
+@media print {
+	.nonprn, .ephemeral, .x, .ui { display: none; }
+	.index { border: solid #fff 0; }
+	body { font-size: 10pt; }
+	td, th { font-size: 10pt; }
+	.ci_title { font-size: 8pt; }
+}
+</STYLE>
+<SCRIPT>
+var root=location.href; root = root.replace(/index.*/, ''); root = root.replace(/list.*/, '');
+function about () { window.open(root+'about.html','about','width=440,height=370,resizable=yes,scrollbars=yes') }
+	// This is a list of XMLHttpRequest-creation factory functions to try
+_factories = [
+    function() { return new XMLHttpRequest(); },
+    function() { return new ActiveXObject("Msxml2.XMLHTTP"); },
+    function() { return new ActiveXObject("Microsoft.XMLHTTP"); }
+];
+
+// When we find a factory that works, store it here.
+_factory = null;
+
+// Create and return a new XMLHttpRequest object.
+//
+// The first time we're called, try the list of factory functions until
+// we find one that returns a non-null value and does not throw an
+// exception. Once we find a working factory, remember it for later use.
+//
+newRequest = function() {
+    if (_factory != null) return _factory();
+
+    for(var i = 0; i < _factories.length; i++) {
+        try {
+            var factory = _factories[i];
+            var request = factory();
+            if (request != null) {
+                _factory = factory;
+                return request;
+            }
+        }
+        catch(e) {
+            continue;
+        }
+    }
+    // If we get here, none of the factory candidates succeeded,
+    // so throw an exception now and for all future calls.
+    _factory = function() {
+        //throw new Error("XMLHttpRequest not supported");
+        alert("XMLHttpRequest not supported");
+    }
+    _factory(); // Throw an error
+}
+
+function gethelp (url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+//    alert('OK');
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+function gettip (ent, url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+		ent.innerHTML = req.responseText;
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+</SCRIPT>
+<STYLE>
+div#tipshade {
+	position: fixed; top: 208px; left: 208px;
+	margin: 0px; width: 420px; height: 180px;
+	border: solid gray 2px;
+	background: gray;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 19; display: none;
+}
+div#tipoday {
+	position: fixed; top: 200px; left: 200px;
+	margin: 0px; width: 420px; height: 180px; padding: 0;
+	background: white;
+	border: solid #e44959 2px;
+	font: 10pt Verdana; cursor: default;
+	z-index: 20; display: none;
+}
+div#tiptitle {
+	background: #e44959; color: white; font-weight: bold;
+	padding-left: 4px;
+}
+div#tiptitle span.x {
+	background: white;
+}
+div#tipbox {
+	position: relative; /* top: 5px; */ margin: 8px;
+	max-height: 120px; overflow: auto;
+}
+div#tipctrl {
+	position: absolute; bottom: 0; margin: 4px;
+}
+div#tipctrl td {
+	font-size: 10px;
+}
+div#tipctrl form { margin: 0; }
+span.nw { white-space: nowrap; }
+</STYLE>
+<div id="tipshade" class="ui"> </div>
+<div id="tipoday" class="ui" align=left>
+<div id="tiptitle">HistCite Tip of the Day<span class="x"><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;" title="Close">X</a></span></div>
+<div id="tipbox">Tip of the day</div>
+<div id="tipctrl">
+<table align=bottom width=100%>
+<tr><td width=40% nowrap><form name=ft><label><input type=checkbox OnChange="nextStart(this);" checked> Show tip at next start</label></form></td>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=-1');>Previous Tip</a>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=1');>Next Tip</a>
+<td align=right><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;">Close</a>&nbsp;</td>
+</tr></table></div></div>
+<SCRIPT> var otip;
+function getit () { otip = document.getElementById('tipbox'); gettip(otip,'/tip.txt?next=0'); }
+function nextStart (start) {
+	if(start.checked == true) {
+		on = 1;
+	} else {
+		on = 0;
+	}
+	gethelp('/tipStart?on=' + on);
+}
+function tip_show () {
+	var W, H;
+	if(window.innerWidth) {
+		W = window.innerWidth; H = window.innerHeight;
+	} else {
+		var dd = document.documentElement;
+		W = dd.clientWidth; H = dd.clientHeight;
+	}
+//	alert(W + ' x ' + H);
+	var left = (W-420)/2;
+	var top = (H-180)/2;
+	var tipB = document.getElementById('tipshade');
+	var tipT = document.getElementById('tipoday');
+	tipB.style.left = left + 8 + 'px';
+	tipB.style.top = top + 8 + 'px';
+	tipT.style.left = left + 'px';
+	tipT.style.top = top + 'px';
+	tipB.style.display='block';
+	tipT.style.display='block';
+	getit();
+}
+</SCRIPT>
+
+<style>
+div#af_boxshado {
+	position: fixed; left:148px; top:128px; width: 460px; height: 110px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 11; display: none;
+}
+div#af_box {
+	position: fixed; left:140px; top:120px; width: 460px; height: 110px;
+	background: white; border: solid #999 2px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+div#af_box input {
+	font: 10px Verdana;
+}
+div#af_box_title {
+	background: #d3d3d3; padding-left: 4px; font-weight: bold;
+}
+div#af_box_title span.x {
+	background: white;
+}
+div#af_form {
+	width: 445px; height: 70px;
+	padding: 8px; overflow: auto;
+}
+div#af_form #sub{
+	display: block; margin: 12px 0 0 0;
+}
+div#starh2 {
+	position: absolute; left: 88px; top: 78px; width: 420px; height: 156px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	padding: 8px;
+	z-index: 12; display: none;
+}
+div#starh {
+	position: absolute; left: 80px; top: 70px; width: 420px; height: 156px; overflow: auto;
+	border: outset gray 2px;
+	padding: 8px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+</style>
+<div id="af_boxshado"> </div>
+<div id="af_box">
+<div id="af_box_title">Add File<span class="x"><a onClick="af_close()" title="Close">X</a></span>
+<!--<a href=javascript:na() onMouseOver="na();" onClick="toggle('starh');" class=helpa style="color:#000">-->
+<a onClick="toggle('starh');" class=helpa style="color:#000"><span class="x" id=mstarh style="top:0;right:14px;">?</span><span class="x" id=lstarh style="top:0;right:14px;display:none">_</span></a>
+</div>
+<div id="af_form">
+<FORM action=/input method=GET OnSubmit="return false" name=af style="margin:0">
+	Use [Browse...] to select a file with bibliography data:<br>
+	<INPUT type=hidden name=inputpath>
+	<INPUT type=file name=inputset size=48 OnChange="af.sub.focus()" value="">
+	<INPUT type=submit value="Add File" OnClick="afSubmit();return false" name=sub id="sub">
+</div><div id=starh2> </div>
+<div id=starh class=helpt>
+Use wildcard '*' to add more than one file at a time.
+For example, if you have <code>file1</code>,
+<code>file2</code>, etc. all in the same folder or directory;
+first, locate one of the files with the [Browse...] button.  Then alter the
+file path in the box above to include '*' character (eg. <code>file*</code>).
+Wildcard '?' to blanket only one character works too.<br>
+<b>Note</b>: In Windows you can select multiple files and "drag and drop" them 
+onto HistCite icon or shortcut.  The program would start and load those files.
+</div>
+</FORM><SCRIPT>
+var af = document.af;
+function afSubmit() {
+	if ("" == af.inputset.value ) { alert("Select a file."); return }
+	af.inputpath.value = af.inputset.value;
+	af.submit();
+}
+function af_show() {
+	document.getElementById('af_boxshado').style.display = 'block';
+	document.getElementById('af_box').style.display = 'block';
+	a = document.af.inputset.value;
+	document.af.inputset.focus();
+}
+function af_close() {
+	document.getElementById('af_boxshado').style.display = 'none';
+	document.getElementById('af_box').style.display = 'none';
+}
+</SCRIPT></div>
+
+<SCRIPT>
+function glossary () { window.open(root+'glossary.html','gloss','width=640,height=570,resizable=yes,scrollbars=yes') }
+function opeNod (a) { window.open(root+'node/'+a+'.html',a,'width=770,height=570,resizable=yes,scrollbars=yes') }
+function opeLod (dp, a) { if(''==dp) d='so'; else d=dp; var w = d; w = w.replace(/[-\/]/g, '');
+	window.open(root+d+'/'+a+'.html',w+a,'width=640,height=546,resizable=yes,scrollbars=yes') }
+function na(){}
+</SCRIPT>
+<STYLE>
+#head {
+	position: left:0; padding-left:4px; background:#fff;
+	z-index:2; margin:0 0 8px 0; border-bottom:solid #000 1px;
+}
+#title {
+	padding-bottom: 4px; font-size: 1.3em; font-weight: bold;
+	max-width: 600px; /* non default overflow gives odd z-effects in FF */
+}
+#desc {
+	position: absolute; left: 4px; top: 1.8em;
+	padding: 2px 8px 4px 8px; white-space: normal; max-width: 480px;
+	background: #ffffcc; font-weight: normal; font-size: 10pt;
+	border: solid #000 1px;
+	display: none; z-index: 11;
+}
+#atitle { cursor: text;}
+#atitle, #stats {
+	text-decoration: none; color: #000;
+}
+#stats2 {
+	position: absolute; right: 0px; padding: 0;
+	background: white;
+	display: none; z-index: 11;
+}
+#atitle:hover #desc, #stats:hover #stats2 {
+	display: block;
+}
+@media print {
+	#head { position: static; }
+	#menu_pm { line-height: 0; }
+	#back { display: none; }
+}
+</STYLE>
+<!-- FF 3 only? fix -->
+<div id=head style="width:99%">
+<TABLE width=100% cellpadding=0 cellspacing=0 style="margin:0 0 3px 0">
+<TR valign=top><TD align=left width=60%>
+<div id=title><a id=atitle >RESEE: A Bibliographic Database on Balkan – Southeast European Studies<div id=desc>-------Search: Databases searching procedure and formats------
+*| Search query
+"balkan*" OR "southeast* europe*" OR "south east* europe*" (TITLE-ABS-KEY) 
+Web of Science Core Collection (SSCI, A&HCI, ESCI, BKCI-SSH)
+Scopus
+Constellate (JSTOR and Portico)
+
+Note: The earliest publication date from WoS for the articles was 1957 whereas for the books 2003.
+To complement our database with entries before 1957, we search the Constellate (Jstor and Portico) and Scopus database, finding and adding a further 445 articles.
+Characters were normalize, and English translation of the titles were added for entries in other languages than English. And for Constellate data we kept only Articles and Books from Humanities and Social Sciences.
+The Scopus and Constellate metadata files were converted into WoS (.txt) format.
+We also added manually 59 new entries (9 articles and 50 books) that were missing from the search but showed to be among the most cited references (local citation score greater than 10)
+
+---------Merging variants in the same cited references--------
+Given that databases have problems with the completeness of references and linkages (Van Eck and Waltman 2017), we used CRExplorer to clean the data and reduce the problems posed by variants in the same cited references (Thor et al. 2016)
+The cited references (CRs) in our data contained variants, especially the references on books. 
+We use the manual cleaning-up procedure, setting the clustering algorithm with a Levenshtein threshold of 0.75. 
+We also manually checked and unified variants of the same cited references (CRs), especially for books that received a local citation of more than 20 or had different years or editions and translations into other languages. 
+After the cleaning, we unify the variants of the same CRs, about 12% of the initial cited references.</div></a></div>
+<TD align=center><a href=# OnClick="window.open('../graph/list.html','graph','resizable=yes,scrollbars=yes')" class=nonprn>Historiographs</a><TD nowrap align=right rowspan=2 width=5%><div class=nonprn><a href=javascript:glossary()>Glossary</a>&nbsp;&nbsp;<a href="http://www.histcite.com/HTMLHelp/guide.html" target=guide>HistCite Guide</a>&nbsp;&nbsp;<a href=# OnClick="about(); return false">About</a></div><a id=stats>
+Grand Totals: LCS 8009, GCS 85894, CR 328237<br>Collection span: 1854 - 2022<br></a><TR><TD colspan=2 width=95%><b>Journal List</b> (2650)</TABLE></div><div align=right>24 December 2022</div>
+<div class="index" style=""><a href=../index-tl.html>Records</a>: 8378, <a href=au-pubs.html>Authors</a>: 10107, Journals: 2650, <a href=or-pubs.html>Cited References</a>: 248863, <a href=wd-pubs.html>Words</a>: 11723
+<br><span class=nonprn><a href=py-pubs.html title=' Publication Years: 127 '>Yearly output</a>
+|&nbsp;<a href=dt-pubs.html title=' Document Types: 14 '>Document Type</a>
+|&nbsp;<a href=la-pubs.html title=' Languages: 6 '>Language</a>
+|&nbsp;<a href=in-pubs.html title=' Institutions: 62 '>Institution</a>
+|&nbsp;<a href=i2-pubs.html title=' Institution with Subdivisions: 64 '>Institution with Subdivision</a>
+|&nbsp;<a href=co-pubs.html title=' Countries: 8 '>Country</a></span></div><div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>8</b> of 14<span class=nonprn>: [  &nbsp;<a href=so-name.html class=nu>1</a> &nbsp;<a href=so-name-2.html class=nu>2</a> &nbsp;<a href=so-name-3.html class=nu>3</a> &nbsp;<a href=so-name-4.html class=nu>4</a> &nbsp;<a href=so-name-5.html class=nu>5</a> &nbsp;<a href=so-name-6.html class=nu>6</a> &nbsp;<a href=so-name-7.html class=nu>7</a> &nbsp;8 &nbsp;<a href=so-name-9.html class=nu>9</a> &nbsp;<a href=so-name-10.html class=nu>10</a> ]</span> &nbsp;<a href=so-name-11.html class=nu>11</a>&nbsp;</div>
+<TABLE border=0 cellpadding=5 cellspacing=2 style="border: 2px solid #cccccc;margin: 4px 0;">
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="so-name.html">Journal</a></SPAN><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>1401<TD align=left class=sc>JOURNAL OF LANGUAGE AGGRESSION AND CONFLICT<TD><a TITLE=" Article JOURNAL OF LANGUAGE AGGRESSIO Title: In transit Representations of migration on the Balkan route. Discourse analysis of Croatian and Serbian public broadcasters (RTS and HRT online)" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>1402<TD align=left class=sc>JOURNAL OF LANGUAGE AND POLITICS<TD><a TITLE=" Article JOURNAL OF LANGUAGE AND POLIT Title: Balkan War of Apologies" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>1403<TD align=left class=sc>JOURNAL OF LANGUAGE CONTACT<TD>8<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>1404<TD align=left class=sc>JOURNAL OF LATE ANTIQUITY<TD>3<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>1405<TD align=left class=sc>JOURNAL OF LAW & ECONOMICS<TD><a TITLE=" Article JOURNAL OF LAW &amp; ECONOMICS Title: LEGISLATIVE ORGANIZATION OF FISCAL-POLICY" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=evn><TD>1406<TD align=left class=sc>JOURNAL OF LAW MEDICINE & ETHICS<TD><a TITLE=" Article JOURNAL OF LAW MEDICINE &amp; ETH Title: Overcoming the Balkanization of State Advance Directive Laws" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1407<TD align=left class=sc>JOURNAL OF LESBIAN STUDIES<TD><a TITLE=" Article JOURNAL OF LESBIAN STUDIES Title: From Globalization to Europeanization-And Then? Transnational Influences in Lesbian Activism of the Western Balkans" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=evn><TD>1408<TD align=left class=sc>JOURNAL OF LITERARY THEORY<TD><a TITLE=" Article JOURNAL OF LITERARY THEORY Title: &quot;Cto (ne) delat&#39;&quot; - &quot;What is (not) to be done&quot;? Why Standards and Norms are a Current Problem within Slavistics" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1409<TD align=left class=sc>JOURNAL OF LITHIC STUDIES<TD>3<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>1410<TD align=left class=sc>JOURNAL OF MACROMARKETING<TD><a TITLE=" Article JOURNAL OF MACROMARKETING Title: &quot;Food Deserts&quot; in Urban Districts: Evidence from a Transitional Market and Implications for Macromarketing" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=odd><TD>1411<TD align=left class=sc>JOURNAL OF MANAGEMENT DEVELOPMENT<TD><a TITLE=" Article JOURNAL OF MANAGEMENT DEVELOP Title: Barriers to growth of SMEs in Western Balkan countries" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=evn><TD>1412<TD align=left class=sc>JOURNAL OF MAPS<TD>3<TD>0<TD><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=odd><TD>1413<TD align=left class=sc>JOURNAL OF MARKETING CHANNELS<TD><a TITLE=" Article JOURNAL OF MARKETING CHANNELS Title: Franchising in the Balkans: History, status, and challenges" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>1414<TD align=left class=sc>JOURNAL OF MARKETING MANAGEMENT<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=odd><TD>1415<TD align=left class=sc>JOURNAL OF MARRIAGE AND FAMILY<TD><a TITLE=" Article JOURNAL OF MARRIAGE AND FAMIL Title: Partnering Across the Life Course: Sex, Relationships, and Mate Selection" href=javascript:opeNod(2886)>1</a><TD>0<TD><a title=' 0.2%' class=ank>152</a>
+<TR valign=top align=right class=evn><TD>1416<TD align=left class=sc>JOURNAL OF MATERIAL CULTURE<TD><a TITLE=" Article JOURNAL OF MATERIAL CULTURE Title: The museum&#39;s lexis: Driving objects into ideas" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1417<TD align=left class=sc>JOURNAL OF MATHEMATICAL SOCIOLOGY<TD><a TITLE=" Article JOURNAL OF MATHEMATICAL SOCIO Title: Models for network evolution" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=evn><TD>1418<TD align=left class=sc>JOURNAL OF MEDICINE AND PHILOSOPHY<TD><a TITLE=" Article JOURNAL OF MEDICINE AND PHILO Title: Medical Bribery and the Ethics of Trust: The Romanian Case" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>13</a>
+<TR valign=top align=right class=odd><TD>1419<TD align=left class=sc>JOURNAL OF MEDIEVAL HISTORY<TD>3<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=evn><TD>1420<TD align=left class=sc>JOURNAL OF MEDITERRANEAN ARCHAEOLOGY<TD><a TITLE=" Article JOURNAL OF MEDITERRANEAN ARCH Title: Early Prehistoric Landscape and Landuse in the Fier Region of Albania" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=odd><TD>1421<TD align=left class=sc>JOURNAL OF MEDITERRANEAN STUDIES<TD>5<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=evn><TD>1422<TD align=left class=sc>JOURNAL OF MEHMET AKIF ERSOY UNIVERSITY ECONOMICS AND ADMINISTRATIVE SCIENCES FACULTY<TD>2<TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1423<TD align=left class=sc>JOURNAL OF MILITARY AND STRATEGIC STUDIES<TD>2<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1424<TD align=left class=sc>JOURNAL OF MILITARY HISTORY<TD>5<TD>0<TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=odd><TD>1425<TD align=left class=sc>JOURNAL OF MODERN AFRICAN STUDIES<TD><a TITLE=" Article JOURNAL OF MODERN AFRICAN STU Title: AFRICAN CONCEPT OF BALKANIZATION" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>1426<TD align=left class=sc>JOURNAL OF MODERN EUROPEAN HISTORY<TD>3<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=odd><TD>1427<TD align=left class=sc>JOURNAL OF MODERN GREEK STUDIES<TD>13<TD><a title=' 0.3%' class=ank>22</a><TD><a title=' 0.1%' class=ank>104</a>
+<TR valign=top align=right class=evn><TD>1428<TD align=left class=sc>JOURNAL OF MODERN HISTORY<TD>6<TD><a title=' 0.1%' class=ank>12</a><TD><a title=' 0.1%' class=ank>48</a>
+<TR valign=top align=right class=odd><TD>1429<TD align=left class=sc>JOURNAL OF MODERN ITALIAN STUDIES<TD>4<TD>0<TD><a title=' 0.0%' class=ank>19</a>
+<TR valign=top align=right class=evn><TD>1430<TD align=left class=sc>JOURNAL OF MONEY CREDIT AND BANKING<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.1%' class=ank>59</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="so-name.html">Journal</a></SPAN><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>1431<TD align=left class=sc>JOURNAL OF MONEY LAUNDERING CONTROL<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>1432<TD align=left class=sc>JOURNAL OF MOSAIC RESEARCH<TD><a TITLE=" Article JOURNAL OF MOSAIC RESEARCH Title: The Roman Villa of Tirana (Albania) and Its Mosaics" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1433<TD align=left class=sc>JOURNAL OF MULTILINGUAL AND MULTICULTURAL DEVELOPMENT<TD><a TITLE=" Article; Early Access JOURNAL OF MULTILINGUAL AND M Title: Dialect (non-)acquisition and use by young people of migrant background in Germany" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>1434<TD align=left class=sc>JOURNAL OF MULTINATIONAL FINANCIAL MANAGEMENT<TD><a TITLE=" Article JOURNAL OF MULTINATIONAL FINA Title: Financial integration and portfolio investments to emerging Balkan equity markets" href=javascript:na() class=nu>1</a><TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>23</a>
+<TR valign=top align=right class=odd><TD>1435<TD align=left class=sc>JOURNAL OF MUSEUM EDUCATION<TD><a TITLE=" Article JOURNAL OF MUSEUM EDUCATION Title: The 1" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>1436<TD align=left class=sc>JOURNAL OF MUSLIM MINORITY AFFAIRS<TD>17<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>33</a>
+<TR valign=top align=right class=odd><TD>1437<TD align=left class=sc>JOURNAL OF NORTH AFRICAN STUDIES<TD><a TITLE=" Article JOURNAL OF NORTH AFRICAN STUD Title: Mauritania: A Saharan Frontier-state" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=evn><TD>1438<TD align=left class=sc>JOURNAL OF NUSANTARA STUDIES-JONUS<TD><a TITLE=" Article JOURNAL OF NUSANTARA STUDIES- Title: CIVILIZATION, ECONOMY AND WAQF IN OTTOMAN EUROPE" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1439<TD align=left class=sc>JOURNAL OF ORGANIZATIONAL CHANGE MANAGEMENT<TD>2<TD>0<TD><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=evn><TD>1440<TD align=left class=sc>JOURNAL OF PACIFIC RIM PSYCHOLOGY<TD><a TITLE=" Article JOURNAL OF PACIFIC RIM PSYCHO Title: Serbian Stories of Translocation: Factors Influencing the Refugee Journey Arising from the Balkan Conflicts of the 1990s" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>1441<TD align=left class=sc>JOURNAL OF PALESTINE STUDIES<TD><a TITLE=" Article JOURNAL OF PALESTINE STUDIES Title: THE HERZEGOVINIAN MUSLIM COLONY IN CAESAREA, PALESTINE" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD>0
+<TR valign=top align=right class=evn><TD>1442<TD align=left class=sc>JOURNAL OF PEACE RESEARCH<TD>7<TD><a title=' 0.1%' class=ank>12</a><TD><a title=' 0.2%' class=ank>131</a>
+<TR valign=top align=right class=odd><TD>1443<TD align=left class=sc>JOURNAL OF PENAL LAW AND CRIMINOLOGY-CEZA HUKUKU VE KRIMINOLOJI DERGISI<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>1444<TD align=left class=sc>JOURNAL OF PENTECOSTAL THEOLOGY<TD><a TITLE=" Review JOURNAL OF PENTECOSTAL THEOLO Title: Theology through Eschatological Story A Review of The Spirit and the Common Good: Shared Flourishing in the Image of God by Daniela Augustine" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1445<TD align=left class=sc>JOURNAL OF POLICY MODELING<TD>6<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>18</a>
+<TR valign=top align=right class=evn><TD>1446<TD align=left class=sc>JOURNAL OF POLITICAL & MILITARY SOCIOLOGY<TD>10<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>17</a>
+<TR valign=top align=right class=odd><TD>1447<TD align=left class=sc>JOURNAL OF POLITICAL SCIENCE EDUCATION<TD><a TITLE=" Review JOURNAL OF POLITICAL SCIENCE  Title: New Textbooks on European Politics: A Comparative Review" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1448<TD align=left class=sc>JOURNAL OF POLITICS<TD><a TITLE=" Article; Proceedings Paper JOURNAL OF POLITICS Title: A niche theory of interest representation" href=javascript:opeNod(1059)>1</a><TD>0<TD><a title=' 0.1%' class=ank>114</a>
+<TR valign=top align=right class=odd><TD>1449<TD align=left class=sc>JOURNAL OF POLITICS AND LAW<TD><a TITLE=" Article JOURNAL OF POLITICS AND LAW Title: The Human Rights in OIC, A Gradually Movement but in Progress" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>1450<TD align=left class=sc>JOURNAL OF POPULAR MUSIC STUDIES<TD><a TITLE=" Article JOURNAL OF POPULAR MUSIC STUD Title: Nation Branding in Two Major Serbian Music Festivals, Exit and Guca" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1451<TD align=left class=sc>JOURNAL OF POSTCOLONIAL WRITING<TD>3<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=evn><TD>1452<TD align=left class=sc>JOURNAL OF PRAGMATICS<TD><a TITLE=" Article JOURNAL OF PRAGMATICS Title: On the grammaticalization of evidentiality" href=javascript:opeNod(1374)>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.1%' class=ank>109</a>
+<TR valign=top align=right class=odd><TD>1453<TD align=left class=sc>JOURNAL OF PRIVATE EQUITY<TD><a TITLE=" Article JOURNAL OF PRIVATE EQUITY Title: Five Ways to Operate and Succeed as a Venture Capitalist in Southeast Europe" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>1454<TD align=left class=sc>JOURNAL OF PSYCHOLOGICAL AND EDUCATIONAL RESEARCH<TD><a TITLE=" Article JOURNAL OF PSYCHOLOGICAL AND  Title: DIFFERENCES IN GENERAL CAUSALITY ORIENTATIONS. RESULTS FROM THREE SOUTH- EASTERN COUNTRIES" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1455<TD align=left class=sc>JOURNAL OF PUBLIC AFFAIRS<TD>3<TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>1456<TD align=left class=sc>JOURNAL OF PUBLIC ECONOMICS<TD><a TITLE=" Article JOURNAL OF PUBLIC ECONOMICS Title: Does immigration affect public education expenditures? Quasi-experimental evidence" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>18</a>
+<TR valign=top align=right class=odd><TD>1457<TD align=left class=sc>JOURNAL OF PUBLIC POLICY<TD>2<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=evn><TD>1458<TD align=left class=sc>JOURNAL OF PUBLIC POLICY & MARKETING<TD><a TITLE=" Article JOURNAL OF PUBLIC POLICY &amp; MA Title: When policies and marketing systems explode: An assessment of food marketing in the war-ravaged balkans and implications for recovery, sustainable peace, and prosperity" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=odd><TD>1459<TD align=left class=sc>JOURNAL OF REFUGEE STUDIES<TD>4<TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>1460<TD align=left class=sc>JOURNAL OF REGIONAL SCIENCE<TD><a TITLE=" Article JOURNAL OF REGIONAL SCIENCE Title: Getting the first job: Size and quality of ethnic enclaves and refugee labor market entry" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="so-name.html">Journal</a></SPAN><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>1461<TD align=left class=sc>JOURNAL OF REGULATORY ECONOMICS<TD><a TITLE=" Article JOURNAL OF REGULATORY ECONOMI Title: The financial and operational impacts of FERC Order 636 on the interstate natural gas pipeline industry" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>1462<TD align=left class=sc>JOURNAL OF RELIGIOUS HISTORY<TD><a TITLE=" Article JOURNAL OF RELIGIOUS HISTORY Title: Religious Conversion in Early Post-Ottoman Bulgaria: A Case Study of Ruse" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>1463<TD align=left class=sc>JOURNAL OF RISK AND FINANCIAL MANAGEMENT<TD><a TITLE=" Article JOURNAL OF RISK AND FINANCIAL Title: Financing Growth through Remittances and Foreign Direct Investment: Evidences from Balkan Countries" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=evn><TD>1464<TD align=left class=sc>JOURNAL OF RISK MODEL VALIDATION<TD><a TITLE=" Article JOURNAL OF RISK MODEL VALIDAT Title: Testing value-at-risk models in emerging markets during crises: a case study on South Eastern European countries" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=odd><TD>1465<TD align=left class=sc>JOURNAL OF ROMANCE STUDIES<TD>3<TD>0<TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=evn><TD>1466<TD align=left class=sc>JOURNAL OF RURAL STUDIES<TD>2<TD>0<TD><a title=' 0.0%' class=ank>15</a>
+<TR valign=top align=right class=odd><TD>1467<TD align=left class=sc>JOURNAL OF SERVICES MARKETING<TD>3<TD>0<TD><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=evn><TD>1468<TD align=left class=sc>JOURNAL OF SETTLEMENTS AND SPATIAL PLANNING<TD>2<TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1469<TD align=left class=sc>JOURNAL OF SLAVIC LINGUISTICS<TD><a TITLE=" Article JOURNAL OF SLAVIC LINGUISTICS Title: Manner/Path Typology of Bulgarian Motion Verbs" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>1470<TD align=left class=sc>JOURNAL OF SMALL BUSINESS AND ENTERPRISE DEVELOPMENT<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>32</a>
+<TR valign=top align=right class=odd><TD>1471<TD align=left class=sc>JOURNAL OF SOCIAL ARCHAEOLOGY<TD>3<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.1%' class=ank>68</a>
+<TR valign=top align=right class=evn><TD>1472<TD align=left class=sc>JOURNAL OF SOCIAL HISTORY<TD><a TITLE=" Article JOURNAL OF SOCIAL HISTORY Title: MATERIAL FOUNDATIONS OF PREINDUSTRIAL CIVILIZATION IN BALKANS" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1473<TD align=left class=sc>JOURNAL OF SOCIAL POLITICAL AND ECONOMIC STUDIES<TD><a TITLE=" Article JOURNAL OF SOCIAL POLITICAL A Title: SOUTHEAST EUROPEAN BOUNDARY DISPUTES" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1474<TD align=left class=sc>JOURNAL OF SOCIAL PSYCHOLOGY<TD><a TITLE=" Article JOURNAL OF SOCIAL PSYCHOLOGY Title: How to address the caveat of avoiding direct contact: Reducing prejudice towards gay and lesbian people in five Balkan countries" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=odd><TD>1475<TD align=left class=sc>JOURNAL OF SOCIAL WORK<TD><a TITLE=" Article JOURNAL OF SOCIAL WORK Title: Identifying the invisible: The experiences of prostitution among persons with intellectual disabilities: Implications for social work" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>11</a>
+<TR valign=top align=right class=evn><TD>1476<TD align=left class=sc>JOURNAL OF SOUTHEAST ASIAN ECONOMIES<TD><a TITLE=" Article JOURNAL OF SOUTHEAST ASIAN EC Title: Economic Governance What Can the EU and ASEAN Learn From Each Other After the Economic Crises?" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1477<TD align=left class=sc>JOURNAL OF SOUTHERN EUROPE AND THE BALKANS<TD>5<TD><a title=' 0.6%' class=ank>52</a><TD><a title=' 0.1%' class=ank>63</a>
+<TR valign=top align=right class=evn><TD>1478<TD align=left class=sc>JOURNAL OF SPANISH CULTURAL STUDIES<TD><a TITLE=" Article JOURNAL OF SPANISH CULTURAL S Title: &quot;Pedir un cafe puede costarte la vida&quot;: phobias of democracy in alex de la Iglesia&#39;s El bar" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1479<TD align=left class=sc>JOURNAL OF SPORT & SOCIAL ISSUES<TD><a TITLE=" Article JOURNAL OF SPORT &amp; SOCIAL ISS Title: Sport, Transnational Peacemaking, and Global Civil Society: Exploring the Reflective Discourses of &quot;Sport, Development, and Peace&quot; Project Officials" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.1%' class=ank>65</a>
+<TR valign=top align=right class=evn><TD>1480<TD align=left class=sc>JOURNAL OF STRATEGIC STUDIES<TD>11<TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>41</a>
+<TR valign=top align=right class=odd><TD>1481<TD align=left class=sc>JOURNAL OF TEACHING ENGLISH FOR SPECIFIC AND ACADEMIC PURPOSES<TD>6<TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=evn><TD>1482<TD align=left class=sc>JOURNAL OF TEACHING IN INTERNATIONAL BUSINESS<TD><a TITLE=" Article JOURNAL OF TEACHING IN INTERN Title: Challenges and Opportunities of Business Education in Southeast Europe: The Case of a Balkan Business School" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>1483<TD align=left class=sc>JOURNAL OF THE AMERICAN ACADEMY OF RELIGION<TD>2<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>30</a>
+<TR valign=top align=right class=evn><TD>1484<TD align=left class=sc>JOURNAL OF THE ARNOLD ARBORETUM<TD><a TITLE=" Article JOURNAL OF THE ARNOLD ARBORET Title: The Arnold Arboretum Expedition to the Balkan peninsula" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1485<TD align=left class=sc>JOURNAL OF THE BRITISH INSTITUTE OF INTERNATIONAL AFFAIRS<TD><a TITLE=" Article JOURNAL OF THE BRITISH INSTIT Title: The Balkans As a Danger Point" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD>0
+<TR valign=top align=right class=evn><TD>1486<TD align=left class=sc>JOURNAL OF THE ECONOMIC AND SOCIAL HISTORY OF THE ORIENT<TD>4<TD>0<TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=odd><TD>1487<TD align=left class=sc>JOURNAL OF THE GEOGRAPHICAL INSTITUTE JOVAN CVIJIC SASA<TD>22<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=evn><TD>1488<TD align=left class=sc>JOURNAL OF THE HISTORY OF SEXUALITY<TD><a TITLE=" Article JOURNAL OF THE HISTORY OF SEX Title: Of Female Chastity and Male Arms: The Balkan &quot;Man-Woman&quot; in the Age of the World Picture" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>1489<TD align=left class=sc>JOURNAL OF THE KNOWLEDGE ECONOMY<TD><a TITLE=" Article JOURNAL OF THE KNOWLEDGE ECON Title: From Transition to Opportunity: Security, Institutional Strengthening and Economic Development. Southeastern Europe Revisited" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1490<TD align=left class=sc>JOURNAL OF THE ROYAL ANTHROPOLOGICAL INSTITUTE<TD><a TITLE=" Article JOURNAL OF THE ROYAL ANTHROPO Title: A catalogue of vice: a sense of failure and incapacity to act among Roma Muslims in Macedonia" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>8</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="so-name.html">Journal</a></SPAN><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>1491<TD align=left class=sc>JOURNAL OF THE ROYAL ASIATIC SOCIETY<TD><a TITLE=" Article JOURNAL OF THE ROYAL ASIATIC  Title: Post-Mongol States and Early Modern Chronology in Iran and China" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>1492<TD align=left class=sc>JOURNAL OF THE ROYAL MUSICAL ASSOCIATION<TD><a TITLE=" Article JOURNAL OF THE ROYAL MUSICAL  Title: Cross-Cultural Perspectives on Secular Vocal Performance in Early Wales" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1493<TD align=left class=sc>JOURNAL OF THE ROYAL SOCIETY INTERFACE<TD>2<TD>0<TD><a title=' 0.1%' class=ank>46</a>
+<TR valign=top align=right class=evn><TD>1494<TD align=left class=sc>JOURNAL OF THE ROYAL SOCIETY OF ARTS<TD><a TITLE=" Article JOURNAL OF THE ROYAL SOCIETY  Title: TRAVELS IN THE BALKAN PENINSULA" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1495<TD align=left class=sc>JOURNAL OF THEORETICAL SOCIAL PSYCHOLOGY<TD><a TITLE=" Article JOURNAL OF THEORETICAL SOCIAL Title: How knowing others makes us more inclusive: Social identity inclusiveness mediates the effects of contact on out-group acceptance" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>1496<TD align=left class=sc>JOURNAL OF TRANSFORMATIVE EDUCATION<TD><a TITLE=" Article JOURNAL OF TRANSFORMATIVE EDU Title: Transforming Worldviews The Case of Education for Peace in Bosnia and Herzegovina" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>42</a>
+<TR valign=top align=right class=odd><TD>1497<TD align=left class=sc>JOURNAL OF TRANSPORT GEOGRAPHY<TD>3<TD>0<TD><a title=' 0.1%' class=ank>114</a>
+<TR valign=top align=right class=evn><TD>1498<TD align=left class=sc>JOURNAL OF URBAN AFFAIRS<TD>3<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>16</a>
+<TR valign=top align=right class=odd><TD>1499<TD align=left class=sc>JOURNAL OF URBAN AND REGIONAL ANALYSIS<TD>2<TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>1500<TD align=left class=sc>JOURNAL OF URBAN DESIGN<TD><a TITLE=" Article JOURNAL OF URBAN DESIGN Title: The Detriments and Benefits of the Fall of Planning: The Evolution of Public Space in a Balkan Post-socialist Capital" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=odd><TD>1501<TD align=left class=sc>JOURNAL OF URBAN ETHNOLOGY<TD><a TITLE=" Article JOURNAL OF URBAN ETHNOLOGY Title: The missing worlds. A city from the women&#39;s perspective" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1502<TD align=left class=sc>JOURNAL OF URBAN HISTORY<TD><a TITLE=" Article JOURNAL OF URBAN HISTORY Title: The Resilience of the Port Cities of Trieste, Rijeka, and Koper" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1503<TD align=left class=sc>JOURNAL OF URBAN PLANNING AND DEVELOPMENT<TD><a TITLE=" Article JOURNAL OF URBAN PLANNING AND Title: Location of financial, insurance, and real estate firms in Istanbul" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>18</a>
+<TR valign=top align=right class=evn><TD>1504<TD align=left class=sc>JOURNAL OF URBAN PLANNING AND DEVELOPMENT-ASCE<TD><a TITLE=" Article JOURNAL OF URBAN PLANNING AND Title: Locational determinants of foreign investors in Istanbul" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>11</a>
+<TR valign=top align=right class=odd><TD>1505<TD align=left class=sc>JOURNAL OF VOCATIONAL BEHAVIOR<TD><a TITLE=" Article JOURNAL OF VOCATIONAL BEHAVIO Title: Fostering the scientific practice of vocational psychology" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>11</a>
+<TR valign=top align=right class=evn><TD>1506<TD align=left class=sc>JOURNAL OF VOCATIONAL EDUCATION AND TRAINING<TD><a TITLE=" Article; Early Access JOURNAL OF VOCATIONAL EDUCATI Title: The advantages and disadvantages of polish dual vocational education from the perspective of students, school representatives and employers" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1507<TD align=left class=sc>JOURNAL OF WAR & CULTURE STUDIES<TD>2<TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>1508<TD align=left class=sc>JOURNAL OF WINE ECONOMICS<TD><a TITLE=" Article JOURNAL OF WINE ECONOMICS Title: Climate Change and Grapevines: A Simulation Study for the Mediterranean Basin" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>18</a>
+<TR valign=top align=right class=odd><TD>1509<TD align=left class=sc>JOURNAL OF WOMENS HISTORY<TD><a TITLE=" Article; Proceedings Paper JOURNAL OF WOMENS HISTORY Title: TRANS CULTURAL ENCOUNTERS: Discourses on Women&#39;s Rights and Feminist Interventions in the Ottoman Empire, Greece, and Turkey from the Mid-Nineteenth Century to the Interwar Period" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>1510<TD align=left class=sc>JOURNAL OF WORLD INVESTMENT & TRADE<TD><a TITLE=" Article JOURNAL OF WORLD INVESTMENT &amp; Title: Inward FDI in the Western Balkans in the wake of Croatia&#39;s EU accession" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>1511<TD align=left class=sc>JOURNAL OF WORLD LITERATURE<TD><a TITLE=" Article JOURNAL OF WORLD LITERATURE Title: The Ottoman Empire, Southeastern European Literature, and Postcolonial Theory" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>1512<TD align=left class=sc>JOURNAL OF WORLD PREHISTORY<TD>9<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.2%' class=ank>136</a>
+<TR valign=top align=right class=odd><TD>1513<TD align=left class=sc>JOURNAL OF YOUTH STUDIES<TD>2<TD>0<TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=evn><TD>1514<TD align=left class=sc>JOURNALISM<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>17</a>
+<TR valign=top align=right class=odd><TD>1515<TD align=left class=sc>JOURNALISM & MASS COMMUNICATION QUARTERLY<TD><a TITLE=" Article JOURNALISM &amp; MASS COMMUNICATI Title: Intellectual Balkanization or Globalization: The Future of Communication Research Publishing" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>11</a>
+<TR valign=top align=right class=evn><TD>1516<TD align=left class=sc>JOURNALISM PRACTICE<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1517<TD align=left class=sc>JOURNALISM STUDIES<TD><a TITLE=" Article JOURNALISM STUDIES Title: New Roles for Media in the Western Balkans: A study of transitional journalism" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>16</a>
+<TR valign=top align=right class=evn><TD>1518<TD align=left class=sc>JOURNEYS-THE INTERNATIONAL JOURNAL OF TRAVEL AND TRAVEL WRITING<TD>2<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=odd><TD>1519<TD align=left class=sc>JUS POST BELLUM: TOWARDS A LAW OF TRANSITION FROM CONFLICT TO PEACE<TD><a TITLE=" BOOK CHAPTER JUS POST BELLUM: TOWARDS A LA Title: ARE HUMAN RIGHTS NORMS PART OF THE JUS POST BELLUM, AND SHOULD THEY BE?" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>1520<TD align=left class=sc>KEIO ECONOMIC STUDIES<TD><a TITLE=" Article KEIO ECONOMIC STUDIES Title: REDISCOVERY OF BALKANS" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="so-name.html">Journal</a></SPAN><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>1521<TD align=left class=sc>KEW BULLETIN<TD><a TITLE=" Article KEW BULLETIN Title: Laurentia in the Balkan Peninsula" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1522<TD align=left class=sc>KNJIZEVNA SMOTRA<TD>6<TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1523<TD align=left class=sc>KNOWLEDGE MANAGEMENT RESEARCH & PRACTICE<TD><a TITLE=" Article KNOWLEDGE MANAGEMENT RESEARCH Title: Examining the relationship between social capital and knowledge usage in the nonprofit industry" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=evn><TD>1524<TD align=left class=sc>KONSTANTINOVE LISTY-CONSTANTINES LETTERS<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1525<TD align=left class=sc>KOREA JOURNAL<TD><a TITLE=" Article KOREA JOURNAL Title: Intercommunication between &quot;realism&quot; and &quot;modernism&quot;: A return to the literary work" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1526<TD align=left class=sc>KOREAN JOURNAL OF DEFENSE ANALYSIS<TD><a TITLE=" Article KOREAN JOURNAL OF DEFENSE ANA Title: Coping with the Korean peace process: An American view" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1527<TD align=left class=sc>KOREAN JOURNAL OF INTERNATIONAL AND COMPARATIVE LAW<TD><a TITLE=" Article KOREAN JOURNAL OF INTERNATION Title: Reconciliation in Europe A Case Study from the Western Balkans" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1528<TD align=left class=sc>KOSMORAMA<TD><a TITLE=" Article KOSMORAMA Title: False images and sins of the past: The Third Balkan War in film" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1529<TD align=left class=sc>KOSOVO SHORT HIST<TD><a TITLE=" BOOK KOSOVO SHORT HIST Title: Kosovo: A short history" href=javascript:opeNod(1167)>1</a><TD><a title=' 1.1%' class=ank>89</a><TD><a title=' 2.0%' class=ank>1732</a>
+<TR valign=top align=right class=evn><TD>1530<TD align=left class=sc>KOSOVO WAR REVENGE<TD><a TITLE=" BOOK KOSOVO WAR REVENGE Title: Kosovo: War and Revenge" href=javascript:opeNod(1301)>1</a><TD><a title=' 0.5%' class=ank>43</a><TD><a title=' 1.4%' class=ank>1168</a>
+<TR valign=top align=right class=odd><TD>1531<TD align=left class=sc>KRATKIE SOOBSHCHENIYA INSTITUTA ARKHEOLOGII<TD>3<TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>1532<TD align=left class=sc>KREMLIN PLAYBOOK IN SOUTHEAST EUROPE: ECONOMIC INFLUENCE AND SHARP POWER<TD>2<TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1533<TD align=left class=sc>KRIMINALISTIK<TD>4<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1534<TD align=left class=sc>KURDISH STUDIES<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1535<TD align=left class=sc>KYKLOS<TD><a TITLE=" Article KYKLOS Title: STRUCTURAL-CHANGES IN INVESTMENTS IN SOUTHEAST EUROPE" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1536<TD align=left class=sc>LABOR HISTORY<TD><a TITLE=" Article LABOR HISTORY Title: Approaching the socialist factory and its workforce: considerations from fieldwork in (former) Yugoslavia" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=odd><TD>1537<TD align=left class=sc>LABORATORIUM-RUSSIAN REVIEW OF SOCIAL RESEARCH<TD><a TITLE=" Article LABORATORIUM-RUSSIAN REVIEW O Title: FIGHT THE DRAGON LONG, THE DRAGON YOU BECOME: PERFORMING VIEWERS IN THE GRAFFITI MONUMENT" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>1538<TD align=left class=sc>LABOUR ECONOMICS<TD><a TITLE=" Article LABOUR ECONOMICS Title: Migration and gender differences in the home labour market: Evidence from Albania" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>39</a>
+<TR valign=top align=right class=odd><TD>1539<TD align=left class=sc>LANDFORM DYNAMICS AND EVOLUTION IN ROMANIA<TD>2<TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>1540<TD align=left class=sc>LANDSCAPE AND URBAN PLANNING<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 1.1%' class=ank>947</a>
+<TR valign=top align=right class=odd><TD>1541<TD align=left class=sc>LANGUAGE<TD><a TITLE=" Article LANGUAGE Title: Relics of Latin melligo in Balkan Romance" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1542<TD align=left class=sc>LANGUAGE & COMMUNICATION<TD>2<TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=odd><TD>1543<TD align=left class=sc>LANGUAGE AND DIALOGUE<TD><a TITLE=" Article LANGUAGE AND DIALOGUE Title: From joker to the butt and back Ethnic identity construction through humour" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1544<TD align=left class=sc>LANGUAGE CONTACT, CONTINUITY AND CHANGE IN THE GENESIS OF MODERN HEBREW<TD><a TITLE=" BOOK CHAPTER LANGUAGE CONTACT, CONTINUITY  Title: Can there be language continuity in language contact?" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1545<TD align=left class=sc>LANGUAGE DYNAMICS AND CHANGE<TD><a TITLE=" Article LANGUAGE DYNAMICS AND CHANGE Title: Bivalent Verb Classes in the Languages of Europe Quantitative Typological Study" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=evn><TD>1546<TD align=left class=sc>LANGUAGE PROBLEMS & LANGUAGE PLANNING<TD><a TITLE=" Article LANGUAGE PROBLEMS &amp; LANGUAGE  Title: Petro Stojan From fervent interlinguist to forgotten hermit" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1547<TD align=left class=sc>LANGUAGES<TD><a TITLE=" Article LANGUAGES Title: A Balkan View on the Left Periphery: Modal and Discourse Particles" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1548<TD align=left class=sc>LANGUAGES IN CONTACT<TD><a TITLE=" Article LANGUAGES IN CONTACT Title: LINGUISTIC BALKANIZATION: CONTACT-INDUCED CHANGE BY MUTUAL REINFORCEMENT" href=javascript:opeNod(1302)>1</a><TD><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.3%' class=ank>246</a>
+<TR valign=top align=right class=odd><TD>1549<TD align=left class=sc>LARES-QUADRIMESTRALE DI STUDI DEMOETNOANTROPOLOGICI<TD><a TITLE=" Article LARES-QUADRIMESTRALE DI STUDI Title: HORROR INFINITI. THE GYPSIES AS TRICKSTERS IN EUROPE" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1550<TD align=left class=sc>LATIN AMERICAN ANTIQUITY<TD><a TITLE=" Article LATIN AMERICAN ANTIQUITY Title: THE POLITICAL LANDSCAPES OF EASTERN SONORA, MEXICO: A RECONSIDERATION OF SCALE AND ORGANIZATION" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>6</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="so-name.html">Journal</a></SPAN><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>1551<TD align=left class=sc>LAWS<TD><a TITLE=" Article LAWS Title: Migrants in the Attic: The Case of Migrants with Disabilities and Resettlement Services in Serbia" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1552<TD align=left class=sc>LEA-LINGUE E LETTERATURE D ORIENTE E D OCCIDENTE<TD><a TITLE=" Article LEA-LINGUE E LETTERATURE D OR Title: The portrait of Marko Pogacar A possible draft and some choc" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1553<TD align=left class=sc>LEGACIES OF THE RUE MORGUE: SCIENCE, SPACE, AND CRIME FICTION IN FRANCE<TD><a TITLE=" BOOK CHAPTER LEGACIES OF THE RUE MORGUE: S Title: Zeropa-Land: Balkanization and the Schizocartographies of Dantec and Radoman" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1554<TD align=left class=sc>LEGAL ISSUES OF ECONOMIC INTEGRATION<TD><a TITLE=" Article LEGAL ISSUES OF ECONOMIC INTE Title: The Compliance and Dispute Settlement System of the European Energy Community" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1555<TD align=left class=sc>LEIDEN JOURNAL OF INTERNATIONAL LAW<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>1556<TD align=left class=sc>LEONARDO MUSIC JOURNAL<TD><a TITLE=" Article LEONARDO MUSIC JOURNAL Title: A Conflux of Musical Logics: Memory, History and the Improvisative Music of SLANT" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1557<TD align=left class=sc>LEVANT<TD>2<TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>1558<TD align=left class=sc>LEX LOCALIS-JOURNAL OF LOCAL SELF-GOVERNMENT<TD>5<TD>0<TD><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=odd><TD>1559<TD align=left class=sc>LEXONOMICA<TD>3<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>1560<TD align=left class=sc>LFE-REVISTA DE LENGUAS PARA FINES ESPECIFICOS<TD><a TITLE=" Article LFE-REVISTA DE LENGUAS PARA F Title: English language skills in ESP for law course" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>1561<TD align=left class=sc>LIBERTY AND THE SEARCH FOR IDENTITY: LIBERAL NATIONALISMS AND THE LEGACY OF EMPIRES<TD><a TITLE=" BOOK CHAPTER LIBERTY AND THE SEARCH FOR ID Title: The Interesting Anomaly of Balkan Liberalism" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>1562<TD align=left class=sc>LILI-ZEITSCHRIFT FUR LITERATURWISSENSCHAFT UND LINGUISTIK<TD><a TITLE=" Article LILI-ZEITSCHRIFT FUR LITERATU Title: Contactological research as a topic of interculturally oriented German studies" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1563<TD align=left class=sc>LIMITS TO THE EUROPEAN UNION'S NORMATIVE POWER IN A POST-CONFLICT SOCIETY: EULEX AND PEACEBUILDING IN KOSOVO<TD><a TITLE=" BOOK CHAPTER LIMITS TO THE EUROPEAN UNION&#39; Title: The EU&#39;s Affair with Kosovo" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1564<TD align=left class=sc>LINGUA<TD>7<TD><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>70</a>
+<TR valign=top align=right class=odd><TD>1565<TD align=left class=sc>LINGUA MONTENEGRINA<TD>16<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>1566<TD align=left class=sc>LINGUE ANTICHE E MODERNE<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1567<TD align=left class=sc>LINGUISTIC REVIEW<TD><a TITLE=" Article LINGUISTIC REVIEW Title: The emergence of the Romanian subjunctive" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=evn><TD>1568<TD align=left class=sc>LINGUISTIC TYPOLOGY<TD><a TITLE=" Article LINGUISTIC TYPOLOGY Title: Perhaps mirativity is phlogiston, but admirativity is perfect: On Balkan evidential strategies" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=odd><TD>1569<TD align=left class=sc>LINGUISTICA E FILOLOGIA<TD><a TITLE=" Article LINGUISTICA E FILOLOGIA Title: Considerations on the structure of information in Slavic Languages" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1570<TD align=left class=sc>LINGUISTIQUE<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1571<TD align=left class=sc>LINGUISTIQUE BALKANI<TD><a TITLE=" BOOK LINGUISTIQUE BALKANI Title: Linguistique balkanique, problemes et resultats" href=javascript:opeNod(264)>1</a><TD><a title=' 0.4%' class=ank>36</a><TD><a title=' 0.7%' class=ank>634</a>
+<TR valign=top align=right class=evn><TD>1572<TD align=left class=sc>LION AND THE UNICORN<TD><a TITLE=" Article LION AND THE UNICORN Title: THE BALKANIZATION OF CHILDRENS WRITING" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>1573<TD align=left class=sc>LISTY FILOLOGICKE<TD><a TITLE=" Article LISTY FILOLOGICKE Title: THULE AND SCANDZA OF JORDANES, AND HIS CONNECTIONS WITH PROCOPIUS" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1574<TD align=left class=sc>LITERA-JOURNAL OF LANGUAGE LITERATURE AND CULTURE STUDIES<TD><a TITLE=" Article LITERA-JOURNAL OF LANGUAGE LI Title: Spanish Jews of Thessaloniki (Settlement, Ascension, Great Destruction)" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1575<TD align=left class=sc>LITERARY REVIEW<TD><a TITLE=" Article LITERARY REVIEW Title: My private Balkan: Fragments of memory &amp; oblivion" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1576<TD align=left class=sc>LITERATUR UND KRITIK<TD>7<TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1577<TD align=left class=sc>LITHIC TECHNOLOGY<TD><a TITLE=" Article LITHIC TECHNOLOGY Title: TRIBULUM INSERTS IN ETHNOGRAPHIC AND ARCHAEOLOGICAL PERSPECTIVE: CASE STUDIES FROM BULGARIA AND ISRAEL" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=evn><TD>1578<TD align=left class=sc>LIVING WITH PATRIARCHY: DISCURSIVE CONSTRUCTIONS OF GENDERED SUBJECTS ACROSS CULTURES<TD><a TITLE=" BOOK CHAPTER LIVING WITH PATRIARCHY: DISCU Title: What it means to be a Bosnian woman Analyzing women&#39;s talk between patriarchy and emancipation" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>1579<TD align=left class=sc>LJETOPIS SOCIJALNOG RADA<TD>2<TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>1580<TD align=left class=sc>LOCAL ECONOMY<TD><a TITLE=" Article LOCAL ECONOMY Title: Challenges for Public Policy in Promoting Entrepreneurship in South Eastern Europe" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>13</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="so-name.html">Journal</a></SPAN><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>1581<TD align=left class=sc>LOCAL GOVERNMENT STUDIES<TD><a TITLE=" Article LOCAL GOVERNMENT STUDIES Title: Coming out of the shadow? Studies of local governments in Central and Eastern Europe in European academic research" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>1582<TD align=left class=sc>LOGISTICS-BASEL<TD><a TITLE=" Article LOGISTICS-BASEL Title: Cloud and IoT Applications in Material Handling Automation and Intralogistics" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=odd><TD>1583<TD align=left class=sc>LOGOS-VILNIUS<TD>2<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1584<TD align=left class=sc>LOUVAIN STUDIES<TD><a TITLE=" Article LOUVAIN STUDIES Title: Dynamic of Destruction Culture and Mass Killing in the First World War" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1585<TD align=left class=sc>MACEDONIA ITS RACES<TD><a TITLE=" BOOK MACEDONIA ITS RACES Title: Macedonia; its races and their future" href=javascript:opeNod(16)>1</a><TD><a title=' 0.5%' class=ank>41</a><TD><a title=' 0.3%' class=ank>278</a>
+<TR valign=top align=right class=evn><TD>1586<TD align=left class=sc>MACEDONIAN QUESTION AND THE MACEDONIANS: A HISTORY<TD><a TITLE=" BOOK CHAPTER MACEDONIAN QUESTION AND THE M Title: Tracing the birth of a new Balkan nation" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1587<TD align=left class=sc>MAGIC RITUAL AND WITCHCRAFT<TD><a TITLE=" Article MAGIC RITUAL AND WITCHCRAFT Title: STOIKHEION, STUHA, ZDUHAC: GUARDIAN SPIRITS, WEATHER MAGICIANS, AND TALISMANIC MAGIC IN THE BALKANS" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>1588<TD align=left class=sc>MAJORITY VOTING AS A CATALYST OF POPULISM: PREFERENTIAL DECISION-MAKING FOR AN INCLUSIVE DEMOCRACY<TD><a TITLE=" BOOK CHAPTER MAJORITY VOTING AS A CATALYST Title: Continental Europe: Are We All Little Bolsheviks?" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1589<TD align=left class=sc>MAKING POLICY MOVE: TOWARDS A POLITICS OF TRANSLATION AND ASSEMBLAGE<TD><a TITLE=" BOOK CHAPTER MAKING POLICY MOVE: TOWARDS A Title: Performing reform in South East Europe: consultancy, translation and flexible agency" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>1590<TD align=left class=sc>MALIYE DERGISI<TD><a TITLE=" Article MALIYE DERGISI Title: The Correlation Between Democracy and Economic Growth: An Econometric Analysis on Balkan Countries" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>1591<TD align=left class=sc>MAN<TD>13<TD><a title=' 0.1%' class=ank>9</a><TD>0
+<TR valign=top align=right class=evn><TD>1592<TD align=left class=sc>MANAGEMENT DECISION<TD>3<TD>0<TD><a title=' 0.1%' class=ank>63</a>
+<TR valign=top align=right class=odd><TD>1593<TD align=left class=sc>MANAGEMENT RESEARCH AND PRACTICE<TD>4<TD>0<TD><a title=' 0.0%' class=ank>11</a>
+<TR valign=top align=right class=evn><TD>1594<TD align=left class=sc>MANAGEMENT RESEARCH REVIEW<TD><a TITLE=" Article MANAGEMENT RESEARCH REVIEW Title: Roles of foreign-owned subsidiaries in a European peripheral economy" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>1595<TD align=left class=sc>MANAGEMENT SCIENCE<TD><a TITLE=" Article MANAGEMENT SCIENCE Title: Global village or cyber-balkans? Modeling and measuring the integration of electronic communities" href=javascript:opeNod(1720)>1</a><TD>0<TD><a title=' 0.2%' class=ank>133</a>
+<TR valign=top align=right class=evn><TD>1596<TD align=left class=sc>MANAGEMENT-JOURNAL OF CONTEMPORARY MANAGEMENT ISSUES<TD>7<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>22</a>
+<TR valign=top align=right class=odd><TD>1597<TD align=left class=sc>MANAGERIAL AUDITING JOURNAL<TD><a TITLE=" Article MANAGERIAL AUDITING JOURNAL Title: The foreign direct investment decision-making process Strategy, politics and uses of management accounting information" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>1598<TD align=left class=sc>MANAGING TRUST IN STRATEGIC ALLIANCES<TD><a TITLE=" BOOK CHAPTER MANAGING TRUST IN STRATEGIC A Title: KEY ANTECEDENTS OF FOREIGN PARTNER&#39;S TRUST IN INTERNATIONAL STRATEGIC ALLIANCES AND THE IMPACT OF TRUST ON ISA PERFORMANCE" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>1599<TD align=left class=sc>MANKIND QUARTERLY<TD>3<TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>1600<TD align=left class=sc>MANUAL OF LANGUAGE ACQUISITION<TD>2<TD>0<TD>0
+</TABLE>
+<div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>8</b> of 14<span class=nonprn>: [  &nbsp;<a href=so-name.html class=nu>1</a> &nbsp;<a href=so-name-2.html class=nu>2</a> &nbsp;<a href=so-name-3.html class=nu>3</a> &nbsp;<a href=so-name-4.html class=nu>4</a> &nbsp;<a href=so-name-5.html class=nu>5</a> &nbsp;<a href=so-name-6.html class=nu>6</a> &nbsp;<a href=so-name-7.html class=nu>7</a> &nbsp;8 &nbsp;<a href=so-name-9.html class=nu>9</a> &nbsp;<a href=so-name-10.html class=nu>10</a> ]</span> &nbsp;<a href=so-name-11.html class=nu>11</a>&nbsp;</div>
+</BODY>

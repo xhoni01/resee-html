@@ -1,0 +1,592 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><HEAD><TITLE>HistCite - RESEE: A Bibliographic Database on Balkan – Southeast European Studies</TITLE></HEAD>
+<BODY VLINK=blue OnLoad="focus()">
+<STYLE>
+body {
+	margin: 2px 10px; padding: 0;
+	background: #fff;
+}
+body, td, th {
+	font-size: 10pt; font-family: Verdana;
+}
+input, select, textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ui {
+	font-size: 10pt; font-family: Verdana;
+}
+.ui input, .ui select, .ui textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ci_title {
+	font-size: 8pt; font-weight: bold;
+}
+.ci_il {
+	color: black; text-decoration: none;	/* msie6 ! inherit */
+}
+.helpa { text-decoration: none;
+	cursor: help;
+}
+.helpt { background: #ffff77; padding: 4px;
+}
+.nu { text-decoration: none; 
+}
+.sc, .sc a { color: #904644 }
+.fnd { background-color: #beb;
+	padding: 0 3px 2px 2px;
+}
+td div.fndCR {
+	padding-left: 2em;
+//	text-indent: -2em;
+}
+.odd { background-color: #eeeeee }
+.evn { background-color: #dddddd }
+div.odd { padding: 5px; margin-bottom: 2px }
+div.evn { padding: 5px; margin-bottom: 2px }
+.yr { padding: 0; font-weight: bold }
+.ank:hover { cursor: pointer; text-decoration: none; color: inherit; }
+a {
+	text-decoration: none;
+}
+a:hover, a:hover .sc {
+	text-decoration: underline; color: blue;
+}
+.scr:hover, td a.scr:hover { color:#000; text-decoration:none; } /* FF td */
+@media print {
+	.nonprn, .ephemeral, .x, .ui { display: none; }
+	.index { border: solid #fff 0; }
+	body { font-size: 10pt; }
+	td, th { font-size: 10pt; }
+	.ci_title { font-size: 8pt; }
+}
+</STYLE>
+<SCRIPT>
+var root=location.href; root = root.replace(/index.*/, ''); root = root.replace(/list.*/, '');
+function about () { window.open(root+'about.html','about','width=440,height=370,resizable=yes,scrollbars=yes') }
+	// This is a list of XMLHttpRequest-creation factory functions to try
+_factories = [
+    function() { return new XMLHttpRequest(); },
+    function() { return new ActiveXObject("Msxml2.XMLHTTP"); },
+    function() { return new ActiveXObject("Microsoft.XMLHTTP"); }
+];
+
+// When we find a factory that works, store it here.
+_factory = null;
+
+// Create and return a new XMLHttpRequest object.
+//
+// The first time we're called, try the list of factory functions until
+// we find one that returns a non-null value and does not throw an
+// exception. Once we find a working factory, remember it for later use.
+//
+newRequest = function() {
+    if (_factory != null) return _factory();
+
+    for(var i = 0; i < _factories.length; i++) {
+        try {
+            var factory = _factories[i];
+            var request = factory();
+            if (request != null) {
+                _factory = factory;
+                return request;
+            }
+        }
+        catch(e) {
+            continue;
+        }
+    }
+    // If we get here, none of the factory candidates succeeded,
+    // so throw an exception now and for all future calls.
+    _factory = function() {
+        //throw new Error("XMLHttpRequest not supported");
+        alert("XMLHttpRequest not supported");
+    }
+    _factory(); // Throw an error
+}
+
+function gethelp (url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+//    alert('OK');
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+function gettip (ent, url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+		ent.innerHTML = req.responseText;
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+</SCRIPT>
+<STYLE>
+div#tipshade {
+	position: fixed; top: 208px; left: 208px;
+	margin: 0px; width: 420px; height: 180px;
+	border: solid gray 2px;
+	background: gray;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 19; display: none;
+}
+div#tipoday {
+	position: fixed; top: 200px; left: 200px;
+	margin: 0px; width: 420px; height: 180px; padding: 0;
+	background: white;
+	border: solid #e44959 2px;
+	font: 10pt Verdana; cursor: default;
+	z-index: 20; display: none;
+}
+div#tiptitle {
+	background: #e44959; color: white; font-weight: bold;
+	padding-left: 4px;
+}
+div#tiptitle span.x {
+	background: white;
+}
+div#tipbox {
+	position: relative; /* top: 5px; */ margin: 8px;
+	max-height: 120px; overflow: auto;
+}
+div#tipctrl {
+	position: absolute; bottom: 0; margin: 4px;
+}
+div#tipctrl td {
+	font-size: 10px;
+}
+div#tipctrl form { margin: 0; }
+span.nw { white-space: nowrap; }
+</STYLE>
+<div id="tipshade" class="ui"> </div>
+<div id="tipoday" class="ui" align=left>
+<div id="tiptitle">HistCite Tip of the Day<span class="x"><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;" title="Close">X</a></span></div>
+<div id="tipbox">Tip of the day</div>
+<div id="tipctrl">
+<table align=bottom width=100%>
+<tr><td width=40% nowrap><form name=ft><label><input type=checkbox OnChange="nextStart(this);" checked> Show tip at next start</label></form></td>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=-1');>Previous Tip</a>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=1');>Next Tip</a>
+<td align=right><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;">Close</a>&nbsp;</td>
+</tr></table></div></div>
+<SCRIPT> var otip;
+function getit () { otip = document.getElementById('tipbox'); gettip(otip,'/tip.txt?next=0'); }
+function nextStart (start) {
+	if(start.checked == true) {
+		on = 1;
+	} else {
+		on = 0;
+	}
+	gethelp('/tipStart?on=' + on);
+}
+function tip_show () {
+	var W, H;
+	if(window.innerWidth) {
+		W = window.innerWidth; H = window.innerHeight;
+	} else {
+		var dd = document.documentElement;
+		W = dd.clientWidth; H = dd.clientHeight;
+	}
+//	alert(W + ' x ' + H);
+	var left = (W-420)/2;
+	var top = (H-180)/2;
+	var tipB = document.getElementById('tipshade');
+	var tipT = document.getElementById('tipoday');
+	tipB.style.left = left + 8 + 'px';
+	tipB.style.top = top + 8 + 'px';
+	tipT.style.left = left + 'px';
+	tipT.style.top = top + 'px';
+	tipB.style.display='block';
+	tipT.style.display='block';
+	getit();
+}
+</SCRIPT>
+
+<style>
+div#af_boxshado {
+	position: fixed; left:148px; top:128px; width: 460px; height: 110px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 11; display: none;
+}
+div#af_box {
+	position: fixed; left:140px; top:120px; width: 460px; height: 110px;
+	background: white; border: solid #999 2px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+div#af_box input {
+	font: 10px Verdana;
+}
+div#af_box_title {
+	background: #d3d3d3; padding-left: 4px; font-weight: bold;
+}
+div#af_box_title span.x {
+	background: white;
+}
+div#af_form {
+	width: 445px; height: 70px;
+	padding: 8px; overflow: auto;
+}
+div#af_form #sub{
+	display: block; margin: 12px 0 0 0;
+}
+div#starh2 {
+	position: absolute; left: 88px; top: 78px; width: 420px; height: 156px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	padding: 8px;
+	z-index: 12; display: none;
+}
+div#starh {
+	position: absolute; left: 80px; top: 70px; width: 420px; height: 156px; overflow: auto;
+	border: outset gray 2px;
+	padding: 8px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+</style>
+<div id="af_boxshado"> </div>
+<div id="af_box">
+<div id="af_box_title">Add File<span class="x"><a onClick="af_close()" title="Close">X</a></span>
+<!--<a href=javascript:na() onMouseOver="na();" onClick="toggle('starh');" class=helpa style="color:#000">-->
+<a onClick="toggle('starh');" class=helpa style="color:#000"><span class="x" id=mstarh style="top:0;right:14px;">?</span><span class="x" id=lstarh style="top:0;right:14px;display:none">_</span></a>
+</div>
+<div id="af_form">
+<FORM action=/input method=GET OnSubmit="return false" name=af style="margin:0">
+	Use [Browse...] to select a file with bibliography data:<br>
+	<INPUT type=hidden name=inputpath>
+	<INPUT type=file name=inputset size=48 OnChange="af.sub.focus()" value="">
+	<INPUT type=submit value="Add File" OnClick="afSubmit();return false" name=sub id="sub">
+</div><div id=starh2> </div>
+<div id=starh class=helpt>
+Use wildcard '*' to add more than one file at a time.
+For example, if you have <code>file1</code>,
+<code>file2</code>, etc. all in the same folder or directory;
+first, locate one of the files with the [Browse...] button.  Then alter the
+file path in the box above to include '*' character (eg. <code>file*</code>).
+Wildcard '?' to blanket only one character works too.<br>
+<b>Note</b>: In Windows you can select multiple files and "drag and drop" them 
+onto HistCite icon or shortcut.  The program would start and load those files.
+</div>
+</FORM><SCRIPT>
+var af = document.af;
+function afSubmit() {
+	if ("" == af.inputset.value ) { alert("Select a file."); return }
+	af.inputpath.value = af.inputset.value;
+	af.submit();
+}
+function af_show() {
+	document.getElementById('af_boxshado').style.display = 'block';
+	document.getElementById('af_box').style.display = 'block';
+	a = document.af.inputset.value;
+	document.af.inputset.focus();
+}
+function af_close() {
+	document.getElementById('af_boxshado').style.display = 'none';
+	document.getElementById('af_box').style.display = 'none';
+}
+</SCRIPT></div>
+
+<SCRIPT>
+function glossary () { window.open(root+'glossary.html','gloss','width=640,height=570,resizable=yes,scrollbars=yes') }
+function opeNod (a) { window.open(root+'node/'+a+'.html',a,'width=770,height=570,resizable=yes,scrollbars=yes') }
+function opeLod (dp, a) { if(''==dp) d='wd'; else d=dp; var w = d; w = w.replace(/[-\/]/g, '');
+	window.open(root+d+'/'+a+'.html',w+a,'width=640,height=546,resizable=yes,scrollbars=yes') }
+function na(){}
+</SCRIPT>
+<STYLE>
+#head {
+	position: left:0; padding-left:4px; background:#fff;
+	z-index:2; margin:0 0 8px 0; border-bottom:solid #000 1px;
+}
+#title {
+	padding-bottom: 4px; font-size: 1.3em; font-weight: bold;
+	max-width: 600px; /* non default overflow gives odd z-effects in FF */
+}
+#desc {
+	position: absolute; left: 4px; top: 1.8em;
+	padding: 2px 8px 4px 8px; white-space: normal; max-width: 480px;
+	background: #ffffcc; font-weight: normal; font-size: 10pt;
+	border: solid #000 1px;
+	display: none; z-index: 11;
+}
+#atitle { cursor: text;}
+#atitle, #stats {
+	text-decoration: none; color: #000;
+}
+#stats2 {
+	position: absolute; right: 0px; padding: 0;
+	background: white;
+	display: none; z-index: 11;
+}
+#atitle:hover #desc, #stats:hover #stats2 {
+	display: block;
+}
+@media print {
+	#head { position: static; }
+	#menu_pm { line-height: 0; }
+	#back { display: none; }
+}
+</STYLE>
+<!-- FF 3 only? fix -->
+<div id=head style="width:99%">
+<TABLE width=100% cellpadding=0 cellspacing=0 style="margin:0 0 3px 0">
+<TR valign=top><TD align=left width=60%>
+<div id=title><a id=atitle >RESEE: A Bibliographic Database on Balkan – Southeast European Studies<div id=desc>-------Search: Databases searching procedure and formats------
+*| Search query
+"balkan*" OR "southeast* europe*" OR "south east* europe*" (TITLE-ABS-KEY) 
+Web of Science Core Collection (SSCI, A&HCI, ESCI, BKCI-SSH)
+Scopus
+Constellate (JSTOR and Portico)
+
+Note: The earliest publication date from WoS for the articles was 1957 whereas for the books 2003.
+To complement our database with entries before 1957, we search the Constellate (Jstor and Portico) and Scopus database, finding and adding a further 445 articles.
+Characters were normalize, and English translation of the titles were added for entries in other languages than English. And for Constellate data we kept only Articles and Books from Humanities and Social Sciences.
+The Scopus and Constellate metadata files were converted into WoS (.txt) format.
+We also added manually 59 new entries (9 articles and 50 books) that were missing from the search but showed to be among the most cited references (local citation score greater than 10)
+
+---------Merging variants in the same cited references--------
+Given that databases have problems with the completeness of references and linkages (Van Eck and Waltman 2017), we used CRExplorer to clean the data and reduce the problems posed by variants in the same cited references (Thor et al. 2016)
+The cited references (CRs) in our data contained variants, especially the references on books. 
+We use the manual cleaning-up procedure, setting the clustering algorithm with a Levenshtein threshold of 0.75. 
+We also manually checked and unified variants of the same cited references (CRs), especially for books that received a local citation of more than 20 or had different years or editions and translations into other languages. 
+After the cleaning, we unify the variants of the same CRs, about 12% of the initial cited references.</div></a></div>
+<TD align=center><a href=# OnClick="window.open('../graph/list.html','graph','resizable=yes,scrollbars=yes')" class=nonprn>Historiographs</a><TD nowrap align=right rowspan=2 width=5%><div class=nonprn><a href=# OnClick="window.open('../help/wd.html','help','width=690,height=590,resizable=yes,scrollbars=yes')">Help</a>&nbsp;&nbsp;
+<a href=javascript:glossary()>Glossary</a>&nbsp;&nbsp;<a href="http://www.histcite.com/HTMLHelp/guide.html" target=guide>HistCite Guide</a>&nbsp;&nbsp;<a href=# OnClick="about(); return false">About</a></div><a id=stats>
+Grand Totals: LCS 8009, GCS 85894, CR 328237<br>Collection span: 1854 - 2022<br></a><TR><TD colspan=2 width=95%><b>Word(<a href=# title=" Titles " class=helpa>i</a>) List</b> (11723) Word&nbsp;count:&nbsp;64404, All&nbsp;words&nbsp;count:&nbsp;103007</TABLE></div><div align=right>24 December 2022</div>
+<div class="index" style=""><a href=../index-tl.html>Records</a>: 8378, <a href=au-pubs.html>Authors</a>: 10107, <a href=so-pubs.html>Journals</a>: 2650, <a href=or-pubs.html>Cited References</a>: 248863, Words: 11723
+<br><span class=nonprn><a href=py-pubs.html title=' Publication Years: 127 '>Yearly output</a>
+|&nbsp;<a href=dt-pubs.html title=' Document Types: 14 '>Document Type</a>
+|&nbsp;<a href=la-pubs.html title=' Languages: 6 '>Language</a>
+|&nbsp;<a href=in-pubs.html title=' Institutions: 62 '>Institution</a>
+|&nbsp;<a href=i2-pubs.html title=' Institution with Subdivisions: 64 '>Institution with Subdivision</a>
+|&nbsp;<a href=co-pubs.html title=' Countries: 8 '>Country</a></span></div><div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>2</b> of 59<span class=nonprn>: [  &nbsp;<a href=wd-pubs.html class=nu>1</a> &nbsp;2 &nbsp;3 &nbsp;4 &nbsp;5 &nbsp;6 &nbsp;7 &nbsp;8 &nbsp;9 &nbsp;10 ]</span> &nbsp;11&nbsp; &nbsp;21&nbsp; &nbsp;31&nbsp; &nbsp;41&nbsp; &nbsp;51&nbsp;</div>
+<TABLE border=0 cellpadding=5 cellspacing=2 style="border: 2px solid #cccccc;margin: 4px 0;">
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="wd-name.html">Word</a><TH><SPAN class=sc><a href="wd-pubs.html" TITLE=" Records ">Recs</a></SPAN><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>201<TD align=left>PROBLEM<TD class=sc><a href=# OnClick="opeLod('', '8392', 'PROBLEM');return false">43</a><TD><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.1%' class=ank>86</a>
+<TR valign=top align=right class=evn><TD>202<TD align=left>SELECTED<TD class=sc><a href=# OnClick="opeLod('', '9500', 'SELECTED');return false">43</a><TD><a title=' 0.2%' class=ank>16</a><TD><a title=' 0.3%' class=ank>257</a>
+<TR valign=top align=right class=odd><TD>203<TD align=left>CHURCH<TD class=sc><a href=# OnClick="opeLod('', '1791', 'CHURCH');return false">42</a><TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=evn><TD>204<TD align=left>CITY<TD class=sc><a href=# OnClick="opeLod('', '1826', 'CITY');return false">42</a><TD><a title=' 0.7%' class=ank>54</a><TD><a title=' 0.2%' class=ank>181</a>
+<TR valign=top align=right class=odd><TD>205<TD align=left>CONDITIONALITY<TD class=sc><a href=# OnClick="opeLod('', '2099', 'CONDITIONALITY');return false">42</a><TD><a title=' 3.3%' class=ank>264</a><TD><a title=' 0.7%' class=ank>572</a>
+<TR valign=top align=right class=evn><TD>206<TD align=left>ITALIAN<TD class=sc><a href=# OnClick="opeLod('', '5596', 'ITALIAN');return false">42</a><TD><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.2%' class=ank>154</a>
+<TR valign=top align=right class=odd><TD>207<TD align=left>MIGRANTS<TD class=sc><a href=# OnClick="opeLod('', '6701', 'MIGRANTS');return false">42</a><TD><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.3%' class=ank>299</a>
+<TR valign=top align=right class=evn><TD>208<TD align=left>NINETEENTH<TD class=sc><a href=# OnClick="opeLod('', '7258', 'NINETEENTH');return false">42</a><TD><a title=' 1.6%' class=ank>125</a><TD><a title=' 0.6%' class=ank>513</a>
+<TR valign=top align=right class=odd><TD>209<TD align=left>ONE<TD class=sc><a href=# OnClick="opeLod('', '7453', 'ONE');return false">42</a><TD><a title=' 0.2%' class=ank>13</a><TD><a title=' 0.1%' class=ank>73</a>
+<TR valign=top align=right class=evn><TD>210<TD align=left>ORTHODOX<TD class=sc><a href=# OnClick="opeLod('', '7538', 'ORTHODOX');return false">42</a><TD><a title=' 0.7%' class=ank>55</a><TD><a title=' 0.2%' class=ank>195</a>
+<TR valign=top align=right class=odd><TD>211<TD align=left>RECENT<TD class=sc><a href=# OnClick="opeLod('', '8763', 'RECENT');return false">42</a><TD><a title=' 1.3%' class=ank>102</a><TD><a title=' 0.3%' class=ank>251</a>
+<TR valign=top align=right class=evn><TD>212<TD align=left>RIGHTS<TD class=sc><a href=# OnClick="opeLod('', '9143', 'RIGHTS');return false">42</a><TD><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.2%' class=ank>174</a>
+<TR valign=top align=right class=odd><TD>213<TD align=left>SETTLEMENT<TD class=sc><a href=# OnClick="opeLod('', '9577', 'SETTLEMENT');return false">42</a><TD><a title=' 0.4%' class=ank>31</a><TD><a title=' 0.4%' class=ank>318</a>
+<TR valign=top align=right class=evn><TD>214<TD align=left>SOUTHERN<TD class=sc><a href=# OnClick="opeLod('', '9909', 'SOUTHERN');return false">42</a><TD><a title=' 0.4%' class=ank>32</a><TD><a title=' 0.3%' class=ank>294</a>
+<TR valign=top align=right class=odd><TD>215<TD align=left>STRATEGIES<TD class=sc><a href=# OnClick="opeLod('', '10144', 'STRATEGIES');return false">42</a><TD><a title=' 1.1%' class=ank>86</a><TD><a title=' 0.5%' class=ank>414</a>
+<TR valign=top align=right class=evn><TD>216<TD align=left>HUNGARIAN<TD class=sc><a href=# OnClick="opeLod('', '5020', 'HUNGARIAN');return false">41</a><TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>60</a>
+<TR valign=top align=right class=odd><TD>217<TD align=left>HUNGARY<TD class=sc><a href=# OnClick="opeLod('', '5022', 'HUNGARY');return false">41</a><TD><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.2%' class=ank>200</a>
+<TR valign=top align=right class=evn><TD>218<TD align=left>PROBLEMS<TD class=sc><a href=# OnClick="opeLod('', '8395', 'PROBLEMS');return false">41</a><TD><a title=' 0.2%' class=ank>13</a><TD><a title=' 0.1%' class=ank>88</a>
+<TR valign=top align=right class=odd><TD>219<TD align=left>RELATIONSHIP<TD class=sc><a href=# OnClick="opeLod('', '8901', 'RELATIONSHIP');return false">41</a><TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>128</a>
+<TR valign=top align=right class=evn><TD>220<TD align=left>STRUCTURE<TD class=sc><a href=# OnClick="opeLod('', '10169', 'STRUCTURE');return false">41</a><TD><a title=' 0.4%' class=ank>29</a><TD><a title=' 0.3%' class=ank>293</a>
+<TR valign=top align=right class=odd><TD>221<TD align=left>20TH<TD class=sc>40<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=evn><TD>222<TD align=left>BORDERS<TD class=sc>40<TD><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.2%' class=ank>192</a>
+<TR valign=top align=right class=odd><TD>223<TD align=left>COUNTRY<TD class=sc>40<TD><a title=' 0.6%' class=ank>47</a><TD><a title=' 0.8%' class=ank>699</a>
+<TR valign=top align=right class=evn><TD>224<TD align=left>EVOLUTION<TD class=sc>40<TD><a title=' 0.8%' class=ank>62</a><TD><a title=' 0.8%' class=ank>661</a>
+<TR valign=top align=right class=odd><TD>225<TD align=left>EXAMPLE<TD class=sc>40<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>91</a>
+<TR valign=top align=right class=evn><TD>226<TD align=left>FACTORS<TD class=sc>40<TD><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.2%' class=ank>142</a>
+<TR valign=top align=right class=odd><TD>227<TD align=left>JUSTICE<TD class=sc>40<TD><a title=' 0.2%' class=ank>13</a><TD><a title=' 0.2%' class=ank>206</a>
+<TR valign=top align=right class=evn><TD>228<TD align=left>STABILITY<TD class=sc>40<TD><a title=' 0.4%' class=ank>35</a><TD><a title=' 0.2%' class=ank>139</a>
+<TR valign=top align=right class=odd><TD>229<TD align=left>THREE<TD class=sc>40<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.1%' class=ank>104</a>
+<TR valign=top align=right class=evn><TD>230<TD align=left>BOSNIAN<TD class=sc>39<TD><a title=' 0.7%' class=ank>55</a><TD><a title=' 1.7%' class=ank>1486</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="wd-name.html">Word</a><TH><SPAN class=sc><a href="wd-pubs.html" TITLE=" Records ">Recs</a></SPAN><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>231<TD align=left>BRONZE<TD class=sc>39<TD><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.6%' class=ank>492</a>
+<TR valign=top align=right class=evn><TD>232<TD align=left>CHANGES<TD class=sc>39<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.2%' class=ank>159</a>
+<TR valign=top align=right class=odd><TD>233<TD align=left>EMERGING<TD class=sc>39<TD><a title=' 0.4%' class=ank>35</a><TD><a title=' 0.6%' class=ank>484</a>
+<TR valign=top align=right class=evn><TD>234<TD align=left>EMPIRICAL<TD class=sc>39<TD><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.4%' class=ank>378</a>
+<TR valign=top align=right class=odd><TD>235<TD align=left>TRANSFORMATION<TD class=sc>39<TD><a title=' 0.8%' class=ank>64</a><TD><a title=' 0.4%' class=ank>369</a>
+<TR valign=top align=right class=evn><TD>236<TD align=left>TRANSNATIONAL<TD class=sc>39<TD><a title=' 0.2%' class=ank>19</a><TD><a title=' 0.4%' class=ank>346</a>
+<TR valign=top align=right class=odd><TD>237<TD align=left>ANATOLIA<TD class=sc>38<TD><a title=' 0.4%' class=ank>29</a><TD><a title=' 0.4%' class=ank>337</a>
+<TR valign=top align=right class=evn><TD>238<TD align=left>CONSTRUCTION<TD class=sc>38<TD><a title=' 0.2%' class=ank>19</a><TD><a title=' 0.2%' class=ank>129</a>
+<TR valign=top align=right class=odd><TD>239<TD align=left>DYNAMICS<TD class=sc>38<TD><a title=' 0.4%' class=ank>30</a><TD><a title=' 0.4%' class=ank>372</a>
+<TR valign=top align=right class=evn><TD>240<TD align=left>GEOGRAPHY<TD class=sc>38<TD><a title=' 1.3%' class=ank>105</a><TD><a title=' 0.4%' class=ank>301</a>
+<TR valign=top align=right class=odd><TD>241<TD align=left>GERMANY<TD class=sc>38<TD><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.3%' class=ank>240</a>
+<TR valign=top align=right class=evn><TD>242<TD align=left>HEALTH<TD class=sc>38<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.3%' class=ank>291</a>
+<TR valign=top align=right class=odd><TD>243<TD align=left>MUSIC<TD class=sc>38<TD><a title=' 0.3%' class=ank>26</a><TD><a title=' 0.1%' class=ank>93</a>
+<TR valign=top align=right class=evn><TD>244<TD align=left>PRACTICES<TD class=sc>38<TD><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.3%' class=ank>220</a>
+<TR valign=top align=right class=odd><TD>245<TD align=left>ASPECTS<TD class=sc>37<TD><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.1%' class=ank>46</a>
+<TR valign=top align=right class=evn><TD>246<TD align=left>FRENCH<TD class=sc>37<TD><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>75</a>
+<TR valign=top align=right class=odd><TD>247<TD align=left>HALF<TD class=sc>37<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>20</a>
+<TR valign=top align=right class=evn><TD>248<TD align=left>PRESENT<TD class=sc>37<TD><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.3%' class=ank>248</a>
+<TR valign=top align=right class=odd><TD>249<TD align=left>ROAD<TD class=sc>37<TD><a title=' 0.4%' class=ank>34</a><TD><a title=' 0.3%' class=ank>220</a>
+<TR valign=top align=right class=evn><TD>250<TD align=left>SOURCES<TD class=sc>37<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>111</a>
+<TR valign=top align=right class=odd><TD>251<TD align=left>STRATEGIC<TD class=sc>37<TD><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.3%' class=ank>221</a>
+<TR valign=top align=right class=evn><TD>252<TD align=left>ANCIENT<TD class=sc>36<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.3%' class=ank>241</a>
+<TR valign=top align=right class=odd><TD>253<TD align=left>BEGINNING<TD class=sc>36<TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>110</a>
+<TR valign=top align=right class=evn><TD>254<TD align=left>BELGRADE<TD class=sc>36<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>115</a>
+<TR valign=top align=right class=odd><TD>255<TD align=left>BUSINESS<TD class=sc>36<TD><a title=' 0.9%' class=ank>73</a><TD><a title=' 0.5%' class=ank>390</a>
+<TR valign=top align=right class=evn><TD>256<TD align=left>EXPERIENCE<TD class=sc>36<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>122</a>
+<TR valign=top align=right class=odd><TD>257<TD align=left>EXTERNAL<TD class=sc>36<TD><a title=' 1.0%' class=ank>81</a><TD><a title=' 0.4%' class=ank>358</a>
+<TR valign=top align=right class=evn><TD>258<TD align=left>ISLAM<TD class=sc>36<TD><a title=' 0.8%' class=ank>67</a><TD><a title=' 0.2%' class=ank>142</a>
+<TR valign=top align=right class=odd><TD>259<TD align=left>PATTERNS<TD class=sc>36<TD><a title=' 0.6%' class=ank>52</a><TD><a title=' 0.5%' class=ank>395</a>
+<TR valign=top align=right class=evn><TD>260<TD align=left>SMALL<TD class=sc>36<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.2%' class=ank>138</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="wd-name.html">Word</a><TH><SPAN class=sc><a href="wd-pubs.html" TITLE=" Records ">Recs</a></SPAN><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>261<TD align=left>TRADITION<TD class=sc>36<TD><a title=' 0.6%' class=ank>52</a><TD><a title=' 0.7%' class=ank>585</a>
+<TR valign=top align=right class=evn><TD>262<TD align=left>ADRIATIC<TD class=sc>35<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.1%' class=ank>68</a>
+<TR valign=top align=right class=odd><TD>263<TD align=left>ATTITUDES<TD class=sc>35<TD><a title=' 0.2%' class=ank>20</a><TD><a title=' 0.2%' class=ank>147</a>
+<TR valign=top align=right class=evn><TD>264<TD align=left>EXPERIENCES<TD class=sc>35<TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>100</a>
+<TR valign=top align=right class=odd><TD>265<TD align=left>NATIONS<TD class=sc>35<TD><a title=' 0.7%' class=ank>60</a><TD><a title=' 0.7%' class=ank>578</a>
+<TR valign=top align=right class=evn><TD>266<TD align=left>PERCEPTION<TD class=sc>35<TD><a title=' 0.2%' class=ank>14</a><TD><a title=' 0.3%' class=ank>262</a>
+<TR valign=top align=right class=odd><TD>267<TD align=left>PERCEPTIONS<TD class=sc>35<TD><a title=' 0.2%' class=ank>18</a><TD><a title=' 0.1%' class=ank>123</a>
+<TR valign=top align=right class=evn><TD>268<TD align=left>REFUGEES<TD class=sc>35<TD><a title=' 0.2%' class=ank>17</a><TD><a title=' 0.2%' class=ank>191</a>
+<TR valign=top align=right class=odd><TD>269<TD align=left>ART<TD class=sc>34<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.1%' class=ank>97</a>
+<TR valign=top align=right class=evn><TD>270<TD align=left>BANKING<TD class=sc>34<TD><a title=' 0.3%' class=ank>24</a><TD><a title=' 0.3%' class=ank>239</a>
+<TR valign=top align=right class=odd><TD>271<TD align=left>BLACK<TD class=sc>34<TD><a title=' 1.0%' class=ank>84</a><TD><a title=' 1.3%' class=ank>1086</a>
+<TR valign=top align=right class=evn><TD>272<TD align=left>COLD<TD class=sc>34<TD><a title=' 1.3%' class=ank>102</a><TD><a title=' 2.9%' class=ank>2483</a>
+<TR valign=top align=right class=odd><TD>273<TD align=left>ENVIRONMENTAL<TD class=sc>34<TD><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.3%' class=ank>235</a>
+<TR valign=top align=right class=evn><TD>274<TD align=left>INFORMAL<TD class=sc>34<TD><a title=' 0.5%' class=ank>39</a><TD><a title=' 0.3%' class=ank>259</a>
+<TR valign=top align=right class=odd><TD>275<TD align=left>LONG<TD class=sc>34<TD><a title=' 0.2%' class=ank>14</a><TD><a title=' 0.2%' class=ank>159</a>
+<TR valign=top align=right class=evn><TD>276<TD align=left>ORIGINS<TD class=sc>34<TD><a title=' 2.2%' class=ank>174</a><TD><a title=' 2.4%' class=ank>2075</a>
+<TR valign=top align=right class=odd><TD>277<TD align=left>PARTY<TD class=sc>34<TD><a title=' 0.2%' class=ank>18</a><TD><a title=' 0.3%' class=ank>265</a>
+<TR valign=top align=right class=evn><TD>278<TD align=left>PLACE<TD class=sc>34<TD><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.2%' class=ank>136</a>
+<TR valign=top align=right class=odd><TD>279<TD align=left>REFUGEE<TD class=sc>34<TD><a title=' 0.2%' class=ank>16</a><TD><a title=' 0.2%' class=ank>188</a>
+<TR valign=top align=right class=evn><TD>280<TD align=left>RISK<TD class=sc>34<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.5%' class=ank>432</a>
+<TR valign=top align=right class=odd><TD>281<TD align=left>ROMA<TD class=sc>34<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.2%' class=ank>201</a>
+<TR valign=top align=right class=evn><TD>282<TD align=left>ROMAN<TD class=sc>34<TD><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>73</a>
+<TR valign=top align=right class=odd><TD>283<TD align=left>THIRD<TD class=sc>34<TD><a title=' 1.0%' class=ank>83</a><TD><a title=' 0.3%' class=ank>244</a>
+<TR valign=top align=right class=evn><TD>284<TD align=left>DIVERSITY<TD class=sc>33<TD><a title=' 0.1%' class=ank>12</a><TD><a title=' 0.7%' class=ank>601</a>
+<TR valign=top align=right class=odd><TD>285<TD align=left>IMMIGRANTS<TD class=sc>33<TD><a title=' 0.2%' class=ank>13</a><TD><a title=' 0.5%' class=ank>409</a>
+<TR valign=top align=right class=evn><TD>286<TD align=left>REFLECTIONS<TD class=sc>33<TD><a title=' 0.2%' class=ank>15</a><TD><a title=' 0.1%' class=ank>94</a>
+<TR valign=top align=right class=odd><TD>287<TD align=left>RURAL<TD class=sc>33<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.7%' class=ank>631</a>
+<TR valign=top align=right class=evn><TD>288<TD align=left>STRATEGY<TD class=sc>33<TD><a title=' 0.2%' class=ank>19</a><TD><a title=' 0.1%' class=ank>82</a>
+<TR valign=top align=right class=odd><TD>289<TD align=left>ERA<TD class=sc>32<TD><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.1%' class=ank>102</a>
+<TR valign=top align=right class=evn><TD>290<TD align=left>IMAGE<TD class=sc>32<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.1%' class=ank>66</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="wd-name.html">Word</a><TH><SPAN class=sc><a href="wd-pubs.html" TITLE=" Records ">Recs</a></SPAN><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>291<TD align=left>ISSUES<TD class=sc>32<TD><a title=' 0.4%' class=ank>32</a><TD><a title=' 0.2%' class=ank>200</a>
+<TR valign=top align=right class=evn><TD>292<TD align=left>MINORITIES<TD class=sc>32<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.1%' class=ank>45</a>
+<TR valign=top align=right class=odd><TD>293<TD align=left>NORTHERN<TD class=sc>32<TD><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.5%' class=ank>394</a>
+<TR valign=top align=right class=evn><TD>294<TD align=left>PRACTICE<TD class=sc>32<TD><a title=' 0.3%' class=ank>26</a><TD><a title=' 2.3%' class=ank>1951</a>
+<TR valign=top align=right class=odd><TD>295<TD align=left>RELIGION<TD class=sc>32<TD><a title=' 0.4%' class=ank>29</a><TD><a title=' 0.2%' class=ank>140</a>
+<TR valign=top align=right class=evn><TD>296<TD align=left>ROUTE<TD class=sc>32<TD><a title=' 0.5%' class=ank>43</a><TD><a title=' 0.2%' class=ank>214</a>
+<TR valign=top align=right class=odd><TD>297<TD align=left>SEA<TD class=sc>32<TD><a title=' 0.2%' class=ank>14</a><TD><a title=' 0.3%' class=ank>236</a>
+<TR valign=top align=right class=evn><TD>298<TD align=left>UNIVERSITY<TD class=sc>32<TD><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>73</a>
+<TR valign=top align=right class=odd><TD>299<TD align=left>ASSESSMENT<TD class=sc>31<TD><a title=' 0.2%' class=ank>20</a><TD><a title=' 0.5%' class=ank>395</a>
+<TR valign=top align=right class=evn><TD>300<TD align=left>CORRUPTION<TD class=sc>31<TD><a title=' 0.4%' class=ank>34</a><TD><a title=' 0.2%' class=ank>157</a>
+<TR valign=top align=right class=odd><TD>301<TD align=left>DATA<TD class=sc>31<TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.2%' class=ank>210</a>
+<TR valign=top align=right class=evn><TD>302<TD align=left>DES<TD class=sc>31<TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>303<TD align=left>FDI<TD class=sc>31<TD><a title=' 0.6%' class=ank>45</a><TD><a title=' 0.4%' class=ank>347</a>
+<TR valign=top align=right class=evn><TD>304<TD align=left>FRAMEWORK<TD class=sc>31<TD><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.3%' class=ank>260</a>
+<TR valign=top align=right class=odd><TD>305<TD align=left>NORTH<TD class=sc>31<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.1%' class=ank>50</a>
+<TR valign=top align=right class=evn><TD>306<TD align=left>ORIGIN<TD class=sc>31<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>87</a>
+<TR valign=top align=right class=odd><TD>307<TD align=left>POWERS<TD class=sc>31<TD><a title=' 1.1%' class=ank>88</a><TD><a title=' 0.9%' class=ank>768</a>
+<TR valign=top align=right class=evn><TD>308<TD align=left>PRE<TD class=sc>31<TD><a title=' 0.4%' class=ank>33</a><TD><a title=' 0.2%' class=ank>181</a>
+<TR valign=top align=right class=odd><TD>309<TD align=left>PRODUCTION<TD class=sc>31<TD><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.2%' class=ank>155</a>
+<TR valign=top align=right class=evn><TD>310<TD align=left>SITUATION<TD class=sc>31<TD><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.0%' class=ank>34</a>
+<TR valign=top align=right class=odd><TD>311<TD align=left>SOVIET<TD class=sc>31<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.1%' class=ank>84</a>
+<TR valign=top align=right class=evn><TD>312<TD align=left>SPATIAL<TD class=sc>31<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.3%' class=ank>225</a>
+<TR valign=top align=right class=odd><TD>313<TD align=left>STUDENTS<TD class=sc>31<TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>86</a>
+<TR valign=top align=right class=evn><TD>314<TD align=left>TRENDS<TD class=sc>31<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.1%' class=ank>84</a>
+<TR valign=top align=right class=odd><TD>315<TD align=left>VIEW<TD class=sc>31<TD><a title=' 0.5%' class=ank>43</a><TD><a title=' 0.1%' class=ank>86</a>
+<TR valign=top align=right class=evn><TD>316<TD align=left>ARCHAEOLOGICAL<TD class=sc>30<TD><a title=' 0.2%' class=ank>20</a><TD><a title=' 0.3%' class=ank>225</a>
+<TR valign=top align=right class=odd><TD>317<TD align=left>AUSTRIAN<TD class=sc>30<TD><a title=' 0.3%' class=ank>21</a><TD><a title=' 0.1%' class=ank>51</a>
+<TR valign=top align=right class=evn><TD>318<TD align=left>COMPARISON<TD class=sc>30<TD><a title=' 0.2%' class=ank>17</a><TD><a title=' 0.3%' class=ank>297</a>
+<TR valign=top align=right class=odd><TD>319<TD align=left>CONVERGENCE<TD class=sc>30<TD><a title=' 0.3%' class=ank>21</a><TD><a title=' 0.1%' class=ank>104</a>
+<TR valign=top align=right class=evn><TD>320<TD align=left>INVESTMENTS<TD class=sc>30<TD><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.2%' class=ank>152</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="wd-name.html">Word</a><TH><SPAN class=sc><a href="wd-pubs.html" TITLE=" Records ">Recs</a></SPAN><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>321<TD align=left>ISLAMIC<TD class=sc>30<TD><a title=' 0.3%' class=ank>27</a><TD><a title=' 0.2%' class=ank>181</a>
+<TR valign=top align=right class=evn><TD>322<TD align=left>KNOWLEDGE<TD class=sc>30<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 2.3%' class=ank>1938</a>
+<TR valign=top align=right class=odd><TD>323<TD align=left>LEARNING<TD class=sc>30<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.1%' class=ank>65</a>
+<TR valign=top align=right class=evn><TD>324<TD align=left>PEOPLES<TD class=sc>30<TD><a title=' 0.2%' class=ank>15</a><TD><a title=' 0.1%' class=ank>126</a>
+<TR valign=top align=right class=odd><TD>325<TD align=left>QUALITY<TD class=sc>30<TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.2%' class=ank>176</a>
+<TR valign=top align=right class=evn><TD>326<TD align=left>SLOVENIA<TD class=sc>30<TD><a title=' 0.1%' class=ank>12</a><TD><a title=' 0.1%' class=ank>116</a>
+<TR valign=top align=right class=odd><TD>327<TD align=left>ACTIVITIES<TD class=sc>29<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>37</a>
+<TR valign=top align=right class=evn><TD>328<TD align=left>CONFLICTS<TD class=sc>29<TD><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.2%' class=ank>189</a>
+<TR valign=top align=right class=odd><TD>329<TD align=left>CONTRIBUTION<TD class=sc>29<TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>62</a>
+<TR valign=top align=right class=evn><TD>330<TD align=left>FAMILY<TD class=sc>29<TD><a title=' 0.1%' class=ank>12</a><TD><a title=' 0.2%' class=ank>206</a>
+<TR valign=top align=right class=odd><TD>331<TD align=left>HISTORIOGRAPHY<TD class=sc>29<TD><a title=' 0.9%' class=ank>69</a><TD><a title=' 0.2%' class=ank>134</a>
+<TR valign=top align=right class=evn><TD>332<TD align=left>IDENTITIES<TD class=sc>29<TD><a title=' 0.6%' class=ank>52</a><TD><a title=' 0.4%' class=ank>357</a>
+<TR valign=top align=right class=odd><TD>333<TD align=left>INSTITUTIONS<TD class=sc>29<TD><a title=' 0.4%' class=ank>36</a><TD><a title=' 0.3%' class=ank>221</a>
+<TR valign=top align=right class=evn><TD>334<TD align=left>LEVEL<TD class=sc>29<TD><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.2%' class=ank>186</a>
+<TR valign=top align=right class=odd><TD>335<TD align=left>MUSLIMS<TD class=sc>29<TD><a title=' 1.4%' class=ank>111</a><TD><a title=' 0.8%' class=ank>659</a>
+<TR valign=top align=right class=evn><TD>336<TD align=left>SERVICE<TD class=sc>29<TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.2%' class=ank>152</a>
+<TR valign=top align=right class=odd><TD>337<TD align=left>STOCK<TD class=sc>29<TD><a title=' 0.3%' class=ank>21</a><TD><a title=' 0.3%' class=ank>261</a>
+<TR valign=top align=right class=evn><TD>338<TD align=left>18TH<TD class=sc>28<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.0%' class=ank>20</a>
+<TR valign=top align=right class=odd><TD>339<TD align=left>CHANGING<TD class=sc>28<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>108</a>
+<TR valign=top align=right class=evn><TD>340<TD align=left>FOOD<TD class=sc>28<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.5%' class=ank>462</a>
+<TR valign=top align=right class=odd><TD>341<TD align=left>INDUSTRY<TD class=sc>28<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>96</a>
+<TR valign=top align=right class=evn><TD>342<TD align=left>LINGUISTIC<TD class=sc>28<TD><a title=' 0.4%' class=ank>29</a><TD><a title=' 0.3%' class=ank>274</a>
+<TR valign=top align=right class=odd><TD>343<TD align=left>PEOPLE<TD class=sc>28<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.2%' class=ank>168</a>
+<TR valign=top align=right class=evn><TD>344<TD align=left>PROJECT<TD class=sc>28<TD><a title=' 0.2%' class=ank>20</a><TD><a title=' 0.3%' class=ank>243</a>
+<TR valign=top align=right class=odd><TD>345<TD align=left>REFORMS<TD class=sc>28<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>71</a>
+<TR valign=top align=right class=evn><TD>346<TD align=left>SUSTAINABLE<TD class=sc>28<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.2%' class=ank>159</a>
+<TR valign=top align=right class=odd><TD>347<TD align=left>WORKS<TD class=sc>28<TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=evn><TD>348<TD align=left>CHARACTERISTICS<TD class=sc>27<TD><a title=' 0.6%' class=ank>47</a><TD><a title=' 1.4%' class=ank>1223</a>
+<TR valign=top align=right class=odd><TD>349<TD align=left>CONCEPT<TD class=sc>27<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=evn><TD>350<TD align=left>CRIME<TD class=sc>27<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>124</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="wd-name.html">Word</a><TH><SPAN class=sc><a href="wd-pubs.html" TITLE=" Records ">Recs</a></SPAN><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>351<TD align=left>DEMOGRAPHIC<TD class=sc>27<TD><a title=' 0.8%' class=ank>66</a><TD><a title=' 1.6%' class=ank>1390</a>
+<TR valign=top align=right class=evn><TD>352<TD align=left>DOMESTIC<TD class=sc>27<TD><a title=' 0.4%' class=ank>32</a><TD><a title=' 0.4%' class=ank>378</a>
+<TR valign=top align=right class=odd><TD>353<TD align=left>FACTOR<TD class=sc>27<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=evn><TD>354<TD align=left>GENETIC<TD class=sc>27<TD><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.4%' class=ank>345</a>
+<TR valign=top align=right class=odd><TD>355<TD align=left>IMPORTANCE<TD class=sc>27<TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>64</a>
+<TR valign=top align=right class=evn><TD>356<TD align=left>INTERVENTION<TD class=sc>27<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.4%' class=ank>333</a>
+<TR valign=top align=right class=odd><TD>357<TD align=left>OVERVIEW<TD class=sc>27<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=evn><TD>358<TD align=left>POTENTIAL<TD class=sc>27<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.5%' class=ank>418</a>
+<TR valign=top align=right class=odd><TD>359<TD align=left>POTTERY<TD class=sc>27<TD><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.5%' class=ank>397</a>
+<TR valign=top align=right class=evn><TD>360<TD align=left>RECONSTRUCTION<TD class=sc>27<TD><a title=' 0.3%' class=ank>21</a><TD><a title=' 0.2%' class=ank>153</a>
+<TR valign=top align=right class=odd><TD>361<TD align=left>REVOLUTION<TD class=sc>27<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.1%' class=ank>114</a>
+<TR valign=top align=right class=evn><TD>362<TD align=left>SOCIETIES<TD class=sc>27<TD><a title=' 0.2%' class=ank>14</a><TD><a title=' 0.1%' class=ank>77</a>
+<TR valign=top align=right class=odd><TD>363<TD align=left>THEORY<TD class=sc>27<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.4%' class=ank>370</a>
+<TR valign=top align=right class=evn><TD>364<TD align=left>TRAVEL<TD class=sc>27<TD><a title=' 0.2%' class=ank>18</a><TD><a title=' 0.1%' class=ank>48</a>
+<TR valign=top align=right class=odd><TD>365<TD align=left>ASSISTANCE<TD class=sc>26<TD><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>96</a>
+<TR valign=top align=right class=evn><TD>366<TD align=left>BALKANISM<TD class=sc>26<TD><a title=' 1.1%' class=ank>90</a><TD><a title=' 0.2%' class=ank>180</a>
+<TR valign=top align=right class=odd><TD>367<TD align=left>BRITAIN<TD class=sc>26<TD><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>93</a>
+<TR valign=top align=right class=evn><TD>368<TD align=left>EFFECT<TD class=sc>26<TD><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>90</a>
+<TR valign=top align=right class=odd><TD>369<TD align=left>IMPERIAL<TD class=sc>26<TD><a title=' 0.8%' class=ank>64</a><TD><a title=' 0.7%' class=ank>624</a>
+<TR valign=top align=right class=evn><TD>370<TD align=left>LABOUR<TD class=sc>26<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.3%' class=ank>276</a>
+<TR valign=top align=right class=odd><TD>371<TD align=left>LAND<TD class=sc>26<TD><a title=' 0.2%' class=ank>16</a><TD><a title=' 0.1%' class=ank>90</a>
+<TR valign=top align=right class=evn><TD>372<TD align=left>MINORITY<TD class=sc>26<TD><a title=' 0.2%' class=ank>15</a><TD><a title=' 0.1%' class=ank>103</a>
+<TR valign=top align=right class=odd><TD>373<TD align=left>REVIEW<TD class=sc>26<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.1%' class=ank>99</a>
+<TR valign=top align=right class=evn><TD>374<TD align=left>SEE<TD class=sc>26<TD><a title=' 0.2%' class=ank>15</a><TD><a title=' 0.3%' class=ank>250</a>
+<TR valign=top align=right class=odd><TD>375<TD align=left>SLAVS<TD class=sc>26<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>19</a>
+<TR valign=top align=right class=evn><TD>376<TD align=left>UNDERSTANDING<TD class=sc>26<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.4%' class=ank>360</a>
+<TR valign=top align=right class=odd><TD>377<TD align=left>USING<TD class=sc>26<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.2%' class=ank>157</a>
+<TR valign=top align=right class=evn><TD>378<TD align=left>17TH<TD class=sc>25<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>18</a>
+<TR valign=top align=right class=odd><TD>379<TD align=left>CHILDREN<TD class=sc>25<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.2%' class=ank>192</a>
+<TR valign=top align=right class=evn><TD>380<TD align=left>CRIMINAL<TD class=sc>25<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.1%' class=ank>112</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="wd-name.html">Word</a><TH><SPAN class=sc><a href="wd-pubs.html" TITLE=" Records ">Recs</a></SPAN><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>381<TD align=left>CRITICAL<TD class=sc>25<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.2%' class=ank>133</a>
+<TR valign=top align=right class=evn><TD>382<TD align=left>DEMOCRATIC<TD class=sc>25<TD><a title=' 0.4%' class=ank>32</a><TD><a title=' 0.2%' class=ank>176</a>
+<TR valign=top align=right class=odd><TD>383<TD align=left>GEOPOLITICAL<TD class=sc>25<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.2%' class=ank>134</a>
+<TR valign=top align=right class=evn><TD>384<TD align=left>GROUPS<TD class=sc>25<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.3%' class=ank>292</a>
+<TR valign=top align=right class=odd><TD>385<TD align=left>IDEA<TD class=sc>25<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.1%' class=ank>66</a>
+<TR valign=top align=right class=evn><TD>386<TD align=left>INNOVATION<TD class=sc>25<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.3%' class=ank>218</a>
+<TR valign=top align=right class=odd><TD>387<TD align=left>IRON<TD class=sc>25<TD><a title=' 0.2%' class=ank>13</a><TD><a title=' 0.1%' class=ank>117</a>
+<TR valign=top align=right class=evn><TD>388<TD align=left>MODELS<TD class=sc>25<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.5%' class=ank>441</a>
+<TR valign=top align=right class=odd><TD>389<TD align=left>POPULAR<TD class=sc>25<TD><a title=' 0.2%' class=ank>17</a><TD><a title=' 0.1%' class=ank>68</a>
+<TR valign=top align=right class=evn><TD>390<TD align=left>PROMOTION<TD class=sc>25<TD><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.1%' class=ank>112</a>
+<TR valign=top align=right class=odd><TD>391<TD align=left>RISE<TD class=sc>25<TD><a title=' 0.5%' class=ank>40</a><TD><a title=' 0.2%' class=ank>177</a>
+<TR valign=top align=right class=evn><TD>392<TD align=left>THESSALONIKI<TD class=sc>25<TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>61</a>
+<TR valign=top align=right class=odd><TD>393<TD align=left>UNITED<TD class=sc>25<TD><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.3%' class=ank>254</a>
+<TR valign=top align=right class=evn><TD>394<TD align=left>ANTI<TD class=sc>24<TD><a title=' 0.2%' class=ank>19</a><TD><a title=' 0.1%' class=ank>84</a>
+<TR valign=top align=right class=odd><TD>395<TD align=left>AUSTRIA<TD class=sc>24<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=evn><TD>396<TD align=left>BANK<TD class=sc>24<TD><a title=' 0.3%' class=ank>22</a><TD><a title=' 0.5%' class=ank>416</a>
+<TR valign=top align=right class=odd><TD>397<TD align=left>CHINA<TD class=sc>24<TD><a title=' 0.2%' class=ank>15</a><TD><a title=' 0.3%' class=ank>238</a>
+<TR valign=top align=right class=evn><TD>398<TD align=left>COMMON<TD class=sc>24<TD><a title=' 0.2%' class=ank>13</a><TD><a title=' 0.1%' class=ank>88</a>
+<TR valign=top align=right class=odd><TD>399<TD align=left>COPPER<TD class=sc>24<TD><a title=' 0.3%' class=ank>22</a><TD><a title=' 0.2%' class=ank>196</a>
+<TR valign=top align=right class=evn><TD>400<TD align=left>ENVIRONMENT<TD class=sc>24<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.1%' class=ank>53</a>
+</TABLE>
+<div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>2</b> of 59<span class=nonprn>: [  &nbsp;<a href=wd-pubs.html class=nu>1</a> &nbsp;2 &nbsp;3 &nbsp;4 &nbsp;5 &nbsp;6 &nbsp;7 &nbsp;8 &nbsp;9 &nbsp;10 ]</span> &nbsp;11&nbsp; &nbsp;21&nbsp; &nbsp;31&nbsp; &nbsp;41&nbsp; &nbsp;51&nbsp;</div>
+</BODY>

@@ -1,0 +1,591 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><HEAD><TITLE>HistCite - RESEE: A Bibliographic Database on Balkan – Southeast European Studies</TITLE></HEAD>
+<BODY VLINK=blue OnLoad="focus()">
+<STYLE>
+body {
+	margin: 2px 10px; padding: 0;
+	background: #fff;
+}
+body, td, th {
+	font-size: 10pt; font-family: Verdana;
+}
+input, select, textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ui {
+	font-size: 10pt; font-family: Verdana;
+}
+.ui input, .ui select, .ui textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ci_title {
+	font-size: 8pt; font-weight: bold;
+}
+.ci_il {
+	color: black; text-decoration: none;	/* msie6 ! inherit */
+}
+.helpa { text-decoration: none;
+	cursor: help;
+}
+.helpt { background: #ffff77; padding: 4px;
+}
+.nu { text-decoration: none; 
+}
+.sc, .sc a { color: #904644 }
+.fnd { background-color: #beb;
+	padding: 0 3px 2px 2px;
+}
+td div.fndCR {
+	padding-left: 2em;
+//	text-indent: -2em;
+}
+.odd { background-color: #eeeeee }
+.evn { background-color: #dddddd }
+div.odd { padding: 5px; margin-bottom: 2px }
+div.evn { padding: 5px; margin-bottom: 2px }
+.yr { padding: 0; font-weight: bold }
+.ank:hover { cursor: pointer; text-decoration: none; color: inherit; }
+a {
+	text-decoration: none;
+}
+a:hover, a:hover .sc {
+	text-decoration: underline; color: blue;
+}
+.scr:hover, td a.scr:hover { color:#000; text-decoration:none; } /* FF td */
+@media print {
+	.nonprn, .ephemeral, .x, .ui { display: none; }
+	.index { border: solid #fff 0; }
+	body { font-size: 10pt; }
+	td, th { font-size: 10pt; }
+	.ci_title { font-size: 8pt; }
+}
+</STYLE>
+<SCRIPT>
+var root=location.href; root = root.replace(/index.*/, ''); root = root.replace(/list.*/, '');
+function about () { window.open(root+'about.html','about','width=440,height=370,resizable=yes,scrollbars=yes') }
+	// This is a list of XMLHttpRequest-creation factory functions to try
+_factories = [
+    function() { return new XMLHttpRequest(); },
+    function() { return new ActiveXObject("Msxml2.XMLHTTP"); },
+    function() { return new ActiveXObject("Microsoft.XMLHTTP"); }
+];
+
+// When we find a factory that works, store it here.
+_factory = null;
+
+// Create and return a new XMLHttpRequest object.
+//
+// The first time we're called, try the list of factory functions until
+// we find one that returns a non-null value and does not throw an
+// exception. Once we find a working factory, remember it for later use.
+//
+newRequest = function() {
+    if (_factory != null) return _factory();
+
+    for(var i = 0; i < _factories.length; i++) {
+        try {
+            var factory = _factories[i];
+            var request = factory();
+            if (request != null) {
+                _factory = factory;
+                return request;
+            }
+        }
+        catch(e) {
+            continue;
+        }
+    }
+    // If we get here, none of the factory candidates succeeded,
+    // so throw an exception now and for all future calls.
+    _factory = function() {
+        //throw new Error("XMLHttpRequest not supported");
+        alert("XMLHttpRequest not supported");
+    }
+    _factory(); // Throw an error
+}
+
+function gethelp (url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+//    alert('OK');
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+function gettip (ent, url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+		ent.innerHTML = req.responseText;
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+</SCRIPT>
+<STYLE>
+div#tipshade {
+	position: fixed; top: 208px; left: 208px;
+	margin: 0px; width: 420px; height: 180px;
+	border: solid gray 2px;
+	background: gray;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 19; display: none;
+}
+div#tipoday {
+	position: fixed; top: 200px; left: 200px;
+	margin: 0px; width: 420px; height: 180px; padding: 0;
+	background: white;
+	border: solid #e44959 2px;
+	font: 10pt Verdana; cursor: default;
+	z-index: 20; display: none;
+}
+div#tiptitle {
+	background: #e44959; color: white; font-weight: bold;
+	padding-left: 4px;
+}
+div#tiptitle span.x {
+	background: white;
+}
+div#tipbox {
+	position: relative; /* top: 5px; */ margin: 8px;
+	max-height: 120px; overflow: auto;
+}
+div#tipctrl {
+	position: absolute; bottom: 0; margin: 4px;
+}
+div#tipctrl td {
+	font-size: 10px;
+}
+div#tipctrl form { margin: 0; }
+span.nw { white-space: nowrap; }
+</STYLE>
+<div id="tipshade" class="ui"> </div>
+<div id="tipoday" class="ui" align=left>
+<div id="tiptitle">HistCite Tip of the Day<span class="x"><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;" title="Close">X</a></span></div>
+<div id="tipbox">Tip of the day</div>
+<div id="tipctrl">
+<table align=bottom width=100%>
+<tr><td width=40% nowrap><form name=ft><label><input type=checkbox OnChange="nextStart(this);" checked> Show tip at next start</label></form></td>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=-1');>Previous Tip</a>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=1');>Next Tip</a>
+<td align=right><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;">Close</a>&nbsp;</td>
+</tr></table></div></div>
+<SCRIPT> var otip;
+function getit () { otip = document.getElementById('tipbox'); gettip(otip,'/tip.txt?next=0'); }
+function nextStart (start) {
+	if(start.checked == true) {
+		on = 1;
+	} else {
+		on = 0;
+	}
+	gethelp('/tipStart?on=' + on);
+}
+function tip_show () {
+	var W, H;
+	if(window.innerWidth) {
+		W = window.innerWidth; H = window.innerHeight;
+	} else {
+		var dd = document.documentElement;
+		W = dd.clientWidth; H = dd.clientHeight;
+	}
+//	alert(W + ' x ' + H);
+	var left = (W-420)/2;
+	var top = (H-180)/2;
+	var tipB = document.getElementById('tipshade');
+	var tipT = document.getElementById('tipoday');
+	tipB.style.left = left + 8 + 'px';
+	tipB.style.top = top + 8 + 'px';
+	tipT.style.left = left + 'px';
+	tipT.style.top = top + 'px';
+	tipB.style.display='block';
+	tipT.style.display='block';
+	getit();
+}
+</SCRIPT>
+
+<style>
+div#af_boxshado {
+	position: fixed; left:148px; top:128px; width: 460px; height: 110px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 11; display: none;
+}
+div#af_box {
+	position: fixed; left:140px; top:120px; width: 460px; height: 110px;
+	background: white; border: solid #999 2px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+div#af_box input {
+	font: 10px Verdana;
+}
+div#af_box_title {
+	background: #d3d3d3; padding-left: 4px; font-weight: bold;
+}
+div#af_box_title span.x {
+	background: white;
+}
+div#af_form {
+	width: 445px; height: 70px;
+	padding: 8px; overflow: auto;
+}
+div#af_form #sub{
+	display: block; margin: 12px 0 0 0;
+}
+div#starh2 {
+	position: absolute; left: 88px; top: 78px; width: 420px; height: 156px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	padding: 8px;
+	z-index: 12; display: none;
+}
+div#starh {
+	position: absolute; left: 80px; top: 70px; width: 420px; height: 156px; overflow: auto;
+	border: outset gray 2px;
+	padding: 8px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+</style>
+<div id="af_boxshado"> </div>
+<div id="af_box">
+<div id="af_box_title">Add File<span class="x"><a onClick="af_close()" title="Close">X</a></span>
+<!--<a href=javascript:na() onMouseOver="na();" onClick="toggle('starh');" class=helpa style="color:#000">-->
+<a onClick="toggle('starh');" class=helpa style="color:#000"><span class="x" id=mstarh style="top:0;right:14px;">?</span><span class="x" id=lstarh style="top:0;right:14px;display:none">_</span></a>
+</div>
+<div id="af_form">
+<FORM action=/input method=GET OnSubmit="return false" name=af style="margin:0">
+	Use [Browse...] to select a file with bibliography data:<br>
+	<INPUT type=hidden name=inputpath>
+	<INPUT type=file name=inputset size=48 OnChange="af.sub.focus()" value="">
+	<INPUT type=submit value="Add File" OnClick="afSubmit();return false" name=sub id="sub">
+</div><div id=starh2> </div>
+<div id=starh class=helpt>
+Use wildcard '*' to add more than one file at a time.
+For example, if you have <code>file1</code>,
+<code>file2</code>, etc. all in the same folder or directory;
+first, locate one of the files with the [Browse...] button.  Then alter the
+file path in the box above to include '*' character (eg. <code>file*</code>).
+Wildcard '?' to blanket only one character works too.<br>
+<b>Note</b>: In Windows you can select multiple files and "drag and drop" them 
+onto HistCite icon or shortcut.  The program would start and load those files.
+</div>
+</FORM><SCRIPT>
+var af = document.af;
+function afSubmit() {
+	if ("" == af.inputset.value ) { alert("Select a file."); return }
+	af.inputpath.value = af.inputset.value;
+	af.submit();
+}
+function af_show() {
+	document.getElementById('af_boxshado').style.display = 'block';
+	document.getElementById('af_box').style.display = 'block';
+	a = document.af.inputset.value;
+	document.af.inputset.focus();
+}
+function af_close() {
+	document.getElementById('af_boxshado').style.display = 'none';
+	document.getElementById('af_box').style.display = 'none';
+}
+</SCRIPT></div>
+
+<SCRIPT>
+function glossary () { window.open(root+'glossary.html','gloss','width=640,height=570,resizable=yes,scrollbars=yes') }
+function opeNod (a) { window.open(root+'node/'+a+'.html',a,'width=770,height=570,resizable=yes,scrollbars=yes') }
+function opeLod (dp, a) { if(''==dp) d='so'; else d=dp; var w = d; w = w.replace(/[-\/]/g, '');
+	window.open(root+d+'/'+a+'.html',w+a,'width=640,height=546,resizable=yes,scrollbars=yes') }
+function na(){}
+</SCRIPT>
+<STYLE>
+#head {
+	position: left:0; padding-left:4px; background:#fff;
+	z-index:2; margin:0 0 8px 0; border-bottom:solid #000 1px;
+}
+#title {
+	padding-bottom: 4px; font-size: 1.3em; font-weight: bold;
+	max-width: 600px; /* non default overflow gives odd z-effects in FF */
+}
+#desc {
+	position: absolute; left: 4px; top: 1.8em;
+	padding: 2px 8px 4px 8px; white-space: normal; max-width: 480px;
+	background: #ffffcc; font-weight: normal; font-size: 10pt;
+	border: solid #000 1px;
+	display: none; z-index: 11;
+}
+#atitle { cursor: text;}
+#atitle, #stats {
+	text-decoration: none; color: #000;
+}
+#stats2 {
+	position: absolute; right: 0px; padding: 0;
+	background: white;
+	display: none; z-index: 11;
+}
+#atitle:hover #desc, #stats:hover #stats2 {
+	display: block;
+}
+@media print {
+	#head { position: static; }
+	#menu_pm { line-height: 0; }
+	#back { display: none; }
+}
+</STYLE>
+<!-- FF 3 only? fix -->
+<div id=head style="width:99%">
+<TABLE width=100% cellpadding=0 cellspacing=0 style="margin:0 0 3px 0">
+<TR valign=top><TD align=left width=60%>
+<div id=title><a id=atitle >RESEE: A Bibliographic Database on Balkan – Southeast European Studies<div id=desc>-------Search: Databases searching procedure and formats------
+*| Search query
+"balkan*" OR "southeast* europe*" OR "south east* europe*" (TITLE-ABS-KEY) 
+Web of Science Core Collection (SSCI, A&HCI, ESCI, BKCI-SSH)
+Scopus
+Constellate (JSTOR and Portico)
+
+Note: The earliest publication date from WoS for the articles was 1957 whereas for the books 2003.
+To complement our database with entries before 1957, we search the Constellate (Jstor and Portico) and Scopus database, finding and adding a further 445 articles.
+Characters were normalize, and English translation of the titles were added for entries in other languages than English. And for Constellate data we kept only Articles and Books from Humanities and Social Sciences.
+The Scopus and Constellate metadata files were converted into WoS (.txt) format.
+We also added manually 59 new entries (9 articles and 50 books) that were missing from the search but showed to be among the most cited references (local citation score greater than 10)
+
+---------Merging variants in the same cited references--------
+Given that databases have problems with the completeness of references and linkages (Van Eck and Waltman 2017), we used CRExplorer to clean the data and reduce the problems posed by variants in the same cited references (Thor et al. 2016)
+The cited references (CRs) in our data contained variants, especially the references on books. 
+We use the manual cleaning-up procedure, setting the clustering algorithm with a Levenshtein threshold of 0.75. 
+We also manually checked and unified variants of the same cited references (CRs), especially for books that received a local citation of more than 20 or had different years or editions and translations into other languages. 
+After the cleaning, we unify the variants of the same CRs, about 12% of the initial cited references.</div></a></div>
+<TD align=center><a href=# OnClick="window.open('../graph/list.html','graph','resizable=yes,scrollbars=yes')" class=nonprn>Historiographs</a><TD nowrap align=right rowspan=2 width=5%><div class=nonprn><a href=javascript:glossary()>Glossary</a>&nbsp;&nbsp;<a href="http://www.histcite.com/HTMLHelp/guide.html" target=guide>HistCite Guide</a>&nbsp;&nbsp;<a href=# OnClick="about(); return false">About</a></div><a id=stats>
+Grand Totals: LCS 8009, GCS 85894, CR 328237<br>Collection span: 1854 - 2022<br></a><TR><TD colspan=2 width=95%><b>Journal List</b> (2650)</TABLE></div><div align=right>24 December 2022</div>
+<div class="index" style=""><a href=../index-tl.html>Records</a>: 8378, <a href=au-pubs.html>Authors</a>: 10107, Journals: 2650, <a href=or-pubs.html>Cited References</a>: 248863, <a href=wd-pubs.html>Words</a>: 11723
+<br><span class=nonprn><a href=py-pubs.html title=' Publication Years: 127 '>Yearly output</a>
+|&nbsp;<a href=dt-pubs.html title=' Document Types: 14 '>Document Type</a>
+|&nbsp;<a href=la-pubs.html title=' Languages: 6 '>Language</a>
+|&nbsp;<a href=in-pubs.html title=' Institutions: 62 '>Institution</a>
+|&nbsp;<a href=i2-pubs.html title=' Institution with Subdivisions: 64 '>Institution with Subdivision</a>
+|&nbsp;<a href=co-pubs.html title=' Countries: 8 '>Country</a></span></div><div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>2</b> of 14<span class=nonprn>: [  &nbsp;<a href=so-gcs.html class=nu>1</a> &nbsp;2 &nbsp;3 &nbsp;4 &nbsp;5 &nbsp;6 &nbsp;7 &nbsp;8 &nbsp;9 &nbsp;10 ]</span> &nbsp;11&nbsp;</div>
+<TABLE border=0 cellpadding=5 cellspacing=2 style="border: 2px solid #cccccc;margin: 4px 0;">
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="so-name.html">Journal</a><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><SPAN class=sc><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a></SPAN>
+<TR valign=top align=right class=odd><TD>201<TD align=left>EUROPEAN JOURNAL OF COMPARATIVE ECONOMICS<TD>9<TD><a title=' 0.1%' class=ank>6</a><TD class=sc><a title=' 0.1%' class=ank>63</a>
+<TR valign=top align=right class=evn><TD>202<TD align=left>FOOD POLICY<TD>4<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.1%' class=ank>63</a>
+<TR valign=top align=right class=odd><TD>203<TD align=left>JOURNAL OF ADOLESCENT RESEARCH<TD><a TITLE=" Article JOURNAL OF ADOLESCENT RESEARC Title: How Do Parents Make Adolescents Feel Loved? Perspectives on Supportive Parenting From Adolescents in 12 Cultures" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.1%' class=ank>63</a>
+<TR valign=top align=right class=evn><TD>204<TD align=left>JOURNAL OF SOUTHERN EUROPE AND THE BALKANS<TD>5<TD><a title=' 0.6%' class=ank>52</a><TD class=sc><a title=' 0.1%' class=ank>63</a>
+<TR valign=top align=right class=odd><TD>205<TD align=left>MANAGEMENT DECISION<TD>3<TD>0<TD class=sc><a title=' 0.1%' class=ank>63</a>
+<TR valign=top align=right class=evn><TD>206<TD align=left>MARKETING INTELLIGENCE & PLANNING<TD>2<TD>0<TD class=sc><a title=' 0.1%' class=ank>63</a>
+<TR valign=top align=right class=odd><TD>207<TD align=left>CITIES<TD>5<TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.1%' class=ank>62</a>
+<TR valign=top align=right class=evn><TD>208<TD align=left>EUROPEAN JOURNAL OF CRIMINOLOGY<TD><a TITLE=" Article EUROPEAN JOURNAL OF CRIMINOLO Title: Traffickers and Trafficking in Southern and Eastern Europe Considering the Other Side of Human Trafficking" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.1%' class=ank>62</a>
+<TR valign=top align=right class=odd><TD>209<TD align=left>JOURNAL OF ANTHROPOLOGICAL RESEARCH<TD>2<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.1%' class=ank>62</a>
+<TR valign=top align=right class=evn><TD>210<TD align=left>ANNALES-ANALI ZA ISTRSKE IN MEDITERANSKE STUDIJE-SERIES HISTORIA ET SOCIOLOGIA<TD>16<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.1%' class=ank>60</a>
+<TR valign=top align=right class=odd><TD>211<TD align=left>SECURITY STUDIES<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>60</a>
+<TR valign=top align=right class=evn><TD>212<TD align=left>EUROPEAN URBAN AND REGIONAL STUDIES<TD>4<TD><a title=' 0.1%' class=ank>9</a><TD class=sc><a title=' 0.1%' class=ank>59</a>
+<TR valign=top align=right class=odd><TD>213<TD align=left>INTERNATIONAL JOURNAL OF SPORT AND EXERCISE PSYCHOLOGY<TD><a TITLE=" Article INTERNATIONAL JOURNAL OF SPOR Title: Components of home advantage in 157 national soccer leagues worldwide" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.1%' class=ank>59</a>
+<TR valign=top align=right class=evn><TD>214<TD align=left>JOURNAL OF MONEY CREDIT AND BANKING<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>59</a>
+<TR valign=top align=right class=odd><TD>215<TD align=left>CITY & COMMUNITY<TD><a TITLE=" Article CITY &amp; COMMUNITY Title: Rigging the Rules of the Game: How Landlords Geographically Sort Low-Income Renters" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.1%' class=ank>58</a>
+<TR valign=top align=right class=evn><TD>216<TD align=left>EVOLUTIONARY ANTHROPOLOGY<TD><a TITLE=" Article EVOLUTIONARY ANTHROPOLOGY Title: The Paleoanthropology of Greece" href=javascript:na() class=nu>1</a><TD><a title=' 0.1%' class=ank>6</a><TD class=sc><a title=' 0.1%' class=ank>58</a>
+<TR valign=top align=right class=odd><TD>217<TD align=left>GEOGRAPHICAL REVIEW<TD>10<TD><a title=' 0.1%' class=ank>5</a><TD class=sc><a title=' 0.1%' class=ank>58</a>
+<TR valign=top align=right class=evn><TD>218<TD align=left>MEDITERRANEAN QUARTERLY-A JOURNAL OF GLOBAL ISSUES<TD>18<TD><a title=' 0.2%' class=ank>18</a><TD class=sc><a title=' 0.1%' class=ank>58</a>
+<TR valign=top align=right class=odd><TD>219<TD align=left>BRITISH FOOD JOURNAL<TD>3<TD>0<TD class=sc><a title=' 0.1%' class=ank>57</a>
+<TR valign=top align=right class=evn><TD>220<TD align=left>GEOGRAPHICA PANNONICA<TD>10<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>57</a>
+<TR valign=top align=right class=odd><TD>221<TD align=left>POSTCOLONIAL DISORDERS<TD><a TITLE=" BOOK CHAPTER POSTCOLONIAL DISORDERS Title: LABORATORY OF INTERVENTION The Humanitarian Governance of the Postcommunist Balkan Territories" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.1%' class=ank>57</a>
+<TR valign=top align=right class=evn><TD>222<TD align=left>JOURNAL OF ARCHAEOLOGICAL METHOD AND THEORY<TD>4<TD><a title=' 0.1%' class=ank>11</a><TD class=sc><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=odd><TD>223<TD align=left>JOURNAL OF CONTEMPORARY HISTORY<TD>15<TD><a title=' 0.2%' class=ank>15</a><TD class=sc><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=evn><TD>224<TD align=left>JOURNAL OF MATHEMATICAL SOCIOLOGY<TD><a TITLE=" Article JOURNAL OF MATHEMATICAL SOCIO Title: Models for network evolution" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=odd><TD>225<TD align=left>MONTENEGRIN JOURNAL OF ECONOMICS<TD>14<TD><a title=' 0.2%' class=ank>15</a><TD class=sc><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=evn><TD>226<TD align=left>POPULATION STUDIES-A JOURNAL OF DEMOGRAPHY<TD>3<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=odd><TD>227<TD align=left>SOCIAL NETWORKS<TD><a TITLE=" Article SOCIAL NETWORKS Title: Reinforced structural holes" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=evn><TD>228<TD align=left>EUROPEAN JOURNAL OF ARCHAEOLOGY<TD>5<TD><a title=' 0.2%' class=ank>18</a><TD class=sc><a title=' 0.1%' class=ank>55</a>
+<TR valign=top align=right class=odd><TD>229<TD align=left>EUROPEAN FINANCIAL MANAGEMENT<TD><a TITLE=" Article EUROPEAN FINANCIAL MANAGEMENT Title: The Co-movement Dynamics of European Frontier Stock Markets" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.1%' class=ank>54</a>
+<TR valign=top align=right class=evn><TD>230<TD align=left>EUROPEAN SOCIETIES<TD><a TITLE=" Article EUROPEAN SOCIETIES Title: ASSEMBLAGES, TRANSLATION, AND INTERMEDIARIES IN SOUTH EAST EUROPE" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.1%' class=ank>54</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="so-name.html">Journal</a><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><SPAN class=sc><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a></SPAN>
+<TR valign=top align=right class=odd><TD>231<TD align=left>INTERVENTIONS-INTERNATIONAL JOURNAL OF POSTCOLONIAL STUDIES<TD>11<TD><a title=' 0.3%' class=ank>26</a><TD class=sc><a title=' 0.1%' class=ank>54</a>
+<TR valign=top align=right class=evn><TD>232<TD align=left>JOURNAL OF CONTEMPORARY EUROPEAN STUDIES<TD>17<TD><a title=' 0.2%' class=ank>13</a><TD class=sc><a title=' 0.1%' class=ank>54</a>
+<TR valign=top align=right class=odd><TD>233<TD align=left>JOURNAL OF ETHNIC AND MIGRATION STUDIES<TD>6<TD><a title=' 0.1%' class=ank>9</a><TD class=sc><a title=' 0.1%' class=ank>54</a>
+<TR valign=top align=right class=evn><TD>234<TD align=left>JOURNAL OF INTERNATIONAL MIGRATION AND INTEGRATION<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>54</a>
+<TR valign=top align=right class=odd><TD>235<TD align=left>SERBIAN JOURNAL OF MANAGEMENT<TD>10<TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.1%' class=ank>54</a>
+<TR valign=top align=right class=evn><TD>236<TD align=left>ANNALS OF THE AMERICAN ACADEMY OF POLITICAL AND SOCIAL SCIENCE<TD>7<TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.1%' class=ank>53</a>
+<TR valign=top align=right class=odd><TD>237<TD align=left>APPLIED ECONOMICS<TD>6<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.1%' class=ank>53</a>
+<TR valign=top align=right class=evn><TD>238<TD align=left>EUROPEAN FOREIGN AFFAIRS REVIEW<TD><a TITLE=" Article EUROPEAN FOREIGN AFFAIRS REVI Title: The Rocky Road to Europe: The EU&acirc;&#128;&#153;s Stabilisation and Association Process for the Western Balkans and the Principle of Conditionality" href=javascript:opeNod(1571)>1</a><TD><a title=' 0.3%' class=ank>23</a><TD class=sc><a title=' 0.1%' class=ank>53</a>
+<TR valign=top align=right class=odd><TD>239<TD align=left>INTERNATIONAL JOURNAL OF HUMAN RESOURCE MANAGEMENT<TD>5<TD><a title=' 0.1%' class=ank>10</a><TD class=sc><a title=' 0.1%' class=ank>53</a>
+<TR valign=top align=right class=evn><TD>240<TD align=left>REINSTATING OTTOMANS<TD><a TITLE=" Book REINSTATING OTTOMANS Title: Reinstating the Ottomans: Alternative Balkan Modernities, 1800-1912" href=javascript:opeNod(3310)>1</a><TD><a title=' 0.3%' class=ank>26</a><TD class=sc><a title=' 0.1%' class=ank>53</a>
+<TR valign=top align=right class=odd><TD>241<TD align=left>SECURITY DIALOGUE<TD>9<TD><a title=' 0.1%' class=ank>5</a><TD class=sc><a title=' 0.1%' class=ank>53</a>
+<TR valign=top align=right class=evn><TD>242<TD align=left>TRANSPORT POLICY<TD>3<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>53</a>
+<TR valign=top align=right class=odd><TD>243<TD align=left>ANNALS OF HUMAN BIOLOGY<TD>7<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.1%' class=ank>52</a>
+<TR valign=top align=right class=evn><TD>244<TD align=left>BALCANICA<TD><a href=# OnClick="opeLod('', '207', 'BALCANICA');return false">51</a><TD><a title=' 0.2%' class=ank>16</a><TD class=sc><a title=' 0.1%' class=ank>52</a>
+<TR valign=top align=right class=odd><TD>245<TD align=left>FOREST POLICY AND ECONOMICS<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>52</a>
+<TR valign=top align=right class=evn><TD>246<TD align=left>ARCHAEOMETRY<TD>9<TD>0<TD class=sc><a title=' 0.1%' class=ank>51</a>
+<TR valign=top align=right class=odd><TD>247<TD align=left>BUSINESS LAWYER<TD><a TITLE=" Article BUSINESS LAWYER Title: Election contests in the company&#39;s proxy: An idea whose time has not come" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.1%' class=ank>50</a>
+<TR valign=top align=right class=evn><TD>248<TD align=left>OXFORD JOURNAL OF ARCHAEOLOGY<TD>6<TD><a title=' 0.2%' class=ank>16</a><TD class=sc><a title=' 0.1%' class=ank>50</a>
+<TR valign=top align=right class=odd><TD>249<TD align=left>SOCIAL PSYCHOLOGY QUARTERLY<TD><a TITLE=" Article; Proceedings Paper SOCIAL PSYCHOLOGY QUARTERLY Title: The origins and persistence of ethnic identity among the &quot;new immigrant&quot; groups" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>50</a>
+<TR valign=top align=right class=evn><TD>250<TD align=left>ARCHAEOLOGY ETHNOLOGY AND ANTHROPOLOGY OF EURASIA<TD>10<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.1%' class=ank>49</a>
+<TR valign=top align=right class=odd><TD>251<TD align=left>ARMED FORCES & SOCIETY<TD>4<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.1%' class=ank>49</a>
+<TR valign=top align=right class=evn><TD>252<TD align=left>CROATIAN INTERNATIONAL RELATIONS REVIEW<TD>16<TD><a title=' 0.2%' class=ank>20</a><TD class=sc><a title=' 0.1%' class=ank>49</a>
+<TR valign=top align=right class=odd><TD>253<TD align=left>JOURNAL OF MODERN HISTORY<TD>6<TD><a title=' 0.1%' class=ank>12</a><TD class=sc><a title=' 0.1%' class=ank>48</a>
+<TR valign=top align=right class=evn><TD>254<TD align=left>POPULAR COMMUNICATION<TD>2<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.1%' class=ank>48</a>
+<TR valign=top align=right class=odd><TD>255<TD align=left>ACTA HISTRIAE<TD>23<TD><a title=' 0.1%' class=ank>5</a><TD class=sc><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=evn><TD>256<TD align=left>CROATIAN ECONOMIC SURVEY<TD>10<TD><a title=' 0.1%' class=ank>12</a><TD class=sc><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=odd><TD>257<TD align=left>GLOBAL SOCIETY<TD>5<TD><a title=' 0.2%' class=ank>16</a><TD class=sc><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=evn><TD>258<TD align=left>JOURNAL OF ORGANIZATIONAL CHANGE MANAGEMENT<TD>2<TD>0<TD class=sc><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=odd><TD>259<TD align=left>JOURNAL OF PUBLIC POLICY & MARKETING<TD><a TITLE=" Article JOURNAL OF PUBLIC POLICY &amp; MA Title: When policies and marketing systems explode: An assessment of food marketing in the war-ravaged balkans and implications for recovery, sustainable peace, and prosperity" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=evn><TD>260<TD align=left>JOURNAL OF SERVICES MARKETING<TD>3<TD>0<TD class=sc><a title=' 0.1%' class=ank>47</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="so-name.html">Journal</a><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><SPAN class=sc><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a></SPAN>
+<TR valign=top align=right class=odd><TD>261<TD align=left>OECONOMIA COPERNICANA<TD>4<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=evn><TD>262<TD align=left>TOTAL QUALITY MANAGEMENT & BUSINESS EXCELLENCE<TD>3<TD>0<TD class=sc><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=odd><TD>263<TD align=left>INTERNATIONAL MIGRATION<TD>10<TD><a title=' 0.1%' class=ank>11</a><TD class=sc><a title=' 0.1%' class=ank>46</a>
+<TR valign=top align=right class=evn><TD>264<TD align=left>JOURNAL OF INTERNATIONAL FINANCIAL MARKETS INSTITUTIONS & MONEY<TD><a TITLE=" Review JOURNAL OF INTERNATIONAL FINA Title: An analysis of South-Eastern European stock markets: Evidence on cointegration and portfolio diversification benefits" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.1%' class=ank>46</a>
+<TR valign=top align=right class=odd><TD>265<TD align=left>JOURNAL OF THE ROYAL SOCIETY INTERFACE<TD>2<TD>0<TD class=sc><a title=' 0.1%' class=ank>46</a>
+<TR valign=top align=right class=evn><TD>266<TD align=left>REVIEW OF DEVELOPMENT ECONOMICS<TD>2<TD><a title=' 0.1%' class=ank>8</a><TD class=sc><a title=' 0.1%' class=ank>46</a>
+<TR valign=top align=right class=odd><TD>267<TD align=left>AMFITEATRU ECONOMIC<TD>7<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>45</a>
+<TR valign=top align=right class=evn><TD>268<TD align=left>BALKAN SPRACHBUND MORPHO-SYNTACTIC FEATURES<TD>3<TD>0<TD class=sc><a title=' 0.1%' class=ank>45</a>
+<TR valign=top align=right class=odd><TD>269<TD align=left>COMMUNICATION CULTURE & CRITIQUE<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>45</a>
+<TR valign=top align=right class=evn><TD>270<TD align=left>INTERNATIONAL HISTORY REVIEW<TD>15<TD><a title=' 0.1%' class=ank>7</a><TD class=sc><a title=' 0.1%' class=ank>45</a>
+<TR valign=top align=right class=odd><TD>271<TD align=left>INTERNATIONAL JOURNAL OF URBAN AND REGIONAL RESEARCH<TD>4<TD><a title=' 0.1%' class=ank>8</a><TD class=sc><a title=' 0.1%' class=ank>45</a>
+<TR valign=top align=right class=evn><TD>272<TD align=left>ANNUAL REVIEW OF ANTHROPOLOGY, VOL 42<TD><a TITLE=" BOOK CHAPTER ANNUAL REVIEW OF ANTHROPOLOGY Title: Borders and the Relocation of Europe" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.1%' class=ank>44</a>
+<TR valign=top align=right class=odd><TD>273<TD align=left>COMPARATIVE EDUCATION REVIEW<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>44</a>
+<TR valign=top align=right class=evn><TD>274<TD align=left>CRIME LAW AND SOCIAL CHANGE<TD>4<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>44</a>
+<TR valign=top align=right class=odd><TD>275<TD align=left>EMPLOYEE RELATIONS<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.1%' class=ank>44</a>
+<TR valign=top align=right class=evn><TD>276<TD align=left>GLOBAL MEDIA AND COMMUNICATION<TD>2<TD>0<TD class=sc><a title=' 0.1%' class=ank>44</a>
+<TR valign=top align=right class=odd><TD>277<TD align=left>NEW PERSPECTIVES ON TURKEY<TD>4<TD>0<TD class=sc><a title=' 0.1%' class=ank>44</a>
+<TR valign=top align=right class=evn><TD>278<TD align=left>RISE OF AUTHORITARIANISM IN THE WESTERN BALKANS<TD>6<TD>0<TD class=sc><a title=' 0.1%' class=ank>44</a>
+<TR valign=top align=right class=odd><TD>279<TD align=left>SOCIAL & CULTURAL GEOGRAPHY<TD><a TITLE=" Article SOCIAL &amp; CULTURAL GEOGRAPHY Title: The cartographic calculation of space: race mapping and the Balkans at the Paris Peace Conference of 1919" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.1%' class=ank>44</a>
+<TR valign=top align=right class=evn><TD>280<TD align=left>BYZANTINE AND MODERN GREEK STUDIES<TD>9<TD><a title=' 0.1%' class=ank>6</a><TD class=sc><a title=' 0.1%' class=ank>43</a>
+<TR valign=top align=right class=odd><TD>281<TD align=left>CANADIAN JOURNAL OF AGRICULTURAL ECONOMICS-REVUE CANADIENNE D AGROECONOMIE<TD><a TITLE=" Article CANADIAN JOURNAL OF AGRICULTU Title: European Enlargement and Agro-Food Trade" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.1%' class=ank>43</a>
+<TR valign=top align=right class=evn><TD>282<TD align=left>EMPIRICAL ECONOMICS<TD>4<TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.1%' class=ank>43</a>
+<TR valign=top align=right class=odd><TD>283<TD align=left>FRONTIERS IN PSYCHOLOGY<TD><a TITLE=" Article FRONTIERS IN PSYCHOLOGY Title: Job Satisfaction, Organizational Commitment and Job Involvement: The Mediating Role of Job Involvement" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.1%' class=ank>43</a>
+<TR valign=top align=right class=evn><TD>284<TD align=left>AMERICAN BEHAVIORAL SCIENTIST<TD>2<TD>0<TD class=sc><a title=' 0.0%' class=ank>42</a>
+<TR valign=top align=right class=odd><TD>285<TD align=left>EUROPEAN JOURNAL OF INNOVATION MANAGEMENT<TD><a TITLE=" Article EUROPEAN JOURNAL OF INNOVATIO Title: Smart specialisation strategies in south Europe during crisis" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>42</a>
+<TR valign=top align=right class=evn><TD>286<TD align=left>JOURNAL OF CENTRAL BANKING THEORY AND PRACTICE<TD>12<TD><a title=' 0.1%' class=ank>8</a><TD class=sc><a title=' 0.0%' class=ank>42</a>
+<TR valign=top align=right class=odd><TD>287<TD align=left>JOURNAL OF COMPETITIVENESS<TD>3<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>42</a>
+<TR valign=top align=right class=evn><TD>288<TD align=left>JOURNAL OF TRANSFORMATIVE EDUCATION<TD><a TITLE=" Article JOURNAL OF TRANSFORMATIVE EDU Title: Transforming Worldviews The Case of Education for Peace in Bosnia and Herzegovina" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>42</a>
+<TR valign=top align=right class=odd><TD>289<TD align=left>REVIEW OF CENTRAL AND EAST EUROPEAN LAW<TD>7<TD><a title=' 0.1%' class=ank>5</a><TD class=sc><a title=' 0.0%' class=ank>42</a>
+<TR valign=top align=right class=evn><TD>290<TD align=left>COOPERATION AND CONFLICT<TD>5<TD><a title=' 0.1%' class=ank>5</a><TD class=sc><a title=' 0.0%' class=ank>41</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="so-name.html">Journal</a><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><SPAN class=sc><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a></SPAN>
+<TR valign=top align=right class=odd><TD>291<TD align=left>JOURNAL OF STRATEGIC STUDIES<TD>11<TD><a title=' 0.1%' class=ank>5</a><TD class=sc><a title=' 0.0%' class=ank>41</a>
+<TR valign=top align=right class=evn><TD>292<TD align=left>ROYAL SOCIETY OPEN SCIENCE<TD><a TITLE=" Article ROYAL SOCIETY OPEN SCIENCE Title: Amy2B copy number variation reveals starch diet adaptations in ancient European dogs" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>41</a>
+<TR valign=top align=right class=odd><TD>293<TD align=left>STRATEGIES OF SYMBOLIC NATION-BUILDING IN SOUTH EASTERN EUROPE<TD>3<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.0%' class=ank>41</a>
+<TR valign=top align=right class=evn><TD>294<TD align=left>ADVANCES IN COMPLEX SYSTEMS<TD><a TITLE=" Article ADVANCES IN COMPLEX SYSTEMS Title: DISCRETE MODEL OF IDEOLOGICAL STRUGGLE ACCOUNTING FOR MIGRATION" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=odd><TD>295<TD align=left>CONTEMPORARY SECURITY POLICY<TD>5<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=evn><TD>296<TD align=left>HOUSING POLICY DEBATE<TD><a TITLE=" Article HOUSING POLICY DEBATE Title: Who should run the housing voucher program? A reform proposal" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=odd><TD>297<TD align=left>JOURNAL OF LAW & ECONOMICS<TD><a TITLE=" Article JOURNAL OF LAW &amp; ECONOMICS Title: LEGISLATIVE ORGANIZATION OF FISCAL-POLICY" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=evn><TD>298<TD align=left>REGIONAL STUDIES<TD>3<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=odd><TD>299<TD align=left>ROMANIAN JOURNAL OF EUROPEAN AFFAIRS<TD>21<TD><a title=' 0.3%' class=ank>21</a><TD class=sc><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=evn><TD>300<TD align=left>SOCIOLOGIJA<TD>21<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=odd><TD>301<TD align=left>EKONOMIKA POLJOPRIVREDA-ECONOMICS OF AGRICULTURE<TD><a href=# OnClick="opeLod('', '631', 'EKONOMIKA POLJOPRIVREDA-ECONOMICS OF AGRICULTURE');return false">42</a><TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.0%' class=ank>39</a>
+<TR valign=top align=right class=evn><TD>302<TD align=left>GENDER TECHNOLOGY & DEVELOPMENT<TD><a TITLE=" Article GENDER TECHNOLOGY &amp; DEVELOPME Title: Agency or Illness-The Conceptualization of Trafficking: Victims&#39; Choices and Behaviors in the Assistance System" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>39</a>
+<TR valign=top align=right class=odd><TD>303<TD align=left>HISTORY OF THE FAMILY<TD>5<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.0%' class=ank>39</a>
+<TR valign=top align=right class=evn><TD>304<TD align=left>INTERNATIONAL JOURNAL OF SOCIOLOGY<TD>3<TD>0<TD class=sc><a title=' 0.0%' class=ank>39</a>
+<TR valign=top align=right class=odd><TD>305<TD align=left>LABOUR ECONOMICS<TD><a TITLE=" Article LABOUR ECONOMICS Title: Migration and gender differences in the home labour market: Evidence from Albania" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>39</a>
+<TR valign=top align=right class=evn><TD>306<TD align=left>MIDDLE EAST JOURNAL<TD><a TITLE=" Article MIDDLE EAST JOURNAL Title: Towards an Islamic liberalism?: The Nurcu movement and Fethullah Gulen" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>39</a>
+<TR valign=top align=right class=odd><TD>307<TD align=left>CANADIAN JOURNAL OF POLITICAL SCIENCE-REVUE CANADIENNE DE SCIENCE POLITIQUE<TD>3<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=evn><TD>308<TD align=left>EKONOMSKI PREGLED<TD>10<TD><a title=' 0.1%' class=ank>5</a><TD class=sc><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=odd><TD>309<TD align=left>EUROPEAN JOURNAL OF INTERNATIONAL RELATIONS<TD>2<TD>0<TD class=sc><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=evn><TD>310<TD align=left>INTERNATIONAL JOURNAL OF TRANSITIONAL JUSTICE<TD>5<TD><a title=' 0.1%' class=ank>5</a><TD class=sc><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=odd><TD>311<TD align=left>POLITICKA MISAO-CROATIAN POLITICAL SCIENCE REVIEW<TD>26<TD><a title=' 0.3%' class=ank>23</a><TD class=sc><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=evn><TD>312<TD align=left>SOCIOLOGY COMPASS<TD><a TITLE=" Article SOCIOLOGY COMPASS Title: What is Trust? A Multidisciplinary Review, Critique, and Synthesis" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=odd><TD>313<TD align=left>BALKAN HERITAGES: NEGOTIATING HISTORY AND CULTURE<TD>5<TD>0<TD class=sc><a title=' 0.0%' class=ank>37</a>
+<TR valign=top align=right class=evn><TD>314<TD align=left>EUROPE'S TROUBLED REGION: ECONOMIC DEVELOPMENT, INSTITUTIONAL REFORM AND SOCIAL WELFARE IN THE WESTERN BALKANS<TD>4<TD>0<TD class=sc><a title=' 0.0%' class=ank>37</a>
+<TR valign=top align=right class=odd><TD>315<TD align=left>INTERNATIONAL PLANNING STUDIES<TD><a TITLE=" Article INTERNATIONAL PLANNING STUDIE Title: The Neoliberal Agenda and the Changing Urban Form of Istanbul" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>37</a>
+<TR valign=top align=right class=evn><TD>316<TD align=left>JOURNAL OF AUTISM AND DEVELOPMENTAL DISORDERS<TD>2<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.0%' class=ank>37</a>
+<TR valign=top align=right class=odd><TD>317<TD align=left>JOURNAL OF EAST EUROPEAN MANAGEMENT STUDIES<TD>12<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.0%' class=ank>37</a>
+<TR valign=top align=right class=evn><TD>318<TD align=left>MUSIC PERCEPTION<TD><a TITLE=" Article; Proceedings Paper MUSIC PERCEPTION Title: Synchronization and continuation tapping to complex meters" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>37</a>
+<TR valign=top align=right class=odd><TD>319<TD align=left>REVIVAL OF ISLAM IN THE BALKANS: FROM IDENTITY TO RELIGIOSITY<TD>5<TD><a title=' 0.3%' class=ank>21</a><TD class=sc><a title=' 0.0%' class=ank>37</a>
+<TR valign=top align=right class=evn><TD>320<TD align=left>ROMANIAN JOURNAL OF ECONOMIC FORECASTING<TD>6<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>37</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="so-name.html">Journal</a><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><SPAN class=sc><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a></SPAN>
+<TR valign=top align=right class=odd><TD>321<TD align=left>SOCIAL COMPASS<TD>4<TD><a title=' 0.1%' class=ank>6</a><TD class=sc><a title=' 0.0%' class=ank>37</a>
+<TR valign=top align=right class=evn><TD>322<TD align=left>CHINA & WORLD ECONOMY<TD><a TITLE=" Article CHINA &amp; WORLD ECONOMY Title: China&#39;s Engagement with the Sixteen Countries of Central, East and Southeast Europe under the Belt and Road Initiative" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.0%' class=ank>36</a>
+<TR valign=top align=right class=odd><TD>323<TD align=left>CULTURE HEALTH & SEXUALITY<TD>3<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.0%' class=ank>36</a>
+<TR valign=top align=right class=evn><TD>324<TD align=left>DISASTERS<TD>2<TD>0<TD class=sc><a title=' 0.0%' class=ank>36</a>
+<TR valign=top align=right class=odd><TD>325<TD align=left>GEOGRAPHICAL JOURNAL<TD>2<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.0%' class=ank>36</a>
+<TR valign=top align=right class=evn><TD>326<TD align=left>INTERNATIONAL JOURNAL OF PROJECT MANAGEMENT<TD><a TITLE=" Article INTERNATIONAL JOURNAL OF PROJ Title: Diagnosing organizational risks in software projects: Stakeholder resistance" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>36</a>
+<TR valign=top align=right class=odd><TD>327<TD align=left>JOURNAL OF CULTURAL HERITAGE<TD>4<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.0%' class=ank>36</a>
+<TR valign=top align=right class=evn><TD>328<TD align=left>POLITICAL STUDIES<TD>4<TD><a title=' 0.2%' class=ank>13</a><TD class=sc><a title=' 0.0%' class=ank>36</a>
+<TR valign=top align=right class=odd><TD>329<TD align=left>TEORIJA IN PRAKSA<TD>24<TD><a title=' 0.1%' class=ank>9</a><TD class=sc><a title=' 0.0%' class=ank>36</a>
+<TR valign=top align=right class=evn><TD>330<TD align=left>TERRITORY POLITICS GOVERNANCE<TD>4<TD><a title=' 0.1%' class=ank>7</a><TD class=sc><a title=' 0.0%' class=ank>36</a>
+<TR valign=top align=right class=odd><TD>331<TD align=left>ANTHROPOLOGIE-INTERNATIONAL JOURNAL OF HUMAN DIVERSITY AND EVOLUTION<TD>5<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.0%' class=ank>35</a>
+<TR valign=top align=right class=evn><TD>332<TD align=left>CRITIQUE OF ANTHROPOLOGY<TD>2<TD><a title=' 0.2%' class=ank>16</a><TD class=sc><a title=' 0.0%' class=ank>35</a>
+<TR valign=top align=right class=odd><TD>333<TD align=left>INTERNATIONAL JOURNAL OF HERITAGE STUDIES<TD>4<TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.0%' class=ank>35</a>
+<TR valign=top align=right class=evn><TD>334<TD align=left>JOURNAL OF BUSINESS ECONOMICS AND MANAGEMENT<TD>4<TD>0<TD class=sc><a title=' 0.0%' class=ank>35</a>
+<TR valign=top align=right class=odd><TD>335<TD align=left>JOURNAL OF CULTURAL GEOGRAPHY<TD><a TITLE=" Article JOURNAL OF CULTURAL GEOGRAPHY Title: European Union enlargement, post-accession migration and imaginative geographies of the &#39; New Europe &#39;: media discourses in Romania and the United Kingdom" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.0%' class=ank>35</a>
+<TR valign=top align=right class=evn><TD>336<TD align=left>TRANSFORMATIONS IN BUSINESS & ECONOMICS<TD>17<TD><a title=' 0.1%' class=ank>5</a><TD class=sc><a title=' 0.0%' class=ank>35</a>
+<TR valign=top align=right class=odd><TD>337<TD align=left>INTERNATIONAL FEMINIST JOURNAL OF POLITICS<TD>5<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.0%' class=ank>34</a>
+<TR valign=top align=right class=evn><TD>338<TD align=left>PERSONNEL REVIEW<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>34</a>
+<TR valign=top align=right class=odd><TD>339<TD align=left>SOCIOLOGICAL SCIENCE<TD><a TITLE=" Article SOCIOLOGICAL SCIENCE Title: Finding Cultural Holes: How Structure and Culture Diverge in Networks of Scholarly Communication" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>34</a>
+<TR valign=top align=right class=evn><TD>340<TD align=left>COMPARATIVE STUDIES IN SOCIETY AND HISTORY<TD>5<TD><a title=' 0.1%' class=ank>6</a><TD class=sc><a title=' 0.0%' class=ank>33</a>
+<TR valign=top align=right class=odd><TD>341<TD align=left>ECONOMIC GEOGRAPHY<TD><a TITLE=" Article ECONOMIC GEOGRAPHY Title: Countervailing immigration and domestic migration in gateway cities: Australian and Canadian variations on an American theme" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>33</a>
+<TR valign=top align=right class=evn><TD>342<TD align=left>EUROPEAN JOURNAL OF COMMUNICATION<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>33</a>
+<TR valign=top align=right class=odd><TD>343<TD align=left>JOURNAL OF CONTEMPORARY CHINA<TD><a TITLE=" Article JOURNAL OF CONTEMPORARY CHINA Title: Global China and Symbolic Power: The Case of 16+1 Cooperation" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.0%' class=ank>33</a>
+<TR valign=top align=right class=evn><TD>344<TD align=left>JOURNAL OF ETHNOBIOLOGY<TD><a TITLE=" Article JOURNAL OF ETHNOBIOLOGY Title: FERMENTED FOODS FOR FOOD SECURITY AND FOOD SOVEREIGNTY IN THE BALKANS: A CASE STUDY OF THE GORANI PEOPLE OF NORTHEASTERN ALBANIA" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>33</a>
+<TR valign=top align=right class=odd><TD>345<TD align=left>JOURNAL OF MUSLIM MINORITY AFFAIRS<TD>17<TD><a title=' 0.1%' class=ank>6</a><TD class=sc><a title=' 0.0%' class=ank>33</a>
+<TR valign=top align=right class=evn><TD>346<TD align=left>ROMANI STUDIES<TD>7<TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.0%' class=ank>33</a>
+<TR valign=top align=right class=odd><TD>347<TD align=left>SOCIAL INCLUSION<TD>5<TD><a title=' 0.1%' class=ank>5</a><TD class=sc><a title=' 0.0%' class=ank>33</a>
+<TR valign=top align=right class=evn><TD>348<TD align=left>ENVIRONMENT AND PLANNING C-GOVERNMENT AND POLICY<TD>4<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.0%' class=ank>32</a>
+<TR valign=top align=right class=odd><TD>349<TD align=left>ENVIRONMENT AND PLANNING C-POLITICS AND SPACE<TD>2<TD>0<TD class=sc><a title=' 0.0%' class=ank>32</a>
+<TR valign=top align=right class=evn><TD>350<TD align=left>EUROPEAN CHILD & ADOLESCENT PSYCHIATRY<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>32</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="so-name.html">Journal</a><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><SPAN class=sc><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a></SPAN>
+<TR valign=top align=right class=odd><TD>351<TD align=left>INTERNATIONAL JOURNAL OF ENERGY SECTOR MANAGEMENT<TD>4<TD>0<TD class=sc><a title=' 0.0%' class=ank>32</a>
+<TR valign=top align=right class=evn><TD>352<TD align=left>JOURNAL OF INDO-EUROPEAN STUDIES<TD>14<TD><a title=' 0.1%' class=ank>10</a><TD class=sc><a title=' 0.0%' class=ank>32</a>
+<TR valign=top align=right class=odd><TD>353<TD align=left>JOURNAL OF SMALL BUSINESS AND ENTERPRISE DEVELOPMENT<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>32</a>
+<TR valign=top align=right class=evn><TD>354<TD align=left>CONFRONTING THE SHADOW ECONOMY: EVALUATING TAX COMPLIANCE AND BEHAVIOUR POLICIES<TD><a TITLE=" Book CONFRONTING THE SHADOW ECONOM Title: Confronting the Shadow Economy: Evaluating Tax Compliance and Behaviour Policies" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=odd><TD>355<TD align=left>ECONOMIC MODELLING<TD>3<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=evn><TD>356<TD align=left>EURASIAN BUSINESS REVIEW<TD>2<TD>0<TD class=sc><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=odd><TD>357<TD align=left>HUMAN BIOLOGY<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=evn><TD>358<TD align=left>JOURNAL OF EUROPEAN INTEGRATION<TD>10<TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=odd><TD>359<TD align=left>RETHINKING HISTORY<TD>5<TD><a title=' 0.1%' class=ank>9</a><TD class=sc><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=evn><TD>360<TD align=left>THE JOURNAL OF ECONOMIC HISTORY<TD><a TITLE=" Article J ECON HIST Title: &quot;Land Tenure and Related Sectors of the Balkan Economy, 1600&acirc;&#128;&#147;1800&quot;" href=javascript:na() class=nu>1</a><TD><a title=' 0.1%' class=ank>8</a><TD class=sc><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=odd><TD>361<TD align=left>TOUGH LOVE: THE EUROPEAN UNION'S RELATIONS WITH THE WESTERN BALKANS<TD><a TITLE=" Book TOUGH LOVE: THE EUROPEAN UNIO Title: Tough Love: The European Union&#39;s Relations with the Western Balkans" href=javascript:opeNod(2139)>1</a><TD><a title=' 0.2%' class=ank>13</a><TD class=sc><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=evn><TD>362<TD align=left>CORNELL LAW REVIEW<TD><a TITLE=" Review CORNELL LAW REVIEW Title: Who&#39;s liable for cyberwrongs?" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>30</a>
+<TR valign=top align=right class=odd><TD>363<TD align=left>ENVIRONMENT AND PLANNING A-ECONOMY AND SPACE<TD><a TITLE=" Article ENVIRONMENT AND PLANNING A-EC Title: Drawing new boundaries of participation: experiences and strategies of economic citizenship among skilled migrant women in Switzerland" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>30</a>
+<TR valign=top align=right class=evn><TD>364<TD align=left>INFORMATION COMMUNICATION & SOCIETY<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>30</a>
+<TR valign=top align=right class=odd><TD>365<TD align=left>JOURNAL OF THE AMERICAN ACADEMY OF RELIGION<TD>2<TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.0%' class=ank>30</a>
+<TR valign=top align=right class=evn><TD>366<TD align=left>NATIONAL IDENTITIES<TD>5<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.0%' class=ank>30</a>
+<TR valign=top align=right class=odd><TD>367<TD align=left>NEUROBIOLOGY OF LEARNING AND MEMORY<TD><a TITLE=" Review NEUROBIOLOGY OF LEARNING AND  Title: What, if anything, is the medial temporal lobe, and how can the amygdala be part of it if there is no such thing?" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>30</a>
+<TR valign=top align=right class=evn><TD>368<TD align=left>REGIONAL AND FEDERAL STUDIES<TD><a TITLE=" Article REGIONAL AND FEDERAL STUDIES Title: The Paradox of Ethnic Partition: Lessons from de facto Partition in Bosnia and Kosovo" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.0%' class=ank>30</a>
+<TR valign=top align=right class=odd><TD>369<TD align=left>REVIEW OF FINANCE<TD><a TITLE=" Article REVIEW OF FINANCE Title: Microfinance Banks and Financial Inclusion" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>30</a>
+<TR valign=top align=right class=evn><TD>370<TD align=left>SOUTH EUROPEAN SOCIETY AND POLITICS<TD><a TITLE=" Article SOUTH EUROPEAN SOCIETY AND PO Title: The Return of the Greek Patient: Greece and the 2008 Global Financial Crisis" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>30</a>
+<TR valign=top align=right class=odd><TD>371<TD align=left>CROATIAN OPERATIONAL RESEARCH REVIEW<TD>8<TD>0<TD class=sc><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=evn><TD>372<TD align=left>CROATIAN YEARBOOK OF EUROPEAN LAW & POLICY<TD>7<TD><a title=' 0.2%' class=ank>14</a><TD class=sc><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=odd><TD>373<TD align=left>ENERGY JOURNAL<TD>4<TD><a title=' 0.0%' class=ank>4</a><TD class=sc><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=evn><TD>374<TD align=left>ENTREPRENEURSHIP THEORY AND PRACTICE<TD><a TITLE=" Article ENTREPRENEURSHIP THEORY AND P Title: When Contingency Is a Resource: Educating Entrepreneurs in the Balkans, the Bronx, and Beyond" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=odd><TD>375<TD align=left>EUROPEAN JOURNAL OF POLITICAL RESEARCH<TD><a TITLE=" Review EUROPEAN JOURNAL OF POLITICAL Title: What has Eastern Europe taught us about the democratisation literature (and vice versa)?" href=javascript:na() class=nu>1</a><TD><a title=' 0.1%' class=ank>5</a><TD class=sc><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=evn><TD>376<TD align=left>EUROPEANISATION OF THE WESTERN BALKANS: A FAILURE OF EU CONDITIONALITY?<TD>8<TD><a title=' 0.2%' class=ank>13</a><TD class=sc><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=odd><TD>377<TD align=left>INTERNATIONAL JOURNAL OF FINANCE & ECONOMICS<TD>2<TD>0<TD class=sc><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=evn><TD>378<TD align=left>JOURNAL OF MAPS<TD>3<TD>0<TD class=sc><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=odd><TD>379<TD align=left>NEW MEDIA & SOCIETY<TD><a TITLE=" Article NEW MEDIA &amp; SOCIETY Title: Overcoming digital divides in higher education: Digital literacy beyond Facebook" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=evn><TD>380<TD align=left>RISK ANALYSIS<TD><a TITLE=" Article RISK ANALYSIS Title: Evaluating Weight of Evidence in the Mystery of Balkan Endemic Nephropathy" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>29</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="so-name.html">Journal</a><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><SPAN class=sc><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a></SPAN>
+<TR valign=top align=right class=odd><TD>381<TD align=left>TRANSPORTATION RESEARCH PART F-TRAFFIC PSYCHOLOGY AND BEHAVIOUR<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=evn><TD>382<TD align=left>TURKISH HISTORICAL REVIEW<TD>11<TD><a title=' 0.1%' class=ank>10</a><TD class=sc><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=odd><TD>383<TD align=left>TURKISH POLICY QUARTERLY<TD>22<TD><a title=' 0.1%' class=ank>11</a><TD class=sc><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=evn><TD>384<TD align=left>ANATOLIAN STUDIES<TD>2<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=odd><TD>385<TD align=left>ECONOMIC HISTORY REVIEW<TD>2<TD><a title=' 0.1%' class=ank>7</a><TD class=sc><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=evn><TD>386<TD align=left>EUROPEAN INTEGRATION ONLINE PAPERS-EIOP<TD><a TITLE=" Article EUROPEAN INTEGRATION ONLINE P Title: The Energy Community of Southeast Europe: A neo-functionalist project of regional integration" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=odd><TD>387<TD align=left>HUMAN ECOLOGY REVIEW<TD><a TITLE=" Article HUMAN ECOLOGY REVIEW Title: Wild Mushrooms and Lichens used as Human Food for Survival in War Conditions; Podrinje - Zepa Region (Bosnia and Herzegovina, W. Balkan)" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=evn><TD>388<TD align=left>LABOR HISTORY<TD><a TITLE=" Article LABOR HISTORY Title: Approaching the socialist factory and its workforce: considerations from fieldwork in (former) Yugoslavia" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=odd><TD>389<TD align=left>LEX LOCALIS-JOURNAL OF LOCAL SELF-GOVERNMENT<TD>5<TD>0<TD class=sc><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=evn><TD>390<TD align=left>OPEN ECONOMIES REVIEW<TD>4<TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=odd><TD>391<TD align=left>TOURISM MANAGEMENT PERSPECTIVES<TD><a TITLE=" Article TOURISM MANAGEMENT PERSPECTIV Title: Restaurant food waste and the determinants of its effective management in Bulgaria: An exploratory case study of restaurants in Plovdiv" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=evn><TD>392<TD align=left>CIVIL WARS<TD>5<TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.0%' class=ank>27</a>
+<TR valign=top align=right class=odd><TD>393<TD align=left>JOURNAL OF FAMILY HISTORY<TD>5<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.0%' class=ank>27</a>
+<TR valign=top align=right class=evn><TD>394<TD align=left>VIOLENCE AGAINST WOMEN<TD><a TITLE=" Article VIOLENCE AGAINST WOMEN Title: Nationalism, war, and archaization of gender relations in the Balkans" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD class=sc><a title=' 0.0%' class=ank>27</a>
+<TR valign=top align=right class=odd><TD>395<TD align=left>ACTA OECONOMICA<TD>8<TD><a title=' 0.0%' class=ank>2</a><TD class=sc><a title=' 0.0%' class=ank>26</a>
+<TR valign=top align=right class=evn><TD>396<TD align=left>AMERICAN JOURNAL OF ARCHAEOLOGY<TD>5<TD><a title=' 0.1%' class=ank>6</a><TD class=sc><a title=' 0.0%' class=ank>26</a>
+<TR valign=top align=right class=odd><TD>397<TD align=left>BERLINER JOURNAL FUR SOZIOLOGIE<TD>4<TD>0<TD class=sc><a title=' 0.0%' class=ank>26</a>
+<TR valign=top align=right class=evn><TD>398<TD align=left>BRITISH JOURNAL OF SPECIAL EDUCATION<TD><a TITLE=" Article BRITISH JOURNAL OF SPECIAL ED Title: Occupational stress, negative affectivity and physical health in special and general education teachers in Greece" href=javascript:na() class=nu>1</a><TD>0<TD class=sc><a title=' 0.0%' class=ank>26</a>
+<TR valign=top align=right class=odd><TD>399<TD align=left>CONTEMPORARY EUROPEAN HISTORY<TD>5<TD><a title=' 0.0%' class=ank>1</a><TD class=sc><a title=' 0.0%' class=ank>26</a>
+<TR valign=top align=right class=evn><TD>400<TD align=left>DEMOGRAPHIC RESEARCH<TD>2<TD>0<TD class=sc><a title=' 0.0%' class=ank>26</a>
+</TABLE>
+<div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>2</b> of 14<span class=nonprn>: [  &nbsp;<a href=so-gcs.html class=nu>1</a> &nbsp;2 &nbsp;3 &nbsp;4 &nbsp;5 &nbsp;6 &nbsp;7 &nbsp;8 &nbsp;9 &nbsp;10 ]</span> &nbsp;11&nbsp;</div>
+</BODY>

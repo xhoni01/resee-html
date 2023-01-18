@@ -1,0 +1,591 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><HEAD><TITLE>HistCite - RESEE: A Bibliographic Database on Balkan – Southeast European Studies</TITLE></HEAD>
+<BODY VLINK=blue OnLoad="focus()">
+<STYLE>
+body {
+	margin: 2px 10px; padding: 0;
+	background: #fff;
+}
+body, td, th {
+	font-size: 10pt; font-family: Verdana;
+}
+input, select, textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ui {
+	font-size: 10pt; font-family: Verdana;
+}
+.ui input, .ui select, .ui textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ci_title {
+	font-size: 8pt; font-weight: bold;
+}
+.ci_il {
+	color: black; text-decoration: none;	/* msie6 ! inherit */
+}
+.helpa { text-decoration: none;
+	cursor: help;
+}
+.helpt { background: #ffff77; padding: 4px;
+}
+.nu { text-decoration: none; 
+}
+.sc, .sc a { color: #904644 }
+.fnd { background-color: #beb;
+	padding: 0 3px 2px 2px;
+}
+td div.fndCR {
+	padding-left: 2em;
+//	text-indent: -2em;
+}
+.odd { background-color: #eeeeee }
+.evn { background-color: #dddddd }
+div.odd { padding: 5px; margin-bottom: 2px }
+div.evn { padding: 5px; margin-bottom: 2px }
+.yr { padding: 0; font-weight: bold }
+.ank:hover { cursor: pointer; text-decoration: none; color: inherit; }
+a {
+	text-decoration: none;
+}
+a:hover, a:hover .sc {
+	text-decoration: underline; color: blue;
+}
+.scr:hover, td a.scr:hover { color:#000; text-decoration:none; } /* FF td */
+@media print {
+	.nonprn, .ephemeral, .x, .ui { display: none; }
+	.index { border: solid #fff 0; }
+	body { font-size: 10pt; }
+	td, th { font-size: 10pt; }
+	.ci_title { font-size: 8pt; }
+}
+</STYLE>
+<SCRIPT>
+var root=location.href; root = root.replace(/index.*/, ''); root = root.replace(/list.*/, '');
+function about () { window.open(root+'about.html','about','width=440,height=370,resizable=yes,scrollbars=yes') }
+	// This is a list of XMLHttpRequest-creation factory functions to try
+_factories = [
+    function() { return new XMLHttpRequest(); },
+    function() { return new ActiveXObject("Msxml2.XMLHTTP"); },
+    function() { return new ActiveXObject("Microsoft.XMLHTTP"); }
+];
+
+// When we find a factory that works, store it here.
+_factory = null;
+
+// Create and return a new XMLHttpRequest object.
+//
+// The first time we're called, try the list of factory functions until
+// we find one that returns a non-null value and does not throw an
+// exception. Once we find a working factory, remember it for later use.
+//
+newRequest = function() {
+    if (_factory != null) return _factory();
+
+    for(var i = 0; i < _factories.length; i++) {
+        try {
+            var factory = _factories[i];
+            var request = factory();
+            if (request != null) {
+                _factory = factory;
+                return request;
+            }
+        }
+        catch(e) {
+            continue;
+        }
+    }
+    // If we get here, none of the factory candidates succeeded,
+    // so throw an exception now and for all future calls.
+    _factory = function() {
+        //throw new Error("XMLHttpRequest not supported");
+        alert("XMLHttpRequest not supported");
+    }
+    _factory(); // Throw an error
+}
+
+function gethelp (url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+//    alert('OK');
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+function gettip (ent, url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+		ent.innerHTML = req.responseText;
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+</SCRIPT>
+<STYLE>
+div#tipshade {
+	position: fixed; top: 208px; left: 208px;
+	margin: 0px; width: 420px; height: 180px;
+	border: solid gray 2px;
+	background: gray;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 19; display: none;
+}
+div#tipoday {
+	position: fixed; top: 200px; left: 200px;
+	margin: 0px; width: 420px; height: 180px; padding: 0;
+	background: white;
+	border: solid #e44959 2px;
+	font: 10pt Verdana; cursor: default;
+	z-index: 20; display: none;
+}
+div#tiptitle {
+	background: #e44959; color: white; font-weight: bold;
+	padding-left: 4px;
+}
+div#tiptitle span.x {
+	background: white;
+}
+div#tipbox {
+	position: relative; /* top: 5px; */ margin: 8px;
+	max-height: 120px; overflow: auto;
+}
+div#tipctrl {
+	position: absolute; bottom: 0; margin: 4px;
+}
+div#tipctrl td {
+	font-size: 10px;
+}
+div#tipctrl form { margin: 0; }
+span.nw { white-space: nowrap; }
+</STYLE>
+<div id="tipshade" class="ui"> </div>
+<div id="tipoday" class="ui" align=left>
+<div id="tiptitle">HistCite Tip of the Day<span class="x"><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;" title="Close">X</a></span></div>
+<div id="tipbox">Tip of the day</div>
+<div id="tipctrl">
+<table align=bottom width=100%>
+<tr><td width=40% nowrap><form name=ft><label><input type=checkbox OnChange="nextStart(this);" checked> Show tip at next start</label></form></td>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=-1');>Previous Tip</a>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=1');>Next Tip</a>
+<td align=right><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;">Close</a>&nbsp;</td>
+</tr></table></div></div>
+<SCRIPT> var otip;
+function getit () { otip = document.getElementById('tipbox'); gettip(otip,'/tip.txt?next=0'); }
+function nextStart (start) {
+	if(start.checked == true) {
+		on = 1;
+	} else {
+		on = 0;
+	}
+	gethelp('/tipStart?on=' + on);
+}
+function tip_show () {
+	var W, H;
+	if(window.innerWidth) {
+		W = window.innerWidth; H = window.innerHeight;
+	} else {
+		var dd = document.documentElement;
+		W = dd.clientWidth; H = dd.clientHeight;
+	}
+//	alert(W + ' x ' + H);
+	var left = (W-420)/2;
+	var top = (H-180)/2;
+	var tipB = document.getElementById('tipshade');
+	var tipT = document.getElementById('tipoday');
+	tipB.style.left = left + 8 + 'px';
+	tipB.style.top = top + 8 + 'px';
+	tipT.style.left = left + 'px';
+	tipT.style.top = top + 'px';
+	tipB.style.display='block';
+	tipT.style.display='block';
+	getit();
+}
+</SCRIPT>
+
+<style>
+div#af_boxshado {
+	position: fixed; left:148px; top:128px; width: 460px; height: 110px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 11; display: none;
+}
+div#af_box {
+	position: fixed; left:140px; top:120px; width: 460px; height: 110px;
+	background: white; border: solid #999 2px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+div#af_box input {
+	font: 10px Verdana;
+}
+div#af_box_title {
+	background: #d3d3d3; padding-left: 4px; font-weight: bold;
+}
+div#af_box_title span.x {
+	background: white;
+}
+div#af_form {
+	width: 445px; height: 70px;
+	padding: 8px; overflow: auto;
+}
+div#af_form #sub{
+	display: block; margin: 12px 0 0 0;
+}
+div#starh2 {
+	position: absolute; left: 88px; top: 78px; width: 420px; height: 156px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	padding: 8px;
+	z-index: 12; display: none;
+}
+div#starh {
+	position: absolute; left: 80px; top: 70px; width: 420px; height: 156px; overflow: auto;
+	border: outset gray 2px;
+	padding: 8px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+</style>
+<div id="af_boxshado"> </div>
+<div id="af_box">
+<div id="af_box_title">Add File<span class="x"><a onClick="af_close()" title="Close">X</a></span>
+<!--<a href=javascript:na() onMouseOver="na();" onClick="toggle('starh');" class=helpa style="color:#000">-->
+<a onClick="toggle('starh');" class=helpa style="color:#000"><span class="x" id=mstarh style="top:0;right:14px;">?</span><span class="x" id=lstarh style="top:0;right:14px;display:none">_</span></a>
+</div>
+<div id="af_form">
+<FORM action=/input method=GET OnSubmit="return false" name=af style="margin:0">
+	Use [Browse...] to select a file with bibliography data:<br>
+	<INPUT type=hidden name=inputpath>
+	<INPUT type=file name=inputset size=48 OnChange="af.sub.focus()" value="">
+	<INPUT type=submit value="Add File" OnClick="afSubmit();return false" name=sub id="sub">
+</div><div id=starh2> </div>
+<div id=starh class=helpt>
+Use wildcard '*' to add more than one file at a time.
+For example, if you have <code>file1</code>,
+<code>file2</code>, etc. all in the same folder or directory;
+first, locate one of the files with the [Browse...] button.  Then alter the
+file path in the box above to include '*' character (eg. <code>file*</code>).
+Wildcard '?' to blanket only one character works too.<br>
+<b>Note</b>: In Windows you can select multiple files and "drag and drop" them 
+onto HistCite icon or shortcut.  The program would start and load those files.
+</div>
+</FORM><SCRIPT>
+var af = document.af;
+function afSubmit() {
+	if ("" == af.inputset.value ) { alert("Select a file."); return }
+	af.inputpath.value = af.inputset.value;
+	af.submit();
+}
+function af_show() {
+	document.getElementById('af_boxshado').style.display = 'block';
+	document.getElementById('af_box').style.display = 'block';
+	a = document.af.inputset.value;
+	document.af.inputset.focus();
+}
+function af_close() {
+	document.getElementById('af_boxshado').style.display = 'none';
+	document.getElementById('af_box').style.display = 'none';
+}
+</SCRIPT></div>
+
+<SCRIPT>
+function glossary () { window.open(root+'glossary.html','gloss','width=640,height=570,resizable=yes,scrollbars=yes') }
+function opeNod (a) { window.open(root+'node/'+a+'.html',a,'width=770,height=570,resizable=yes,scrollbars=yes') }
+function opeLod (dp, a) { if(''==dp) d='so'; else d=dp; var w = d; w = w.replace(/[-\/]/g, '');
+	window.open(root+d+'/'+a+'.html',w+a,'width=640,height=546,resizable=yes,scrollbars=yes') }
+function na(){}
+</SCRIPT>
+<STYLE>
+#head {
+	position: left:0; padding-left:4px; background:#fff;
+	z-index:2; margin:0 0 8px 0; border-bottom:solid #000 1px;
+}
+#title {
+	padding-bottom: 4px; font-size: 1.3em; font-weight: bold;
+	max-width: 600px; /* non default overflow gives odd z-effects in FF */
+}
+#desc {
+	position: absolute; left: 4px; top: 1.8em;
+	padding: 2px 8px 4px 8px; white-space: normal; max-width: 480px;
+	background: #ffffcc; font-weight: normal; font-size: 10pt;
+	border: solid #000 1px;
+	display: none; z-index: 11;
+}
+#atitle { cursor: text;}
+#atitle, #stats {
+	text-decoration: none; color: #000;
+}
+#stats2 {
+	position: absolute; right: 0px; padding: 0;
+	background: white;
+	display: none; z-index: 11;
+}
+#atitle:hover #desc, #stats:hover #stats2 {
+	display: block;
+}
+@media print {
+	#head { position: static; }
+	#menu_pm { line-height: 0; }
+	#back { display: none; }
+}
+</STYLE>
+<!-- FF 3 only? fix -->
+<div id=head style="width:99%">
+<TABLE width=100% cellpadding=0 cellspacing=0 style="margin:0 0 3px 0">
+<TR valign=top><TD align=left width=60%>
+<div id=title><a id=atitle >RESEE: A Bibliographic Database on Balkan – Southeast European Studies<div id=desc>-------Search: Databases searching procedure and formats------
+*| Search query
+"balkan*" OR "southeast* europe*" OR "south east* europe*" (TITLE-ABS-KEY) 
+Web of Science Core Collection (SSCI, A&HCI, ESCI, BKCI-SSH)
+Scopus
+Constellate (JSTOR and Portico)
+
+Note: The earliest publication date from WoS for the articles was 1957 whereas for the books 2003.
+To complement our database with entries before 1957, we search the Constellate (Jstor and Portico) and Scopus database, finding and adding a further 445 articles.
+Characters were normalize, and English translation of the titles were added for entries in other languages than English. And for Constellate data we kept only Articles and Books from Humanities and Social Sciences.
+The Scopus and Constellate metadata files were converted into WoS (.txt) format.
+We also added manually 59 new entries (9 articles and 50 books) that were missing from the search but showed to be among the most cited references (local citation score greater than 10)
+
+---------Merging variants in the same cited references--------
+Given that databases have problems with the completeness of references and linkages (Van Eck and Waltman 2017), we used CRExplorer to clean the data and reduce the problems posed by variants in the same cited references (Thor et al. 2016)
+The cited references (CRs) in our data contained variants, especially the references on books. 
+We use the manual cleaning-up procedure, setting the clustering algorithm with a Levenshtein threshold of 0.75. 
+We also manually checked and unified variants of the same cited references (CRs), especially for books that received a local citation of more than 20 or had different years or editions and translations into other languages. 
+After the cleaning, we unify the variants of the same CRs, about 12% of the initial cited references.</div></a></div>
+<TD align=center><a href=# OnClick="window.open('../graph/list.html','graph','resizable=yes,scrollbars=yes')" class=nonprn>Historiographs</a><TD nowrap align=right rowspan=2 width=5%><div class=nonprn><a href=javascript:glossary()>Glossary</a>&nbsp;&nbsp;<a href="http://www.histcite.com/HTMLHelp/guide.html" target=guide>HistCite Guide</a>&nbsp;&nbsp;<a href=# OnClick="about(); return false">About</a></div><a id=stats>
+Grand Totals: LCS 8009, GCS 85894, CR 328237<br>Collection span: 1854 - 2022<br></a><TR><TD colspan=2 width=95%><b>Journal List</b> (2650)</TABLE></div><div align=right>24 December 2022</div>
+<div class="index" style=""><a href=../index-tl.html>Records</a>: 8378, <a href=au-pubs.html>Authors</a>: 10107, Journals: 2650, <a href=or-pubs.html>Cited References</a>: 248863, <a href=wd-pubs.html>Words</a>: 11723
+<br><span class=nonprn><a href=py-pubs.html title=' Publication Years: 127 '>Yearly output</a>
+|&nbsp;<a href=dt-pubs.html title=' Document Types: 14 '>Document Type</a>
+|&nbsp;<a href=la-pubs.html title=' Languages: 6 '>Language</a>
+|&nbsp;<a href=in-pubs.html title=' Institutions: 62 '>Institution</a>
+|&nbsp;<a href=i2-pubs.html title=' Institution with Subdivisions: 64 '>Institution with Subdivision</a>
+|&nbsp;<a href=co-pubs.html title=' Countries: 8 '>Country</a></span></div><div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>1</b> of 14<span class=nonprn>: [  &nbsp;1 &nbsp;<a href=so-lcs-2.html class=nu>2</a> &nbsp;3 &nbsp;4 &nbsp;5 &nbsp;6 &nbsp;7 &nbsp;8 &nbsp;9 &nbsp;10 ]</span> &nbsp;11&nbsp;</div>
+<TABLE border=0 cellpadding=5 cellspacing=2 style="border: 2px solid #cccccc;margin: 4px 0;">
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="so-name.html">Journal</a><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>1<TD align=left>IMAGINING BALKANS<TD><a TITLE=" BOOK IMAGINING BALKANS Title: Imagining the Balkans" href=javascript:opeNod(1103)>1</a><TD class=sc><a title=' 6.1%' class=ank>486</a><TD><a title=' 5.7%' class=ank>4924</a>
+<TR valign=top align=right class=evn><TD>2<TD align=left>SLAVIC REVIEW<TD>28<TD class=sc><a title=' 5.1%' class=ank>407</a><TD><a title=' 1.3%' class=ank>1130</a>
+<TR valign=top align=right class=odd><TD>3<TD align=left>JOURNAL OF EUROPEAN PUBLIC POLICY<TD>10<TD class=sc><a title=' 2.3%' class=ank>183</a><TD><a title=' 0.5%' class=ank>417</a>
+<TR valign=top align=right class=evn><TD>4<TD align=left>SOUTHEAST EUROPEAN AND BLACK SEA STUDIES<TD><a href=# OnClick="opeLod('', '2317', 'SOUTHEAST EUROPEAN AND BLACK SEA STUDIES');return false">78</a><TD class=sc><a title=' 1.5%' class=ank>124</a><TD><a title=' 0.5%' class=ank>439</a>
+<TR valign=top align=right class=odd><TD>5<TD align=left>HIST BALKANS<TD><a TITLE=" BOOK HIST BALKANS Title: History of the Balkans. Eighteenth and Nineteenth Centuries &amp; Twentieth Century" href=javascript:opeNod(693)>1</a><TD class=sc><a title=' 1.3%' class=ank>107</a><TD><a title=' 0.5%' class=ank>407</a>
+<TR valign=top align=right class=evn><TD>6<TD align=left>INVENTING RURITANIA<TD><a TITLE=" BOOK INVENTING RURITANIA Title: Inventing Ruritania: the imperialism of the imagination" href=javascript:opeNod(1165)>1</a><TD class=sc><a title=' 1.3%' class=ank>104</a><TD><a title=' 0.9%' class=ank>760</a>
+<TR valign=top align=right class=odd><TD>7<TD align=left>BALKANS 1453<TD><a TITLE=" BOOK BALKANS 1453 Title: The Balkans since 1453" href=javascript:opeNod(453)>1</a><TD class=sc><a title=' 1.2%' class=ank>98</a><TD><a title=' 1.3%' class=ank>1116</a>
+<TR valign=top align=right class=evn><TD>8<TD align=left>BALKAN TRAGEDY CHAOS<TD><a TITLE=" BOOK BALKAN TRAGEDY CHAOS Title: Balkan tragedy: Chaos and dissolution after the Cold War" href=javascript:opeNod(983)>1</a><TD class=sc><a title=' 1.2%' class=ank>94</a><TD><a title=' 2.7%' class=ank>2340</a>
+<TR valign=top align=right class=odd><TD>9<TD align=left>NATL QUESTION YUGOSL<TD><a TITLE=" BOOK NATL QUESTION YUGOSL Title: The national question in Yugoslavia: origins, history, politics" href=javascript:opeNod(712)>1</a><TD class=sc><a title=' 1.2%' class=ank>93</a><TD><a title=' 1.6%' class=ank>1407</a>
+<TR valign=top align=right class=evn><TD>10<TD align=left>BALKAN GHOSTS JOURNE<TD><a TITLE=" BOOK BALKAN GHOSTS JOURNE Title: Balkan ghosts: A journey through history" href=javascript:opeNod(884)>1</a><TD class=sc><a title=' 1.1%' class=ank>92</a><TD><a title=' 2.1%' class=ank>1811</a>
+<TR valign=top align=right class=odd><TD>11<TD align=left>KOSOVO SHORT HIST<TD><a TITLE=" BOOK KOSOVO SHORT HIST Title: Kosovo: A short history" href=javascript:opeNod(1167)>1</a><TD class=sc><a title=' 1.1%' class=ank>89</a><TD><a title=' 2.0%' class=ank>1732</a>
+<TR valign=top align=right class=evn><TD>12<TD align=left>JOURNAL OF ARCHAEOLOGICAL SCIENCE<TD>40<TD class=sc><a title=' 1.1%' class=ank>88</a><TD><a title=' 1.3%' class=ank>1105</a>
+<TR valign=top align=right class=odd><TD>13<TD align=left>EUROPE-ASIA STUDIES<TD>17<TD class=sc><a title=' 1.1%' class=ank>85</a><TD><a title=' 0.3%' class=ank>245</a>
+<TR valign=top align=right class=evn><TD>14<TD align=left>ANTIQUITY<TD>27<TD class=sc><a title=' 1.0%' class=ank>81</a><TD><a title=' 0.7%' class=ank>606</a>
+<TR valign=top align=right class=odd><TD>15<TD align=left>BALKANS NATL WAR GRE<TD><a TITLE=" BOOK BALKANS NATL WAR GRE Title: The Balkans: Nationalism, War, and the Great Powers 1804-2012" href=javascript:opeNod(1183)>1</a><TD class=sc><a title=' 1.0%' class=ank>77</a><TD><a title=' 0.8%' class=ank>682</a>
+<TR valign=top align=right class=evn><TD>16<TD align=left>OTHER BALKAN WARS 19<TD><a TITLE=" BOOK OTHER BALKAN WARS 19 Title: The Other Balkan Wars: A 1913 Carnegie Endowment Inquiry in Retrospect" href=javascript:opeNod(925)>1</a><TD class=sc><a title=' 1.0%' class=ank>77</a><TD><a title=' 0.3%' class=ank>266</a>
+<TR valign=top align=right class=odd><TD>17<TD align=left>EAST EUROPEAN POLITICS AND SOCIETIES<TD><a href=# OnClick="opeLod('', '589', 'EAST EUROPEAN POLITICS AND SOCIETIES');return false">42</a><TD class=sc><a title=' 0.9%' class=ank>76</a><TD><a title=' 0.4%' class=ank>338</a>
+<TR valign=top align=right class=evn><TD>18<TD align=left>JCMS-JOURNAL OF COMMON MARKET STUDIES<TD>8<TD class=sc><a title=' 0.9%' class=ank>76</a><TD><a title=' 0.2%' class=ank>167</a>
+<TR valign=top align=right class=odd><TD>19<TD align=left>AMERICAN HISTORICAL REVIEW<TD>2<TD class=sc><a title=' 0.9%' class=ank>72</a><TD><a title=' 0.2%' class=ank>136</a>
+<TR valign=top align=right class=evn><TD>20<TD align=left>BALKANS SHORT HIST<TD><a TITLE=" BOOK BALKANS SHORT HIST Title: The Balkans: A Short History" href=javascript:opeNod(1416)>1</a><TD class=sc><a title=' 0.9%' class=ank>72</a><TD><a title=' 0.9%' class=ank>771</a>
+<TR valign=top align=right class=odd><TD>21<TD align=left>EAST EUROPEAN POLITICS<TD>23<TD class=sc><a title=' 0.8%' class=ank>67</a><TD><a title=' 0.3%' class=ank>293</a>
+<TR valign=top align=right class=evn><TD>22<TD align=left>PENINSULE BALKANIQUE<TD><a TITLE=" BOOK PENINSULE BALKANIQUE Title: La peninsule balkanique: geographie humaine" href=javascript:opeNod(138)>1</a><TD class=sc><a title=' 0.8%' class=ank>67</a><TD><a title=' 0.4%' class=ank>379</a>
+<TR valign=top align=right class=odd><TD>23<TD align=left>JOURNAL OF BALKAN AND NEAR EASTERN STUDIES<TD><a href=# OnClick="opeLod('', '1300', 'JOURNAL OF BALKAN AND NEAR EASTERN STUDIES');return false">54</a><TD class=sc><a title=' 0.8%' class=ank>63</a><TD><a title=' 0.2%' class=ank>210</a>
+<TR valign=top align=right class=evn><TD>24<TD align=left>BALKAN METAPHOR GLOB<TD><a TITLE=" BOOK BALKAN METAPHOR GLOB Title: Balkan as Metaphor: between globalization and fragmentation" href=javascript:opeNod(1415)>1</a><TD class=sc><a title=' 0.8%' class=ank>61</a><TD><a title=' 0.4%' class=ank>321</a>
+<TR valign=top align=right class=odd><TD>25<TD align=left>BALKAN WARS 1912 191<TD><a TITLE=" BOOK BALKAN WARS 1912 191 Title: The Balkan Wars, 1912-1913: Prelude to the First World War" href=javascript:opeNod(1258)>1</a><TD class=sc><a title=' 0.7%' class=ank>59</a><TD><a title=' 0.6%' class=ank>528</a>
+<TR valign=top align=right class=evn><TD>26<TD align=left>INSIGHT TURKEY<TD>22<TD class=sc><a title=' 0.7%' class=ank>58</a><TD><a title=' 0.3%' class=ank>256</a>
+<TR valign=top align=right class=odd><TD>27<TD align=left>SOUTHEASTERN EUROPE<TD><a href=# OnClick="opeLod('', '2319', 'SOUTHEASTERN EUROPE');return false">62</a><TD class=sc><a title=' 0.7%' class=ank>58</a><TD><a title=' 0.2%' class=ank>174</a>
+<TR valign=top align=right class=evn><TD>28<TD align=left>BALKAN EC HIST 1550<TD><a TITLE=" BOOK BALKAN EC HIST 1550 Title: Balkan economic history, 1550-1950: from imperial borderlands to developing nations" href=javascript:opeNod(666)>1</a><TD class=sc><a title=' 0.7%' class=ank>55</a><TD><a title=' 0.6%' class=ank>548</a>
+<TR valign=top align=right class=odd><TD>29<TD align=left>BOSNIA SHORT HIST<TD><a TITLE=" BOOK BOSNIA SHORT HIST Title: Bosnia, a short history" href=javascript:opeNod(942)>1</a><TD class=sc><a title=' 0.7%' class=ank>55</a><TD><a title=' 2.3%' class=ank>1956</a>
+<TR valign=top align=right class=evn><TD>30<TD align=left>EUROPEAN INTEGRATION<TD><a TITLE=" BOOK EUROPEAN INTEGRATION Title: European integration and transformation in the Western Balkans: Europeanization or business as usual?" href=javascript:opeNod(3975)>1</a><TD class=sc><a title=' 0.7%' class=ank>55</a><TD><a title=' 0.2%' class=ank>194</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="so-name.html">Journal</a><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>31<TD align=left>JOURNAL OF DEMOCRACY<TD>5<TD class=sc><a title=' 0.7%' class=ank>55</a><TD><a title=' 0.3%' class=ank>277</a>
+<TR valign=top align=right class=evn><TD>32<TD align=left>FALL YUGOSLAVIA 3 BA<TD><a TITLE=" BOOK FALL YUGOSLAVIA 3 BA Title: The Fall of Yugoslavia: The Third Balkan War" href=javascript:opeNod(1040)>1</a><TD class=sc><a title=' 0.7%' class=ank>54</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>33<TD align=left>JOURNAL OF ECONOMIC HISTORY<TD>4<TD class=sc><a title=' 0.7%' class=ank>54</a><TD><a title=' 0.3%' class=ank>233</a>
+<TR valign=top align=right class=evn><TD>34<TD align=left>SE EUROPE OTTOMAN RU<TD><a TITLE=" BOOK SE EUROPE OTTOMAN RU Title: Southeastern Europe under Ottoman Rule, 1354-1804" href=javascript:opeNod(584)>1</a><TD class=sc><a title=' 0.7%' class=ank>54</a><TD><a title=' 0.7%' class=ank>570</a>
+<TR valign=top align=right class=odd><TD>35<TD align=left>EUROPEAN FOREIGN POL<TD><a TITLE=" BOOK EUROPEAN FOREIGN POL Title: European Foreign Policy and the Challenges of Balkan Accession. Conditionality, legitimacy and compliance" href=javascript:opeNod(3517)>1</a><TD class=sc><a title=' 0.6%' class=ank>52</a><TD><a title=' 0.2%' class=ank>151</a>
+<TR valign=top align=right class=evn><TD>36<TD align=left>JOURNAL OF SOUTHERN EUROPE AND THE BALKANS<TD>5<TD class=sc><a title=' 0.6%' class=ank>52</a><TD><a title=' 0.1%' class=ank>63</a>
+<TR valign=top align=right class=odd><TD>37<TD align=left>EUROPEAN HISTORY QUARTERLY<TD>16<TD class=sc><a title=' 0.6%' class=ank>51</a><TD><a title=' 0.2%' class=ank>150</a>
+<TR valign=top align=right class=evn><TD>38<TD align=left>HIST OTTOMAN EMPIRE<TD><a TITLE=" BOOK HIST OTTOMAN EMPIRE Title: History of the Ottoman Empire and Modern Turkey: Volume 1 &amp; 2" href=javascript:opeNod(576)>1</a><TD class=sc><a title=' 0.6%' class=ank>48</a><TD><a title=' 0.3%' class=ank>266</a>
+<TR valign=top align=right class=odd><TD>39<TD align=left>E QUESTION 1774 1923<TD><a TITLE=" BOOK E QUESTION 1774 1923 Title: The Eastern question, 1774-1923: A study in international relations" href=javascript:opeNod(472)>1</a><TD class=sc><a title=' 0.6%' class=ank>47</a><TD><a title=' 1.1%' class=ank>916</a>
+<TR valign=top align=right class=evn><TD>40<TD align=left>END WAR<TD><a TITLE=" BOOK END WAR Title: To End a War THE CONFLICT IN YUGOSLAVIA &acirc;&#128;&#147; AMERICA&#39;S INSIDE STORY &acirc;&#128;&#147; NEGOTIATING WITH MILOSEVIC" href=javascript:opeNod(1158)>1</a><TD class=sc><a title=' 0.6%' class=ank>47</a><TD><a title=' 2.1%' class=ank>1834</a>
+<TR valign=top align=right class=odd><TD>41<TD align=left>ETNOANTROPOLOSKI PROBLEMI-ISSUES IN ETHNOLOGY AND ANTHROPOLOGY<TD><a href=# OnClick="opeLod('', '700', 'ETNOANTROPOLOSKI PROBLEMI-ISSUES IN ETHNOLOGY AND ANTHROPOLOGY');return false">46</a><TD class=sc><a title=' 0.6%' class=ank>47</a><TD><a title=' 0.1%' class=ank>126</a>
+<TR valign=top align=right class=evn><TD>42<TD align=left>BALKAN EC C 1800 191<TD><a TITLE=" BOOK BALKAN EC C 1800 191 Title: The Balkan Economies C. 1800-1914: Evolution without development" href=javascript:opeNod(1087)>1</a><TD class=sc><a title=' 0.6%' class=ank>46</a><TD><a title=' 0.4%' class=ank>381</a>
+<TR valign=top align=right class=odd><TD>43<TD align=left>BLACK LAMB GREY FALC<TD><a TITLE=" BOOK BLACK LAMB GREY FALC Title: BLACK LAMB AND GREY FALCON" href=javascript:opeNod(368)>1</a><TD class=sc><a title=' 0.6%' class=ank>45</a><TD><a title=' 0.8%' class=ank>709</a>
+<TR valign=top align=right class=evn><TD>44<TD align=left>PALEOANTHROPOLOGY OF THE BALKANS AND ANATOLIA: HUMAN EVOLUTION AND ITS CONTEXT<TD>12<TD class=sc><a title=' 0.6%' class=ank>45</a><TD><a title=' 0.1%' class=ank>125</a>
+<TR valign=top align=right class=odd><TD>45<TD align=left>SALONICA CITY GHOSTS<TD><a TITLE=" BOOK SALONICA CITY GHOSTS Title: Salonica, City of Ghosts: Christians, Muslims and Jews, 600 1430&acirc;&#128;&#147;1950" href=javascript:opeNod(1618)>1</a><TD class=sc><a title=' 0.6%' class=ank>45</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>46<TD align=left>OTTOMAN EMPIRE CLASS<TD><a TITLE=" BOOK OTTOMAN EMPIRE CLASS Title: The Ottoman Empire : the classical age, 1300-1600" href=javascript:opeNod(516)>1</a><TD class=sc><a title=' 0.5%' class=ank>44</a><TD><a title=' 1.7%' class=ank>1470</a>
+<TR valign=top align=right class=odd><TD>47<TD align=left>OTTOMAN POPULATION 1<TD><a TITLE=" BOOK OTTOMAN POPULATION 1 Title: Osmanli nufusu, (1830-1914) : demografik ve sosyal ozellikleri - Ottoman population, 1830-1914 : demographic and social characteristics" href=javascript:opeNod(739)>1</a><TD class=sc><a title=' 0.5%' class=ank>44</a><TD><a title=' 1.3%' class=ank>1098</a>
+<TR valign=top align=right class=evn><TD>48<TD align=left>ETHNOPOLITICS<TD>18<TD class=sc><a title=' 0.5%' class=ank>43</a><TD><a title=' 0.2%' class=ank>154</a>
+<TR valign=top align=right class=odd><TD>49<TD align=left>KOSOVO WAR REVENGE<TD><a TITLE=" BOOK KOSOVO WAR REVENGE Title: Kosovo: War and Revenge" href=javascript:opeNod(1301)>1</a><TD class=sc><a title=' 0.5%' class=ank>43</a><TD><a title=' 1.4%' class=ank>1168</a>
+<TR valign=top align=right class=evn><TD>50<TD align=left>MYTH ETHNIC WAR SERB<TD><a TITLE=" BOOK MYTH ETHNIC WAR SERB Title: The myth of ethnic war : Serbia and Croatia in the 1990s" href=javascript:opeNod(1599)>1</a><TD class=sc><a title=' 0.5%' class=ank>43</a><TD><a title=' 1.2%' class=ank>1014</a>
+<TR valign=top align=right class=odd><TD>51<TD align=left>BALKAN BABEL DISINTE<TD><a TITLE=" BOOK BALKAN BABEL DISINTE Title: Balkan babel : the disintegration of Yugoslavia from the death of Tito to ethnic war" href=javascript:opeNod(1031)>1</a><TD class=sc><a title=' 0.5%' class=ank>42</a><TD><a title=' 0.2%' class=ank>192</a>
+<TR valign=top align=right class=evn><TD>52<TD align=left>ESTABLISHMENT BALKAN<TD><a TITLE=" BOOK ESTABLISHMENT BALKAN Title: The establishment of the Balkan national states, 1804-1920" href=javascript:opeNod(575)>1</a><TD class=sc><a title=' 0.5%' class=ank>42</a><TD><a title=' 0.5%' class=ank>447</a>
+<TR valign=top align=right class=odd><TD>53<TD align=left>ALBANIAN NATL AWAKEN<TD><a TITLE=" BOOK ALBANIAN NATL AWAKEN Title: The Albanian National Awakening" href=javascript:opeNod(476)>1</a><TD class=sc><a title=' 0.5%' class=ank>41</a><TD><a title=' 0.5%' class=ank>412</a>
+<TR valign=top align=right class=evn><TD>54<TD align=left>BEING MUSLIM BOSNIAN<TD><a TITLE=" BOOK BEING MUSLIM BOSNIAN Title: Being Muslim the Bosnian Way: Identity and Community in a Central Bosnian Village" href=javascript:opeNod(984)>1</a><TD class=sc><a title=' 0.5%' class=ank>41</a><TD><a title=' 1.4%' class=ank>1172</a>
+<TR valign=top align=right class=odd><TD>55<TD align=left>BOSNIA FAKING DEMOCR<TD><a TITLE=" BOOK BOSNIA FAKING DEMOCR Title: Bosnia Faking Democracy After Dayton" href=javascript:opeNod(1185)>1</a><TD class=sc><a title=' 0.5%' class=ank>41</a><TD><a title=' 1.4%' class=ank>1230</a>
+<TR valign=top align=right class=evn><TD>56<TD align=left>DEATH EXILE ETHNIC C<TD><a TITLE=" BOOK DEATH EXILE ETHNIC C Title: Death and Exile: The Ethnic Cleansing of Ottoman Muslims, 1821-1922" href=javascript:opeNod(988)>1</a><TD class=sc><a title=' 0.5%' class=ank>41</a><TD><a title=' 0.7%' class=ank>587</a>
+<TR valign=top align=right class=odd><TD>57<TD align=left>EASTERN EUROPEAN ECONOMICS<TD>36<TD class=sc><a title=' 0.5%' class=ank>41</a><TD><a title=' 0.2%' class=ank>194</a>
+<TR valign=top align=right class=evn><TD>58<TD align=left>FIELDS WHEAT HILLS B<TD><a TITLE=" BOOK FIELDS WHEAT HILLS B Title: Fields of Wheat, Hills of Blood. Passages to Nationhood in Greek Macedonia, 1870-1990" href=javascript:opeNod(1098)>1</a><TD class=sc><a title=' 0.5%' class=ank>41</a><TD><a title=' 0.3%' class=ank>266</a>
+<TR valign=top align=right class=odd><TD>59<TD align=left>MACEDONIA ITS RACES<TD><a TITLE=" BOOK MACEDONIA ITS RACES Title: Macedonia; its races and their future" href=javascript:opeNod(16)>1</a><TD class=sc><a title=' 0.5%' class=ank>41</a><TD><a title=' 0.3%' class=ank>278</a>
+<TR valign=top align=right class=evn><TD>60<TD align=left>CHRISTIANITY ISLAM S<TD><a TITLE=" BOOK CHRISTIANITY ISLAM S Title: Christianity and Islam Under the Sultans" href=javascript:opeNod(260)>1</a><TD class=sc><a title=' 0.5%' class=ank>40</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="so-name.html">Journal</a><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>61<TD align=left>JOURNAL OF FIELD ARCHAEOLOGY<TD>13<TD class=sc><a title=' 0.5%' class=ank>40</a><TD><a title=' 0.3%' class=ank>215</a>
+<TR valign=top align=right class=evn><TD>62<TD align=left>YUGOSLAVIA HIST TWIC<TD><a TITLE=" BOOK YUGOSLAVIA HIST TWIC Title: Yugoslavia as History Twice there was a country" href=javascript:opeNod(1082)>1</a><TD class=sc><a title=' 0.5%' class=ank>40</a><TD><a title=' 0.6%' class=ank>548</a>
+<TR valign=top align=right class=odd><TD>63<TD align=left>CURRENT ANTHROPOLOGY<TD>11<TD class=sc><a title=' 0.5%' class=ank>39</a><TD><a title=' 0.7%' class=ank>596</a>
+<TR valign=top align=right class=evn><TD>64<TD align=left>VINCA CULTURE S E EU<TD><a TITLE=" BOOK VINCA CULTURE S E EU Title: The Vinca culture of south-east Europe: Studies in chronology, economy and society" href=javascript:opeNod(661)>1</a><TD class=sc><a title=' 0.5%' class=ank>39</a><TD><a title=' 0.3%' class=ank>266</a>
+<TR valign=top align=right class=odd><TD>65<TD align=left>NATIONALITIES PAPERS-THE JOURNAL OF NATIONALISM AND ETHNICITY<TD>38<TD class=sc><a title=' 0.5%' class=ank>38</a><TD><a title=' 0.2%' class=ank>157</a>
+<TR valign=top align=right class=evn><TD>66<TD align=left>BALKAN ODYSSEY<TD><a TITLE=" BOOK BALKAN ODYSSEY Title: Balkan Odyssey" href=javascript:opeNod(982)>1</a><TD class=sc><a title=' 0.5%' class=ank>37</a><TD><a title=' 0.8%' class=ank>658</a>
+<TR valign=top align=right class=odd><TD>67<TD align=left>BOSNIA HERCEGOVINA T<TD><a TITLE=" BOOK BOSNIA HERCEGOVINA T Title: Bosnia and Hercegovina: A Tradition Betrayed" href=javascript:opeNod(941)>1</a><TD class=sc><a title=' 0.5%' class=ank>37</a><TD><a title=' 0.6%' class=ank>513</a>
+<TR valign=top align=right class=evn><TD>68<TD align=left>EARLY NEOLITHIC GREE<TD><a TITLE=" BOOK EARLY NEOLITHIC GREE Title: The Early Neolithic in Greece: The First Farming Communities in Europe" href=javascript:opeNod(1347)>1</a><TD class=sc><a title=' 0.5%' class=ank>37</a><TD><a title=' 0.2%' class=ank>192</a>
+<TR valign=top align=right class=odd><TD>69<TD align=left>INTERNATIONAL STUDIES QUARTERLY<TD>6<TD class=sc><a title=' 0.5%' class=ank>37</a><TD><a title=' 0.4%' class=ank>378</a>
+<TR valign=top align=right class=evn><TD>70<TD align=left>LINGUISTIQUE BALKANI<TD><a TITLE=" BOOK LINGUISTIQUE BALKANI Title: Linguistique balkanique, problemes et resultats" href=javascript:opeNod(264)>1</a><TD class=sc><a title=' 0.4%' class=ank>36</a><TD><a title=' 0.7%' class=ank>634</a>
+<TR valign=top align=right class=odd><TD>71<TD align=left>BALKAN IDENTITIES NA<TD><a TITLE=" BOOK BALKAN IDENTITIES NA Title: Balkan Identities: Nation and Memory" href=javascript:opeNod(1549)>1</a><TD class=sc><a title=' 0.4%' class=ank>35</a><TD><a title=' 0.3%' class=ank>243</a>
+<TR valign=top align=right class=evn><TD>72<TD align=left>CINEMA FLAMES BALKAN<TD><a TITLE=" BOOK CINEMA FLAMES BALKAN Title: Cinema of Flames: Balkan Film, Culture and the Media" href=javascript:opeNod(1338)>1</a><TD class=sc><a title=' 0.4%' class=ank>35</a><TD><a title=' 0.5%' class=ank>390</a>
+<TR valign=top align=right class=odd><TD>73<TD align=left>NATL FEDERALISM YUGO<TD><a TITLE=" BOOK NATL FEDERALISM YUGO Title: Nationalism and Federalism in Yugoslavia, 1962-1991" href=javascript:opeNod(860)>1</a><TD class=sc><a title=' 0.4%' class=ank>35</a><TD><a title=' 0.7%' class=ank>623</a>
+<TR valign=top align=right class=evn><TD>74<TD align=left>GESCHICHTE UND GESELLSCHAFT<TD>6<TD class=sc><a title=' 0.4%' class=ank>34</a><TD><a title=' 0.1%' class=ank>94</a>
+<TR valign=top align=right class=odd><TD>75<TD align=left>SLAVONIC AND EAST EUROPEAN REVIEW<TD>15<TD class=sc><a title=' 0.4%' class=ank>33</a><TD><a title=' 0.1%' class=ank>76</a>
+<TR valign=top align=right class=evn><TD>76<TD align=left>SOUTH EAST EUROPEAN JOURNAL OF ECONOMICS AND BUSINESS<TD>36<TD class=sc><a title=' 0.4%' class=ank>33</a><TD><a title=' 0.2%' class=ank>200</a>
+<TR valign=top align=right class=odd><TD>77<TD align=left>ECONOMICS OF TRANSITION<TD>9<TD class=sc><a title=' 0.4%' class=ank>32</a><TD><a title=' 0.2%' class=ank>213</a>
+<TR valign=top align=right class=evn><TD>78<TD align=left>PROCEEDINGS OF THE NATIONAL ACADEMY OF SCIENCES OF THE UNITED STATES OF AMERICA<TD>8<TD class=sc><a title=' 0.4%' class=ank>29</a><TD><a title=' 0.4%' class=ank>325</a>
+<TR valign=top align=right class=odd><TD>79<TD align=left>ETHNIC AND RACIAL STUDIES<TD>13<TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.4%' class=ank>316</a>
+<TR valign=top align=right class=evn><TD>80<TD align=left>MIDDLE EASTERN STUDIES<TD>17<TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.1%' class=ank>84</a>
+<TR valign=top align=right class=odd><TD>81<TD align=left>EAST EUROPEAN QUARTERLY<TD><a href=# OnClick="opeLod('', '590', 'EAST EUROPEAN QUARTERLY');return false">46</a><TD class=sc><a title=' 0.3%' class=ank>26</a><TD><a title=' 0.1%' class=ank>71</a>
+<TR valign=top align=right class=evn><TD>82<TD align=left>INTERVENTIONS-INTERNATIONAL JOURNAL OF POSTCOLONIAL STUDIES<TD>11<TD class=sc><a title=' 0.3%' class=ank>26</a><TD><a title=' 0.1%' class=ank>54</a>
+<TR valign=top align=right class=odd><TD>83<TD align=left>REINSTATING OTTOMANS<TD><a TITLE=" Book REINSTATING OTTOMANS Title: Reinstating the Ottomans: Alternative Balkan Modernities, 1800-1912" href=javascript:opeNod(3310)>1</a><TD class=sc><a title=' 0.3%' class=ank>26</a><TD><a title=' 0.1%' class=ank>53</a>
+<TR valign=top align=right class=evn><TD>84<TD align=left>AMERICAN ETHNOLOGIST<TD>5<TD class=sc><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.2%' class=ank>190</a>
+<TR valign=top align=right class=odd><TD>85<TD align=left>EMPIRE OF DIFFERENCE: THE OTTOMANS IN COMPARATIVE PERSPECTIVE<TD><a TITLE=" Book EMPIRE OF DIFFERENCE: THE OTT Title: Empire of Difference: The Ottomans in Comparative Perspective" href=javascript:opeNod(2226)>1</a><TD class=sc><a title=' 0.3%' class=ank>24</a><TD><a title=' 0.5%' class=ank>424</a>
+<TR valign=top align=right class=evn><TD>86<TD align=left>COMMUNIST AND POST-COMMUNIST STUDIES<TD>15<TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.2%' class=ank>143</a>
+<TR valign=top align=right class=odd><TD>87<TD align=left>EUROPEAN FOREIGN AFFAIRS REVIEW<TD><a TITLE=" Article EUROPEAN FOREIGN AFFAIRS REVI Title: The Rocky Road to Europe: The EU&acirc;&#128;&#153;s Stabilisation and Association Process for the Western Balkans and the Principle of Conditionality" href=javascript:opeNod(1571)>1</a><TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.1%' class=ank>53</a>
+<TR valign=top align=right class=evn><TD>88<TD align=left>FOREIGN AFFAIRS<TD>17<TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.2%' class=ank>188</a>
+<TR valign=top align=right class=odd><TD>89<TD align=left>JOURNAL OF HUMAN EVOLUTION<TD>13<TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.5%' class=ank>472</a>
+<TR valign=top align=right class=evn><TD>90<TD align=left>LANGUAGES IN CONTACT<TD><a TITLE=" Article LANGUAGES IN CONTACT Title: LINGUISTIC BALKANIZATION: CONTACT-INDUCED CHANGE BY MUTUAL REINFORCEMENT" href=javascript:opeNod(1302)>1</a><TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.3%' class=ank>246</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="so-name.html">Journal</a><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>91<TD align=left>POLITICKA MISAO-CROATIAN POLITICAL SCIENCE REVIEW<TD>26<TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=evn><TD>92<TD align=left>JOURNAL OF MODERN GREEK STUDIES<TD>13<TD class=sc><a title=' 0.3%' class=ank>22</a><TD><a title=' 0.1%' class=ank>104</a>
+<TR valign=top align=right class=odd><TD>93<TD align=left>PROBLEMS OF POST-COMMUNISM<TD>17<TD class=sc><a title=' 0.3%' class=ank>22</a><TD><a title=' 0.1%' class=ank>109</a>
+<TR valign=top align=right class=evn><TD>94<TD align=left>STUDIA ISLAMICA<TD><a TITLE=" Article STUDIA ISLAMICA Title: Ottoman Methods of Conquest" href=javascript:opeNod(436)>1</a><TD class=sc><a title=' 0.3%' class=ank>22</a><TD><a title=' 0.2%' class=ank>129</a>
+<TR valign=top align=right class=odd><TD>95<TD align=left>BALKANS END BYZANTIU<TD><a TITLE=" BOOK BALKANS END BYZANTIU Title: The Balkans: from the end of Byzantium to the present day" href=javascript:opeNod(1333)>1</a><TD class=sc><a title=' 0.3%' class=ank>21</a><TD><a title=' 0.2%' class=ank>172</a>
+<TR valign=top align=right class=evn><TD>96<TD align=left>JOURNAL OF ANTHROPOLOGICAL ARCHAEOLOGY<TD>6<TD class=sc><a title=' 0.3%' class=ank>21</a><TD><a title=' 0.3%' class=ank>262</a>
+<TR valign=top align=right class=odd><TD>97<TD align=left>NATURE<TD>4<TD class=sc><a title=' 0.3%' class=ank>21</a><TD><a title=' 0.8%' class=ank>703</a>
+<TR valign=top align=right class=evn><TD>98<TD align=left>REVIVAL OF ISLAM IN THE BALKANS: FROM IDENTITY TO RELIGIOSITY<TD>5<TD class=sc><a title=' 0.3%' class=ank>21</a><TD><a title=' 0.0%' class=ank>37</a>
+<TR valign=top align=right class=odd><TD>99<TD align=left>ROMANIAN JOURNAL OF EUROPEAN AFFAIRS<TD>21<TD class=sc><a title=' 0.3%' class=ank>21</a><TD><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=evn><TD>100<TD align=left>CROATIAN INTERNATIONAL RELATIONS REVIEW<TD>16<TD class=sc><a title=' 0.2%' class=ank>20</a><TD><a title=' 0.1%' class=ank>49</a>
+<TR valign=top align=right class=odd><TD>101<TD align=left>NATIONALITIES PAPERS: THE JOURNAL OF NATIONALISM AND ETHNICITY<TD><a TITLE=" Article NATIONALITIES PAPERS: THE JOU Title: Europeanization, state-building and democratization in the Western Balkans" href=javascript:opeNod(4107)>1</a><TD class=sc><a title=' 0.2%' class=ank>20</a><TD><a title=' 0.4%' class=ank>353</a>
+<TR valign=top align=right class=evn><TD>102<TD align=left>BULGARSKO E-SPISANIE ZA ARKHEOLOGIYA-BULGARIAN E-JOURNAL OF ARCHAEOLOGY<TD>26<TD class=sc><a title=' 0.2%' class=ank>19</a><TD><a title=' 0.1%' class=ank>81</a>
+<TR valign=top align=right class=odd><TD>103<TD align=left>DEMOCRATIZATION<TD>12<TD class=sc><a title=' 0.2%' class=ank>18</a><TD><a title=' 0.1%' class=ank>110</a>
+<TR valign=top align=right class=evn><TD>104<TD align=left>ECONOMIC SYSTEMS<TD>10<TD class=sc><a title=' 0.2%' class=ank>18</a><TD><a title=' 0.2%' class=ank>138</a>
+<TR valign=top align=right class=odd><TD>105<TD align=left>EUROPEAN JOURNAL OF ARCHAEOLOGY<TD>5<TD class=sc><a title=' 0.2%' class=ank>18</a><TD><a title=' 0.1%' class=ank>55</a>
+<TR valign=top align=right class=evn><TD>106<TD align=left>MEDITERRANEAN QUARTERLY-A JOURNAL OF GLOBAL ISSUES<TD>18<TD class=sc><a title=' 0.2%' class=ank>18</a><TD><a title=' 0.1%' class=ank>58</a>
+<TR valign=top align=right class=odd><TD>107<TD align=left>JOURNAL OF COMPARATIVE ECONOMICS<TD>8<TD class=sc><a title=' 0.2%' class=ank>17</a><TD><a title=' 0.2%' class=ank>204</a>
+<TR valign=top align=right class=evn><TD>108<TD align=left>POST-COMMUNIST ECONOMIES<TD>18<TD class=sc><a title=' 0.2%' class=ank>17</a><TD><a title=' 0.1%' class=ank>105</a>
+<TR valign=top align=right class=odd><TD>109<TD align=left>BALCANICA<TD><a href=# OnClick="opeLod('', '207', 'BALCANICA');return false">51</a><TD class=sc><a title=' 0.2%' class=ank>16</a><TD><a title=' 0.1%' class=ank>52</a>
+<TR valign=top align=right class=evn><TD>110<TD align=left>CRITIQUE OF ANTHROPOLOGY<TD>2<TD class=sc><a title=' 0.2%' class=ank>16</a><TD><a title=' 0.0%' class=ank>35</a>
+<TR valign=top align=right class=odd><TD>111<TD align=left>GLOBAL SOCIETY<TD>5<TD class=sc><a title=' 0.2%' class=ank>16</a><TD><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=evn><TD>112<TD align=left>JOURNAL OF INTERVENTION AND STATEBUILDING<TD>10<TD class=sc><a title=' 0.2%' class=ank>16</a><TD><a title=' 0.2%' class=ank>180</a>
+<TR valign=top align=right class=odd><TD>113<TD align=left>OXFORD JOURNAL OF ARCHAEOLOGY<TD>6<TD class=sc><a title=' 0.2%' class=ank>16</a><TD><a title=' 0.1%' class=ank>50</a>
+<TR valign=top align=right class=evn><TD>114<TD align=left>RESEARCH IN INTERNATIONAL BUSINESS AND FINANCE<TD>3<TD class=sc><a title=' 0.2%' class=ank>16</a><TD><a title=' 0.1%' class=ank>82</a>
+<TR valign=top align=right class=odd><TD>115<TD align=left>ZBORNIK RADOVA EKONOMSKOG FAKULTETA U RIJECI-PROCEEDINGS OF RIJEKA FACULTY OF ECONOMICS<TD>19<TD class=sc><a title=' 0.2%' class=ank>16</a><TD><a title=' 0.1%' class=ank>84</a>
+<TR valign=top align=right class=evn><TD>116<TD align=left>ANTHROPOLOGIE<TD>14<TD class=sc><a title=' 0.2%' class=ank>15</a><TD><a title=' 0.1%' class=ank>97</a>
+<TR valign=top align=right class=odd><TD>117<TD align=left>COMPARATIVE ECONOMIC STUDIES<TD>11<TD class=sc><a title=' 0.2%' class=ank>15</a><TD><a title=' 0.1%' class=ank>77</a>
+<TR valign=top align=right class=evn><TD>118<TD align=left>JOURNAL OF CONTEMPORARY HISTORY<TD>15<TD class=sc><a title=' 0.2%' class=ank>15</a><TD><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=odd><TD>119<TD align=left>MONTENEGRIN JOURNAL OF ECONOMICS<TD>14<TD class=sc><a title=' 0.2%' class=ank>15</a><TD><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=evn><TD>120<TD align=left>ARCHAEOLOGICAL AND ANTHROPOLOGICAL SCIENCES<TD>19<TD class=sc><a title=' 0.2%' class=ank>14</a><TD><a title=' 0.2%' class=ank>146</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="so-name.html">Journal</a><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>121<TD align=left>CROATIAN YEARBOOK OF EUROPEAN LAW & POLICY<TD>7<TD class=sc><a title=' 0.2%' class=ank>14</a><TD><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=evn><TD>122<TD align=left>ECONOMIC RESEARCH-EKONOMSKA ISTRAZIVANJA<TD>24<TD class=sc><a title=' 0.2%' class=ank>14</a><TD><a title=' 0.4%' class=ank>308</a>
+<TR valign=top align=right class=odd><TD>123<TD align=left>NATURAL LANGUAGE & LINGUISTIC THEORY<TD>3<TD class=sc><a title=' 0.2%' class=ank>14</a><TD><a title=' 0.4%' class=ank>315</a>
+<TR valign=top align=right class=evn><TD>124<TD align=left>PRAEHISTORISCHE ZEITSCHRIFT<TD>12<TD class=sc><a title=' 0.2%' class=ank>14</a><TD><a title=' 0.1%' class=ank>93</a>
+<TR valign=top align=right class=odd><TD>125<TD align=left>WORLD ARCHAEOLOGY<TD>7<TD class=sc><a title=' 0.2%' class=ank>14</a><TD><a title=' 0.3%' class=ank>262</a>
+<TR valign=top align=right class=evn><TD>126<TD align=left>AMERICAN JOURNAL OF PHYSICAL ANTHROPOLOGY<TD>18<TD class=sc><a title=' 0.2%' class=ank>13</a><TD><a title=' 0.4%' class=ank>342</a>
+<TR valign=top align=right class=odd><TD>127<TD align=left>BULGARIA 1878 1918 H<TD><a TITLE=" BOOK BULGARIA 1878 1918 H Title: Bulgaria 1878-1918: A history" href=javascript:opeNod(687)>1</a><TD class=sc><a title=' 0.2%' class=ank>13</a><TD><a title=' 0.2%' class=ank>184</a>
+<TR valign=top align=right class=evn><TD>128<TD align=left>CAMBRIDGE ARCHAEOLOGICAL JOURNAL<TD>5<TD class=sc><a title=' 0.2%' class=ank>13</a><TD><a title=' 0.1%' class=ank>85</a>
+<TR valign=top align=right class=odd><TD>129<TD align=left>EASTERN JOURNAL OF EUROPEAN STUDIES<TD>17<TD class=sc><a title=' 0.2%' class=ank>13</a><TD><a title=' 0.1%' class=ank>77</a>
+<TR valign=top align=right class=evn><TD>130<TD align=left>EUROPEANISATION OF THE WESTERN BALKANS: A FAILURE OF EU CONDITIONALITY?<TD>8<TD class=sc><a title=' 0.2%' class=ank>13</a><TD><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=odd><TD>131<TD align=left>JOURNAL OF CONTEMPORARY EUROPEAN STUDIES<TD>17<TD class=sc><a title=' 0.2%' class=ank>13</a><TD><a title=' 0.1%' class=ank>54</a>
+<TR valign=top align=right class=evn><TD>132<TD align=left>POLITICAL STUDIES<TD>4<TD class=sc><a title=' 0.2%' class=ank>13</a><TD><a title=' 0.0%' class=ank>36</a>
+<TR valign=top align=right class=odd><TD>133<TD align=left>TOUGH LOVE: THE EUROPEAN UNION'S RELATIONS WITH THE WESTERN BALKANS<TD><a TITLE=" Book TOUGH LOVE: THE EUROPEAN UNIO Title: Tough Love: The European Union&#39;s Relations with the Western Balkans" href=javascript:opeNod(2139)>1</a><TD class=sc><a title=' 0.2%' class=ank>13</a><TD><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=evn><TD>134<TD align=left>CROATIAN ECONOMIC SURVEY<TD>10<TD class=sc><a title=' 0.1%' class=ank>12</a><TD><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=odd><TD>135<TD align=left>JOURNAL OF MODERN HISTORY<TD>6<TD class=sc><a title=' 0.1%' class=ank>12</a><TD><a title=' 0.1%' class=ank>48</a>
+<TR valign=top align=right class=evn><TD>136<TD align=left>JOURNAL OF PEACE RESEARCH<TD>7<TD class=sc><a title=' 0.1%' class=ank>12</a><TD><a title=' 0.2%' class=ank>131</a>
+<TR valign=top align=right class=odd><TD>137<TD align=left>NATIONS AND NATIONALISM<TD>19<TD class=sc><a title=' 0.1%' class=ank>12</a><TD><a title=' 0.1%' class=ank>80</a>
+<TR valign=top align=right class=evn><TD>138<TD align=left>WAR IN HISTORY<TD>3<TD class=sc><a title=' 0.1%' class=ank>12</a><TD><a title=' 0.0%' class=ank>26</a>
+<TR valign=top align=right class=odd><TD>139<TD align=left>COLLEGIUM ANTROPOLOGICUM<TD>18<TD class=sc><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.3%' class=ank>300</a>
+<TR valign=top align=right class=evn><TD>140<TD align=left>HUMAN RIGHTS QUARTERLY<TD>3<TD class=sc><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.1%' class=ank>83</a>
+<TR valign=top align=right class=odd><TD>141<TD align=left>INTERNATIONAL MIGRATION<TD>10<TD class=sc><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.1%' class=ank>46</a>
+<TR valign=top align=right class=evn><TD>142<TD align=left>JOURNAL OF ARCHAEOLOGICAL METHOD AND THEORY<TD>4<TD class=sc><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=odd><TD>143<TD align=left>SOCIAL POLICY & ADMINISTRATION<TD>4<TD class=sc><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.1%' class=ank>76</a>
+<TR valign=top align=right class=evn><TD>144<TD align=left>THIRD WORLD QUARTERLY<TD>5<TD class=sc><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.1%' class=ank>78</a>
+<TR valign=top align=right class=odd><TD>145<TD align=left>TURKISH POLICY QUARTERLY<TD>22<TD class=sc><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=evn><TD>146<TD align=left>ACTA POLITICA<TD>2<TD class=sc><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=odd><TD>147<TD align=left>CONTEMPORARY EUROPE-SOVREMENNAYA EVROPA<TD>17<TD class=sc><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>148<TD align=left>DAEDALUS<TD>3<TD class=sc><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.0%' class=ank>19</a>
+<TR valign=top align=right class=odd><TD>149<TD align=left>EMERGING MARKETS FINANCE AND TRADE<TD>6<TD class=sc><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.1%' class=ank>86</a>
+<TR valign=top align=right class=evn><TD>150<TD align=left>INTERNATIONAL JOURNAL OF HUMAN RESOURCE MANAGEMENT<TD>5<TD class=sc><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.1%' class=ank>53</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="so-name.html">Journal</a><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>151<TD align=left>JOURNAL OF ARCHAEOLOGICAL SCIENCE-REPORTS<TD>25<TD class=sc><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.2%' class=ank>160</a>
+<TR valign=top align=right class=evn><TD>152<TD align=left>JOURNAL OF INDO-EUROPEAN STUDIES<TD>14<TD class=sc><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.0%' class=ank>32</a>
+<TR valign=top align=right class=odd><TD>153<TD align=left>SURVIVAL<TD>15<TD class=sc><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.2%' class=ank>196</a>
+<TR valign=top align=right class=evn><TD>154<TD align=left>THE GEOGRAPHICAL JOURNAL<TD>16<TD class=sc><a title=' 0.1%' class=ank>10</a><TD>0
+<TR valign=top align=right class=odd><TD>155<TD align=left>TURKISH HISTORICAL REVIEW<TD>11<TD class=sc><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=evn><TD>156<TD align=left>ANNALS OF THE ASSOCIATION OF AMERICAN GEOGRAPHERS<TD>3<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.3%' class=ank>246</a>
+<TR valign=top align=right class=odd><TD>157<TD align=left>ANNUAL REVIEW OF ANTHROPOLOGY, VOL 40<TD><a TITLE=" BOOK CHAPTER ANNUAL REVIEW OF ANTHROPOLOGY Title: The Balkan Languages and Balkan Linguistics" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=evn><TD>158<TD align=left>EUROPEAN URBAN AND REGIONAL STUDIES<TD>4<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>59</a>
+<TR valign=top align=right class=odd><TD>159<TD align=left>INTERNATIONAL AFFAIRS<TD>10<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.3%' class=ank>235</a>
+<TR valign=top align=right class=evn><TD>160<TD align=left>JOURNAL OF ETHNIC AND MIGRATION STUDIES<TD>6<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>54</a>
+<TR valign=top align=right class=odd><TD>161<TD align=left>JOURNAL OF HISTORICAL SOCIOLOGY<TD>2<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>14</a>
+<TR valign=top align=right class=evn><TD>162<TD align=left>JOURNAL OF INTERNATIONAL RELATIONS AND DEVELOPMENT<TD>10<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>78</a>
+<TR valign=top align=right class=odd><TD>163<TD align=left>LINGUA<TD>7<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>70</a>
+<TR valign=top align=right class=evn><TD>164<TD align=left>MAN<TD>13<TD class=sc><a title=' 0.1%' class=ank>9</a><TD>0
+<TR valign=top align=right class=odd><TD>165<TD align=left>PANOECONOMICUS<TD>12<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>67</a>
+<TR valign=top align=right class=evn><TD>166<TD align=left>PATTERNS OF PREJUDICE<TD>3<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>19</a>
+<TR valign=top align=right class=odd><TD>167<TD align=left>POPULATION AND DEVELOPMENT REVIEW<TD><a TITLE=" Article POPULATION AND DEVELOPMENT RE Title: Immigration, domestic migration, and demographic balkanization in America: New evidence for the 1990s" href=javascript:opeNod(1068)>1</a><TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>109</a>
+<TR valign=top align=right class=evn><TD>168<TD align=left>RETHINKING HISTORY<TD>5<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=odd><TD>169<TD align=left>TEORIJA IN PRAKSA<TD>24<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>36</a>
+<TR valign=top align=right class=evn><TD>170<TD align=left>ASIA EUROPE JOURNAL<TD>4<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>21</a>
+<TR valign=top align=right class=odd><TD>171<TD align=left>EU RULE OF LAW PROMOTION: JUDICIARY REFORM IN THE WESTERN BALKANS<TD>7<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>16</a>
+<TR valign=top align=right class=evn><TD>172<TD align=left>HISTORY AND ANTHROPOLOGY<TD>12<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>65</a>
+<TR valign=top align=right class=odd><TD>173<TD align=left>INTERNATIONAL JOURNAL OF MIDDLE EAST STUDIES<TD>5<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>23</a>
+<TR valign=top align=right class=evn><TD>174<TD align=left>INTERNATIONAL JOURNAL OF OSTEOARCHAEOLOGY<TD>13<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.2%' class=ank>173</a>
+<TR valign=top align=right class=odd><TD>175<TD align=left>INTERNATIONAL JOURNAL OF URBAN AND REGIONAL RESEARCH<TD>4<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>45</a>
+<TR valign=top align=right class=evn><TD>176<TD align=left>JOURNAL OF CENTRAL BANKING THEORY AND PRACTICE<TD>12<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>42</a>
+<TR valign=top align=right class=odd><TD>177<TD align=left>JOURNAL OF LANGUAGE CONTACT<TD>8<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>178<TD align=left>REVIEW OF DEVELOPMENT ECONOMICS<TD>2<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>46</a>
+<TR valign=top align=right class=odd><TD>179<TD align=left>THE JOURNAL OF ECONOMIC HISTORY<TD><a TITLE=" Article J ECON HIST Title: &quot;Land Tenure and Related Sectors of the Balkan Economy, 1600&acirc;&#128;&#147;1800&quot;" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=evn><TD>180<TD align=left>URBAN STUDIES<TD>4<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.2%' class=ank>162</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="so-name.html">Journal</a><TH><a href="so-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="so-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="so-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>181<TD align=left>BALKAN ARASTRMA ENSTITUSU DERGISI-JOURNAL OF BALKAN RESEARCH INSTITUTE-JBRI<TD>34<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=evn><TD>182<TD align=left>CITIZENSHIP STUDIES<TD>2<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>21</a>
+<TR valign=top align=right class=odd><TD>183<TD align=left>DIPLOMACY & STATECRAFT<TD>9<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>20</a>
+<TR valign=top align=right class=evn><TD>184<TD align=left>ECONOMIC HISTORY REVIEW<TD>2<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=odd><TD>185<TD align=left>EUROPEAN PLANNING STUDIES<TD>9<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.2%' class=ank>139</a>
+<TR valign=top align=right class=evn><TD>186<TD align=left>INTERNATIONAL HISTORY REVIEW<TD>15<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>45</a>
+<TR valign=top align=right class=odd><TD>187<TD align=left>MOUVEMENT SOCIAL<TD>2<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>188<TD align=left>OSTEUROPA<TD>39<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>14</a>
+<TR valign=top align=right class=odd><TD>189<TD align=left>PHILOLOGICA JASSYENSIA<TD>38<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>190<TD align=left>POPULATION AND ENVIRONMENT<TD>2<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>70</a>
+<TR valign=top align=right class=odd><TD>191<TD align=left>TERRITORY POLITICS GOVERNANCE<TD>4<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>36</a>
+<TR valign=top align=right class=evn><TD>192<TD align=left>WELT DES ISLAMS<TD>4<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=odd><TD>193<TD align=left>WORLD POLICY JOURNAL<TD>5<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>17</a>
+<TR valign=top align=right class=evn><TD>194<TD align=left>AMERICAN JOURNAL OF ARCHAEOLOGY<TD>5<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>26</a>
+<TR valign=top align=right class=odd><TD>195<TD align=left>BYZANTINE AND MODERN GREEK STUDIES<TD>9<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>43</a>
+<TR valign=top align=right class=evn><TD>196<TD align=left>CAMBRIDGE HANDBOOK OF AREAL LINGUISTICS<TD><a TITLE=" BOOK CHAPTER CAMBRIDGE HANDBOOK OF AREAL L Title: Reassessing Sprachbunds: A View from the Balkans" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=odd><TD>197<TD align=left>COMPARATIVE ARCHAEOLOGIES: A SOCIOLOGICAL VIEW OF THE SCIENCE OF THE PAST<TD><a TITLE=" BOOK CHAPTER COMPARATIVE ARCHAEOLOGIES: A  Title: Archaeology in the New Countries of Southeastern Europe: A Historical Perspective" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>16</a>
+<TR valign=top align=right class=evn><TD>198<TD align=left>COMPARATIVE STUDIES IN SOCIETY AND HISTORY<TD>5<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>33</a>
+<TR valign=top align=right class=odd><TD>199<TD align=left>CONFLICT SECURITY & DEVELOPMENT<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=evn><TD>200<TD align=left>CORPORATE GOVERNANCE-THE INTERNATIONAL JOURNAL OF BUSINESS IN SOCIETY<TD><a TITLE=" Article CORPORATE GOVERNANCE-THE INTE Title: Governance and enterprise restructuring in Southeast Europe: gross domestic product and foreign direct investments" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>6</a>
+</TABLE>
+<div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>1</b> of 14<span class=nonprn>: [  &nbsp;1 &nbsp;<a href=so-lcs-2.html class=nu>2</a> &nbsp;3 &nbsp;4 &nbsp;5 &nbsp;6 &nbsp;7 &nbsp;8 &nbsp;9 &nbsp;10 ]</span> &nbsp;11&nbsp;</div>
+</BODY>

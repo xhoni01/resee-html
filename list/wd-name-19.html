@@ -1,0 +1,592 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><HEAD><TITLE>HistCite - RESEE: A Bibliographic Database on Balkan – Southeast European Studies</TITLE></HEAD>
+<BODY VLINK=blue OnLoad="focus()">
+<STYLE>
+body {
+	margin: 2px 10px; padding: 0;
+	background: #fff;
+}
+body, td, th {
+	font-size: 10pt; font-family: Verdana;
+}
+input, select, textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ui {
+	font-size: 10pt; font-family: Verdana;
+}
+.ui input, .ui select, .ui textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ci_title {
+	font-size: 8pt; font-weight: bold;
+}
+.ci_il {
+	color: black; text-decoration: none;	/* msie6 ! inherit */
+}
+.helpa { text-decoration: none;
+	cursor: help;
+}
+.helpt { background: #ffff77; padding: 4px;
+}
+.nu { text-decoration: none; 
+}
+.sc, .sc a { color: #904644 }
+.fnd { background-color: #beb;
+	padding: 0 3px 2px 2px;
+}
+td div.fndCR {
+	padding-left: 2em;
+//	text-indent: -2em;
+}
+.odd { background-color: #eeeeee }
+.evn { background-color: #dddddd }
+div.odd { padding: 5px; margin-bottom: 2px }
+div.evn { padding: 5px; margin-bottom: 2px }
+.yr { padding: 0; font-weight: bold }
+.ank:hover { cursor: pointer; text-decoration: none; color: inherit; }
+a {
+	text-decoration: none;
+}
+a:hover, a:hover .sc {
+	text-decoration: underline; color: blue;
+}
+.scr:hover, td a.scr:hover { color:#000; text-decoration:none; } /* FF td */
+@media print {
+	.nonprn, .ephemeral, .x, .ui { display: none; }
+	.index { border: solid #fff 0; }
+	body { font-size: 10pt; }
+	td, th { font-size: 10pt; }
+	.ci_title { font-size: 8pt; }
+}
+</STYLE>
+<SCRIPT>
+var root=location.href; root = root.replace(/index.*/, ''); root = root.replace(/list.*/, '');
+function about () { window.open(root+'about.html','about','width=440,height=370,resizable=yes,scrollbars=yes') }
+	// This is a list of XMLHttpRequest-creation factory functions to try
+_factories = [
+    function() { return new XMLHttpRequest(); },
+    function() { return new ActiveXObject("Msxml2.XMLHTTP"); },
+    function() { return new ActiveXObject("Microsoft.XMLHTTP"); }
+];
+
+// When we find a factory that works, store it here.
+_factory = null;
+
+// Create and return a new XMLHttpRequest object.
+//
+// The first time we're called, try the list of factory functions until
+// we find one that returns a non-null value and does not throw an
+// exception. Once we find a working factory, remember it for later use.
+//
+newRequest = function() {
+    if (_factory != null) return _factory();
+
+    for(var i = 0; i < _factories.length; i++) {
+        try {
+            var factory = _factories[i];
+            var request = factory();
+            if (request != null) {
+                _factory = factory;
+                return request;
+            }
+        }
+        catch(e) {
+            continue;
+        }
+    }
+    // If we get here, none of the factory candidates succeeded,
+    // so throw an exception now and for all future calls.
+    _factory = function() {
+        //throw new Error("XMLHttpRequest not supported");
+        alert("XMLHttpRequest not supported");
+    }
+    _factory(); // Throw an error
+}
+
+function gethelp (url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+//    alert('OK');
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+function gettip (ent, url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+		ent.innerHTML = req.responseText;
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+</SCRIPT>
+<STYLE>
+div#tipshade {
+	position: fixed; top: 208px; left: 208px;
+	margin: 0px; width: 420px; height: 180px;
+	border: solid gray 2px;
+	background: gray;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 19; display: none;
+}
+div#tipoday {
+	position: fixed; top: 200px; left: 200px;
+	margin: 0px; width: 420px; height: 180px; padding: 0;
+	background: white;
+	border: solid #e44959 2px;
+	font: 10pt Verdana; cursor: default;
+	z-index: 20; display: none;
+}
+div#tiptitle {
+	background: #e44959; color: white; font-weight: bold;
+	padding-left: 4px;
+}
+div#tiptitle span.x {
+	background: white;
+}
+div#tipbox {
+	position: relative; /* top: 5px; */ margin: 8px;
+	max-height: 120px; overflow: auto;
+}
+div#tipctrl {
+	position: absolute; bottom: 0; margin: 4px;
+}
+div#tipctrl td {
+	font-size: 10px;
+}
+div#tipctrl form { margin: 0; }
+span.nw { white-space: nowrap; }
+</STYLE>
+<div id="tipshade" class="ui"> </div>
+<div id="tipoday" class="ui" align=left>
+<div id="tiptitle">HistCite Tip of the Day<span class="x"><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;" title="Close">X</a></span></div>
+<div id="tipbox">Tip of the day</div>
+<div id="tipctrl">
+<table align=bottom width=100%>
+<tr><td width=40% nowrap><form name=ft><label><input type=checkbox OnChange="nextStart(this);" checked> Show tip at next start</label></form></td>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=-1');>Previous Tip</a>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=1');>Next Tip</a>
+<td align=right><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;">Close</a>&nbsp;</td>
+</tr></table></div></div>
+<SCRIPT> var otip;
+function getit () { otip = document.getElementById('tipbox'); gettip(otip,'/tip.txt?next=0'); }
+function nextStart (start) {
+	if(start.checked == true) {
+		on = 1;
+	} else {
+		on = 0;
+	}
+	gethelp('/tipStart?on=' + on);
+}
+function tip_show () {
+	var W, H;
+	if(window.innerWidth) {
+		W = window.innerWidth; H = window.innerHeight;
+	} else {
+		var dd = document.documentElement;
+		W = dd.clientWidth; H = dd.clientHeight;
+	}
+//	alert(W + ' x ' + H);
+	var left = (W-420)/2;
+	var top = (H-180)/2;
+	var tipB = document.getElementById('tipshade');
+	var tipT = document.getElementById('tipoday');
+	tipB.style.left = left + 8 + 'px';
+	tipB.style.top = top + 8 + 'px';
+	tipT.style.left = left + 'px';
+	tipT.style.top = top + 'px';
+	tipB.style.display='block';
+	tipT.style.display='block';
+	getit();
+}
+</SCRIPT>
+
+<style>
+div#af_boxshado {
+	position: fixed; left:148px; top:128px; width: 460px; height: 110px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 11; display: none;
+}
+div#af_box {
+	position: fixed; left:140px; top:120px; width: 460px; height: 110px;
+	background: white; border: solid #999 2px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+div#af_box input {
+	font: 10px Verdana;
+}
+div#af_box_title {
+	background: #d3d3d3; padding-left: 4px; font-weight: bold;
+}
+div#af_box_title span.x {
+	background: white;
+}
+div#af_form {
+	width: 445px; height: 70px;
+	padding: 8px; overflow: auto;
+}
+div#af_form #sub{
+	display: block; margin: 12px 0 0 0;
+}
+div#starh2 {
+	position: absolute; left: 88px; top: 78px; width: 420px; height: 156px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	padding: 8px;
+	z-index: 12; display: none;
+}
+div#starh {
+	position: absolute; left: 80px; top: 70px; width: 420px; height: 156px; overflow: auto;
+	border: outset gray 2px;
+	padding: 8px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+</style>
+<div id="af_boxshado"> </div>
+<div id="af_box">
+<div id="af_box_title">Add File<span class="x"><a onClick="af_close()" title="Close">X</a></span>
+<!--<a href=javascript:na() onMouseOver="na();" onClick="toggle('starh');" class=helpa style="color:#000">-->
+<a onClick="toggle('starh');" class=helpa style="color:#000"><span class="x" id=mstarh style="top:0;right:14px;">?</span><span class="x" id=lstarh style="top:0;right:14px;display:none">_</span></a>
+</div>
+<div id="af_form">
+<FORM action=/input method=GET OnSubmit="return false" name=af style="margin:0">
+	Use [Browse...] to select a file with bibliography data:<br>
+	<INPUT type=hidden name=inputpath>
+	<INPUT type=file name=inputset size=48 OnChange="af.sub.focus()" value="">
+	<INPUT type=submit value="Add File" OnClick="afSubmit();return false" name=sub id="sub">
+</div><div id=starh2> </div>
+<div id=starh class=helpt>
+Use wildcard '*' to add more than one file at a time.
+For example, if you have <code>file1</code>,
+<code>file2</code>, etc. all in the same folder or directory;
+first, locate one of the files with the [Browse...] button.  Then alter the
+file path in the box above to include '*' character (eg. <code>file*</code>).
+Wildcard '?' to blanket only one character works too.<br>
+<b>Note</b>: In Windows you can select multiple files and "drag and drop" them 
+onto HistCite icon or shortcut.  The program would start and load those files.
+</div>
+</FORM><SCRIPT>
+var af = document.af;
+function afSubmit() {
+	if ("" == af.inputset.value ) { alert("Select a file."); return }
+	af.inputpath.value = af.inputset.value;
+	af.submit();
+}
+function af_show() {
+	document.getElementById('af_boxshado').style.display = 'block';
+	document.getElementById('af_box').style.display = 'block';
+	a = document.af.inputset.value;
+	document.af.inputset.focus();
+}
+function af_close() {
+	document.getElementById('af_boxshado').style.display = 'none';
+	document.getElementById('af_box').style.display = 'none';
+}
+</SCRIPT></div>
+
+<SCRIPT>
+function glossary () { window.open(root+'glossary.html','gloss','width=640,height=570,resizable=yes,scrollbars=yes') }
+function opeNod (a) { window.open(root+'node/'+a+'.html',a,'width=770,height=570,resizable=yes,scrollbars=yes') }
+function opeLod (dp, a) { if(''==dp) d='wd'; else d=dp; var w = d; w = w.replace(/[-\/]/g, '');
+	window.open(root+d+'/'+a+'.html',w+a,'width=640,height=546,resizable=yes,scrollbars=yes') }
+function na(){}
+</SCRIPT>
+<STYLE>
+#head {
+	position: left:0; padding-left:4px; background:#fff;
+	z-index:2; margin:0 0 8px 0; border-bottom:solid #000 1px;
+}
+#title {
+	padding-bottom: 4px; font-size: 1.3em; font-weight: bold;
+	max-width: 600px; /* non default overflow gives odd z-effects in FF */
+}
+#desc {
+	position: absolute; left: 4px; top: 1.8em;
+	padding: 2px 8px 4px 8px; white-space: normal; max-width: 480px;
+	background: #ffffcc; font-weight: normal; font-size: 10pt;
+	border: solid #000 1px;
+	display: none; z-index: 11;
+}
+#atitle { cursor: text;}
+#atitle, #stats {
+	text-decoration: none; color: #000;
+}
+#stats2 {
+	position: absolute; right: 0px; padding: 0;
+	background: white;
+	display: none; z-index: 11;
+}
+#atitle:hover #desc, #stats:hover #stats2 {
+	display: block;
+}
+@media print {
+	#head { position: static; }
+	#menu_pm { line-height: 0; }
+	#back { display: none; }
+}
+</STYLE>
+<!-- FF 3 only? fix -->
+<div id=head style="width:99%">
+<TABLE width=100% cellpadding=0 cellspacing=0 style="margin:0 0 3px 0">
+<TR valign=top><TD align=left width=60%>
+<div id=title><a id=atitle >RESEE: A Bibliographic Database on Balkan – Southeast European Studies<div id=desc>-------Search: Databases searching procedure and formats------
+*| Search query
+"balkan*" OR "southeast* europe*" OR "south east* europe*" (TITLE-ABS-KEY) 
+Web of Science Core Collection (SSCI, A&HCI, ESCI, BKCI-SSH)
+Scopus
+Constellate (JSTOR and Portico)
+
+Note: The earliest publication date from WoS for the articles was 1957 whereas for the books 2003.
+To complement our database with entries before 1957, we search the Constellate (Jstor and Portico) and Scopus database, finding and adding a further 445 articles.
+Characters were normalize, and English translation of the titles were added for entries in other languages than English. And for Constellate data we kept only Articles and Books from Humanities and Social Sciences.
+The Scopus and Constellate metadata files were converted into WoS (.txt) format.
+We also added manually 59 new entries (9 articles and 50 books) that were missing from the search but showed to be among the most cited references (local citation score greater than 10)
+
+---------Merging variants in the same cited references--------
+Given that databases have problems with the completeness of references and linkages (Van Eck and Waltman 2017), we used CRExplorer to clean the data and reduce the problems posed by variants in the same cited references (Thor et al. 2016)
+The cited references (CRs) in our data contained variants, especially the references on books. 
+We use the manual cleaning-up procedure, setting the clustering algorithm with a Levenshtein threshold of 0.75. 
+We also manually checked and unified variants of the same cited references (CRs), especially for books that received a local citation of more than 20 or had different years or editions and translations into other languages. 
+After the cleaning, we unify the variants of the same CRs, about 12% of the initial cited references.</div></a></div>
+<TD align=center><a href=# OnClick="window.open('../graph/list.html','graph','resizable=yes,scrollbars=yes')" class=nonprn>Historiographs</a><TD nowrap align=right rowspan=2 width=5%><div class=nonprn><a href=# OnClick="window.open('../help/wd.html','help','width=690,height=590,resizable=yes,scrollbars=yes')">Help</a>&nbsp;&nbsp;
+<a href=javascript:glossary()>Glossary</a>&nbsp;&nbsp;<a href="http://www.histcite.com/HTMLHelp/guide.html" target=guide>HistCite Guide</a>&nbsp;&nbsp;<a href=# OnClick="about(); return false">About</a></div><a id=stats>
+Grand Totals: LCS 8009, GCS 85894, CR 328237<br>Collection span: 1854 - 2022<br></a><TR><TD colspan=2 width=95%><b>Word(<a href=# title=" Titles " class=helpa>i</a>) List</b> (11723) Word&nbsp;count:&nbsp;64404, All&nbsp;words&nbsp;count:&nbsp;103007</TABLE></div><div align=right>24 December 2022</div>
+<div class="index" style=""><a href=../index-tl.html>Records</a>: 8378, <a href=au-pubs.html>Authors</a>: 10107, <a href=so-pubs.html>Journals</a>: 2650, <a href=or-pubs.html>Cited References</a>: 248863, Words: 11723
+<br><span class=nonprn><a href=py-pubs.html title=' Publication Years: 127 '>Yearly output</a>
+|&nbsp;<a href=dt-pubs.html title=' Document Types: 14 '>Document Type</a>
+|&nbsp;<a href=la-pubs.html title=' Languages: 6 '>Language</a>
+|&nbsp;<a href=in-pubs.html title=' Institutions: 62 '>Institution</a>
+|&nbsp;<a href=i2-pubs.html title=' Institution with Subdivisions: 64 '>Institution with Subdivision</a>
+|&nbsp;<a href=co-pubs.html title=' Countries: 8 '>Country</a></span></div><div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>19</b> of 59 &nbsp;<a href=wd-name.html class=nu>1</a>&nbsp;<span class=nonprn>: [  &nbsp;<a href=wd-name-11.html class=nu>11</a> &nbsp;<a href=wd-name-12.html class=nu>12</a> &nbsp;<a href=wd-name-13.html class=nu>13</a> &nbsp;<a href=wd-name-14.html class=nu>14</a> &nbsp;<a href=wd-name-15.html class=nu>15</a> &nbsp;<a href=wd-name-16.html class=nu>16</a> &nbsp;<a href=wd-name-17.html class=nu>17</a> &nbsp;<a href=wd-name-18.html class=nu>18</a> &nbsp;19 &nbsp;<a href=wd-name-20.html class=nu>20</a> ]</span> &nbsp;<a href=wd-name-21.html class=nu>21</a>&nbsp; &nbsp;<a href=wd-name-31.html class=nu>31</a>&nbsp; &nbsp;<a href=wd-name-41.html class=nu>41</a>&nbsp; &nbsp;<a href=wd-name-51.html class=nu>51</a>&nbsp;</div>
+<TABLE border=0 cellpadding=5 cellspacing=2 style="border: 2px solid #cccccc;margin: 4px 0;">
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="wd-name.html">Word</a></SPAN><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>3601<TD align=left class=sc>ESTABLISHING<TD>5<TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>3602<TD align=left class=sc>ESTABLISHMENT<TD>13<TD><a title=' 0.6%' class=ank>46</a><TD><a title=' 0.6%' class=ank>482</a>
+<TR valign=top align=right class=odd><TD>3603<TD align=left class=sc>ESTABLISHMENTS<TD><a TITLE=" Article INTERNATIONAL JOURNAL OF HUMA Title: Establishments&#39; use of temporary agency workers: the influence of institutions and establishments&#39; employment strategies" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=evn><TD>3604<TD align=left class=sc>ESTATE<TD>4<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>20</a>
+<TR valign=top align=right class=odd><TD>3605<TD align=left class=sc>ESTERHAZY<TD><a TITLE=" Article ZEITSCHRIFT FUR INTERKULTUREL Title: Danube Passages: Interculturality and the Experience of Transit in Peter Esterhazy&#39;s Donau abwarts" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3606<TD align=left class=sc>ESTIMATES<TD>5<TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>3607<TD align=left class=sc>ESTIMATING<TD>6<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.1%' class=ank>93</a>
+<TR valign=top align=right class=evn><TD>3608<TD align=left class=sc>ESTIMATION<TD>6<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.1%' class=ank>52</a>
+<TR valign=top align=right class=odd><TD>3609<TD align=left class=sc>ESTIMATIONS<TD><a TITLE=" Article REVISTA DE CERCETARE SI INTER Title: Empirical Modeling of Education Expenditures for Balkans: Evidence from Panel FMOLS and DOLS Estimations" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>3610<TD align=left class=sc>ESTONIA<TD>4<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=odd><TD>3611<TD align=left class=sc>ETA<TD><a TITLE=" Article STUDIA CERANEA Title: THE DEFENCE OF THE LONG WALLS OF THRACE (M alpha kappa rho alpha&#39; T epsilon i chi eta tau eta&#39;sigma Theta rho alpha&#39;kappa eta sigma ) UNDER JUSTINIAN THE GREAT ( 527- 565 A. D.)" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>3612<TD align=left class=sc>ETAIREIA<TD><a TITLE=" Article HISTORICAL REVIEW-LA REVUE HI Title: THE PHILIKI ETAIREIA REVISITED: IN SEARCH OF CONTEXTS, NATIONAL AND INTERNATIONAL" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>3613<TD align=left class=sc>ETATS<TD><a TITLE=" Article BULL INT SOC CROIX-ROUGE Title: Guerre des Balkans. &acirc;&#128;&#148; Appel aux Croix-Rouges des Etats neutres: (Cent quarante-deuxieme circulaire aux Comites Centraux) / Balkan War. &acirc;&#128;&#148; Appeal to the Red Cross Societies of neutral States: (One Hundred and Forty-Second Circular to the Central Committees)" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3614<TD align=left class=sc>ETERNAL<TD><a TITLE=" Article PHILOLOGICA JASSYENSIA Title: The Eternal Ulysses: The Wanderings and Suffering of Migrants in Odyssey and Nowadays" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3615<TD align=left class=sc>ETHIC<TD><a TITLE=" Article SOCIAL COMPASS Title: The Bulgarian Orthodox Church and the &quot;Ethic of Capitalism&quot;" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>3616<TD align=left class=sc>ETHICAL<TD><a TITLE=" Article SYNTHESIS PHILOSOPHICA Title: Integrative Bioethics as a Chance An Ideal Example for Ethical Discussions?" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=odd><TD>3617<TD align=left class=sc>ETHICS<TD>9<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.1%' class=ank>70</a>
+<TR valign=top align=right class=evn><TD>3618<TD align=left class=sc>ETHIOPIAN<TD><a TITLE=" Article SOUTHEAST EUROPEAN AND BLACK  Title: Britain, the Ethiopian crisis and the Balkan Entente, 1935-1936" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>3619<TD align=left class=sc>ETHNIC<TD><a href=# OnClick="opeLod('', '3618', 'ETHNIC');return false">125</a><TD><a title=' 2.6%' class=ank>210</a><TD><a title=' 3.2%' class=ank>2724</a>
+<TR valign=top align=right class=evn><TD>3620<TD align=left class=sc>ETHNICAL<TD><a TITLE=" Article GEOGRAPHISCHE ZEITSCHRIFT Title: Ethnicity and globalisation. On the significance of ethnical categories in countries undergoing transition." href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>3621<TD align=left class=sc>ETHNICALLY<TD><a TITLE=" Article POLITICKA MISAO-CROATIAN POLI Title: Reintegration of Local Communities Divided by Ethnic Conflict: Ethnically Mixed Municipalities in the Western Balkans" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3622<TD align=left class=sc>ETHNICISATION<TD><a TITLE=" Article NATIONAL IDENTITIES Title: The specifics of Balkan ethnic identity construction: ethnicisation of localities" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3623<TD align=left class=sc>ETHNICITIES<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>3624<TD align=left class=sc>ETHNICITY<TD>19<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>103</a>
+<TR valign=top align=right class=odd><TD>3625<TD align=left class=sc>ETHNICIZED<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=evn><TD>3626<TD align=left class=sc>ETHNICS<TD><a TITLE=" Article ETHNOPOLITICS Title: Claimed Co-ethnics and Kin-State Citizenship in Southeastern Europe" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=odd><TD>3627<TD align=left class=sc>ETHNO<TD>12<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.1%' class=ank>84</a>
+<TR valign=top align=right class=evn><TD>3628<TD align=left class=sc>ETHNOARCHAELOGY<TD><a TITLE=" Article ETNOANTROPOLOSKI PROBLEMI-ISS Title: Ethnoarchaelogy - the Present as Key to the Past" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>3629<TD align=left class=sc>ETHNOARCHAEOLOGY<TD><a TITLE=" BOOK CHAPTER CONTESTING ETHNOARCHAEOLOGIES Title: Ethnoarchaeology in the Balkans. A View from Bulgaria" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3630<TD align=left class=sc>ETHNOBIOLOGY<TD><a TITLE=" Article HUMAN ECOLOGY Title: Cross-Cultural Ethnobiology in the Western Balkans: Medical Ethnobotany and Ethnozoology Among Albanians and Serbs in the Pester Plateau, Sandzak, South-Western Serbia" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.1%' class=ank>86</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="wd-name.html">Word</a></SPAN><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>3631<TD align=left class=sc>ETHNOBOTANY<TD>2<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.3%' class=ank>222</a>
+<TR valign=top align=right class=evn><TD>3632<TD align=left class=sc>ETHNOCENTRISM<TD>2<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.1%' class=ank>78</a>
+<TR valign=top align=right class=odd><TD>3633<TD align=left class=sc>ETHNOCULTURAL<TD><a TITLE=" Article RUSSKAIA LITERATURA Title: The so-called Eastern question in Russian politics and literature (geopolitical and ethnocultural problems in the Balkans and Central Asia)" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3634<TD align=left class=sc>ETHNOFEDERALISM<TD><a TITLE=" Article INTERNATIONAL POLITICAL SCIEN Title: Ethnofederalism, separatism, and conflict: what have we learned from the Soviet and Yugoslav experiences?" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=odd><TD>3635<TD align=left class=sc>ETHNOGENESIS<TD>3<TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>3636<TD align=left class=sc>ETHNOGRAPHIC<TD>12<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.2%' class=ank>197</a>
+<TR valign=top align=right class=odd><TD>3637<TD align=left class=sc>ETHNOGRAPHICAL<TD><a TITLE=" Article PHILOLOGICA JASSYENSIA Title: The Romanians from the Northern Bulgaria Historical, Sociological and Ethnographical Grounds" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>3638<TD align=left class=sc>ETHNOGRAPHY<TD>7<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>15</a>
+<TR valign=top align=right class=odd><TD>3639<TD align=left class=sc>ETHNOLINGUISTIC<TD>6<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>3640<TD align=left class=sc>ETHNOLOGICAL<TD>3<TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3641<TD align=left class=sc>ETHNOLOGY<TD>2<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3642<TD align=left class=sc>ETHNONATIONAL<TD>2<TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3643<TD align=left class=sc>ETHNONATIONALISM<TD>2<TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>3644<TD align=left class=sc>ETHNONATIONALIST<TD><a TITLE=" Article OCCASIONAL PAPERS ON RELIGION Title: CHRIST&#39;S ETHNONATIONALIST CRUCIFIXION: SACRALISATION OF ETHNONATIONALIST AGENDAS WITHIN CROATIAN CATHOLICISM AND SERBIAN ORTHODOXY - CAUSES AND EFFECTS" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3645<TD align=left class=sc>ETHNONYM<TD><a TITLE=" Article RADOVI-ZAVODA ZA HRVATSKU POV Title: The Spread of the Croatian Ethnonym and Linguonym to the Slovene Population of the Present-Day Eastern Slovenia Between the 16th and Early 19th Centuries and Their Disappearance" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3646<TD align=left class=sc>ETHNONYMS<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>11</a>
+<TR valign=top align=right class=odd><TD>3647<TD align=left class=sc>ETHNOPHARMACOLOGY<TD><a TITLE=" Article COLLEGIUM ANTROPOLOGICUM Title: The ecological aspect of ethnobotany and ethnopharmacology of population in Bosnia and Herzegovina" href=javascript:opeNod(1981)>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.2%' class=ank>136</a>
+<TR valign=top align=right class=evn><TD>3648<TD align=left class=sc>ETHNOPOLITICAL<TD>3<TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3649<TD align=left class=sc>ETHNOPOLITICS<TD><a TITLE=" Article ETHNOPOLITICS Title: Geopolitics, Ethnopolitics and the EU: The Cases of Serbia and Latvia" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>3650<TD align=left class=sc>ETHNOS<TD><a TITLE=" Article RUSIN Title: RECONSTRUCTION OF HISTORIC AND GEOGRAPHICAL INFORMATION ABOUT THE INITIAL PERIOD OF THE MOLDAVIAN ETHNOS FORMATION (ACCORDING TO THE BRIEF TALES ABOUT THE MOLDAVIAN LORDS FROM THE BEGINNING OF THE MOLDAVIAN LAND)" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3651<TD align=left class=sc>ETHNOSYMBOLISM<TD><a TITLE=" Article NATIONS AND NATIONALISM Title: &#39;Ethnic memories&#39; from above? The Kosovo myth among the South Slavs and minimalist ethnosymbolism" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3652<TD align=left class=sc>ETHNOZOOLOGY<TD><a TITLE=" Article HUMAN ECOLOGY Title: Cross-Cultural Ethnobiology in the Western Balkans: Medical Ethnobotany and Ethnozoology Among Albanians and Serbs in the Pester Plateau, Sandzak, South-Western Serbia" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.1%' class=ank>86</a>
+<TR valign=top align=right class=odd><TD>3653<TD align=left class=sc>ETHRIDGE<TD><a TITLE=" Article DIPLOMACY &amp; STATECRAFT Title: THE 1945 ETHRIDGE MISSION TO BULGARIA AND ROMANIA AND THE ORIGINS OF THE COLD WAR IN THE BALKANS" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3654<TD align=left class=sc>ETS<TD><a TITLE=" Article ENVIRONMENTAL &amp; RESOURCE ECON Title: Origins and Development of the EU ETS" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.1%' class=ank>68</a>
+<TR valign=top align=right class=odd><TD>3655<TD align=left class=sc>ETT<TD><a TITLE=" Article JAZZ RESEARCH JOURNAL Title: Ett minne for livet: A Swedish music collective" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3656<TD align=left class=sc>ETYMOLOGICAL<TD>4<TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3657<TD align=left class=sc>ETYMOLOGIES<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>3658<TD align=left class=sc>ETYMOLOGISCHES<TD><a TITLE=" Article INDOGER FORSCH Title: Etymologisches aus den Balkansprachen / Etymology from the Balkan languages" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3659<TD align=left class=sc>ETYMOLOGY<TD>7<TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>3660<TD align=left class=sc>EUGEN<TD><a TITLE=" Article WORLD LITERATURE STUDIES Title: The young Eugen Ionescu between Dada existentialism and the Balkan tradition of the absurd" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="wd-name.html">Word</a></SPAN><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>3661<TD align=left class=sc>EUGENE<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>3662<TD align=left class=sc>EUGENICS<TD><a TITLE=" Article CONTEMPORANEA Title: Eugenics and racial anthropology: the Slovene-Italian relations in the field of bio-politics (1930s-1960s)" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3663<TD align=left class=sc>EUJUST<TD><a TITLE=" BOOK CHAPTER EUROPEAN SECURITY AND DEFENCE Title: More than a Balkan Crisis Manager The EUJUST Themis in Georgia" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>3664<TD align=left class=sc>EULEX<TD><a TITLE=" Article JOURNAL OF EUROPEAN INTEGRATI Title: The EU and rule of law development in Kosovo: EULEX, domestic spoilers, and a two-level commitment problem" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3665<TD align=left class=sc>EUPHEMISES<TD><a TITLE=" Article INTERNATIONALE POLITIK Title: Dismal perspectives - The west euphemises the situation in western Balkans" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3666<TD align=left class=sc>EURASIA<TD>17<TD><a title=' 0.3%' class=ank>27</a><TD><a title=' 0.4%' class=ank>342</a>
+<TR valign=top align=right class=odd><TD>3667<TD align=left class=sc>EURASIAN<TD>2<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>32</a>
+<TR valign=top align=right class=evn><TD>3668<TD align=left class=sc>EURASIANISM<TD>2<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>13</a>
+<TR valign=top align=right class=odd><TD>3669<TD align=left class=sc>EURASIANS<TD><a TITLE=" Article VOPROSY ISTORII Title: Unheard controversy: the eurasians about the fate of the slavs" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3670<TD align=left class=sc>EURESPONSES<TD><a TITLE=" Article POLICING-A JOURNAL OF POLICY  Title: Decline, Change or Denial: Human Trafficking and EUResponses in the Balkan Triangle" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=odd><TD>3671<TD align=left class=sc>EURIBOR<TD><a TITLE=" Article JOURNAL OF EAST-WEST BUSINESS Title: The Spillover Effect of Euribor on Southeastern European Economies: A Global VAR Approach" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3672<TD align=left class=sc>EURIZATION<TD><a TITLE=" Article CROATIAN OPERATIONAL RESEARCH Title: Financial eurization in Croatia and its (non)linear pattern behaviour" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=odd><TD>3673<TD align=left class=sc>EURO<TD>19<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>127</a>
+<TR valign=top align=right class=evn><TD>3674<TD align=left class=sc>EUROBAROMETER<TD><a TITLE=" Article SOUTHEAST EUROPEAN AND BLACK  Title: Tackling undeclared work in southeast Europe: lessons from a 2007 Eurobarometer survey" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=odd><TD>3675<TD align=left class=sc>EUROIZATION<TD>3<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=evn><TD>3676<TD align=left class=sc>EUROIZED<TD><a TITLE=" Article EMPIRICAL ECONOMICS Title: Assessing independent monetary policy in small, open and euroized countries: evidence from Western Balkan" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>3677<TD align=left class=sc>EUROLOGY<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>3678<TD align=left class=sc>EUROMISSILE<TD><a TITLE=" Article COLD WAR HISTORY Title: Troublemaker or peacemaker? Andreas Papandreou, the Euromissile Crisis, and the policy of peace, 1981-86" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=odd><TD>3679<TD align=left class=sc>EUROPA<TD>2<TD><a title=' 0.2%' class=ank>17</a><TD><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=evn><TD>3680<TD align=left class=sc>EUROPARTIES<TD><a TITLE=" Article COMPARATIVE EUROPEAN POLITICS Title: Europarties in the neighbourhood: how transnational party politics bind Eastern Europe and the Western Balkans to the EU" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=odd><TD>3681<TD align=left class=sc>EUROPE<TD><a href=# OnClick="opeLod('', '3680', 'EUROPE');return false">1187</a><TD><a title=' 11.2%' class=ank>896</a><TD><a title=' 11.5%' class=ank>9841</a>
+<TR valign=top align=right class=evn><TD>3682<TD align=left class=sc>EUROPEAN<TD><a href=# OnClick="opeLod('', '3681', 'EUROPEAN');return false">584</a><TD><a title=' 6.6%' class=ank>532</a><TD><a title=' 4.0%' class=ank>3421</a>
+<TR valign=top align=right class=odd><TD>3683<TD align=left class=sc>EUROPEANA<TD><a TITLE=" Article JOURNAL OF CONTEMPORARY EUROP Title: Reconciliation narrative: scope and limits of the Pax Europeana" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>3684<TD align=left class=sc>EUROPEANISATION<TD>17<TD><a title=' 0.2%' class=ank>15</a><TD><a title=' 0.2%' class=ank>139</a>
+<TR valign=top align=right class=odd><TD>3685<TD align=left class=sc>EUROPEANISERS<TD><a TITLE=" BOOK CHAPTER DEMOCRATIZATION IN EU FOREIGN Title: Subtle Europeanisers Czech and Slovak advocacy and assistance strategy in the Western Balkans" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3686<TD align=left class=sc>EUROPEANISING<TD><a TITLE=" Article WEST EUROPEAN POLITICS Title: Europeanising the &#39;Kosovo Question&#39;: Serbia&#39;s Policies in the Context of EU Integration" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>21</a>
+<TR valign=top align=right class=odd><TD>3687<TD align=left class=sc>EUROPEANISM<TD>2<TD>0<TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>3688<TD align=left class=sc>EUROPEANIZATION<TD><a href=# OnClick="opeLod('', '3687', 'EUROPEANIZATION');return false">53</a><TD><a title=' 2.0%' class=ank>160</a><TD><a title=' 1.1%' class=ank>925</a>
+<TR valign=top align=right class=odd><TD>3689<TD align=left class=sc>EUROPEANIZED<TD><a TITLE=" Article JOURNAL OF BALKAN AND NEAR EA Title: Turkish Foreign Policy towards the Balkans: A Europeanized Foreign Policy in a De-Europeanized National Context?" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.0%' class=ank>15</a>
+<TR valign=top align=right class=evn><TD>3690<TD align=left class=sc>EUROPEANIZING<TD>2<TD><a title=' 0.2%' class=ank>16</a><TD><a title=' 0.0%' class=ank>23</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="wd-name.html">Word</a></SPAN><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>3691<TD align=left class=sc>EUROPEANNESS<TD>3<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=evn><TD>3692<TD align=left class=sc>EUROPEANS<TD>8<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.1%' class=ank>49</a>
+<TR valign=top align=right class=odd><TD>3693<TD align=left class=sc>EUROSCEPTIC<TD><a TITLE=" Article SOUTHEAST EUROPEAN AND BLACK  Title: Eurosceptic yet pro-enlargement: the paradoxes of Hungary&#39;s EU policy" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>3694<TD align=left class=sc>EUROSCEPTICISM<TD>3<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>13</a>
+<TR valign=top align=right class=odd><TD>3695<TD align=left class=sc>EUROVISION<TD>2<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>41</a>
+<TR valign=top align=right class=evn><TD>3696<TD align=left class=sc>EUROZONE<TD><a TITLE=" Article ECONOMIC MODELLING Title: Linkages between the Eurozone and the South-Eastern European countries: A global VAR analysis" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=odd><TD>3697<TD align=left class=sc>EURYDICE<TD><a TITLE=" Article JOURNAL OF ANALYTICAL PSYCHOL Title: Orpheus and Eurydice: a creative agony" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>3698<TD align=left class=sc>EUSAIR<TD><a TITLE=" Article JOURNAL OF INTERNATIONAL RELA Title: Assessing the rise of macro-regionalism in Europe: the EU Strategy for the Adriatic and Ionian Region (EUSAIR)" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>3699<TD align=left class=sc>EUSKARO<TD><a TITLE=" Article IRAN AND THE CAUCASUS Title: The Anthropological Context of Euskaro-Caucasian" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>3700<TD align=left class=sc>EUSTATHIUS<TD><a TITLE=" Article IKON-JOURNAL OF ICONOGRAPHIC  Title: Warrior, Parent, Martyr Iconographic Variants and Hagiographic Attributes of Saint Eustathius Placidas in the Wallachian Mural Painting (1650-1815)" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3701<TD align=left class=sc>EUTHANASIA<TD><a TITLE=" Article COLLEGIUM ANTROPOLOGICUM Title: Euthanasia of Patients with the Chronic Renal Failure" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>3702<TD align=left class=sc>EUTOPIA<TD><a TITLE=" BOOK CHAPTER RISE AND FALL OF PEACEBUILDIN Title: EUtopia and the Pull of Integration" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3703<TD align=left class=sc>EU’S<TD><a TITLE=" Article EUROPEAN FOREIGN AFFAIRS REVI Title: The Rocky Road to Europe: The EU&acirc;&#128;&#153;s Stabilisation and Association Process for the Western Balkans and the Principle of Conditionality" href=javascript:opeNod(1571)>1</a><TD><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.1%' class=ank>53</a>
+<TR valign=top align=right class=evn><TD>3704<TD align=left class=sc>EVACUATION<TD>2<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.1%' class=ank>87</a>
+<TR valign=top align=right class=odd><TD>3705<TD align=left class=sc>EVALUATING<TD>17<TD><a title=' 0.4%' class=ank>29</a><TD><a title=' 0.3%' class=ank>217</a>
+<TR valign=top align=right class=evn><TD>3706<TD align=left class=sc>EVALUATION<TD>16<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>32</a>
+<TR valign=top align=right class=odd><TD>3707<TD align=left class=sc>EVALUATIONS<TD><a TITLE=" Article TARIH INCELEMELERI DERGISI Title: In the Russian Press (Niva Magazine) Evaluations on the Second Constitutional Process" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3708<TD align=left class=sc>EVANGELIUM<TD><a TITLE=" Article PALAEOBULGARICA-STAROBALGARIS Title: THE BULGARIAN GOSPEL OF RUSSIAN NATIONAL LIBRARY MS F.II.I.122 (SECOND QUARTER OF THE 14TH CENTURY) AND ITS IDENTIFICATION WITH THE EVANGELIUM BUCOVINENSE" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3709<TD align=left class=sc>EVANS<TD><a TITLE=" Article HISTORY OF EUROPEAN IDEAS Title: Re-staging the &#39;Eastern Question&#39;: Arthur J. Evans and the search for the origins of European civilization in the Balkans" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3710<TD align=left class=sc>EVASION<TD><a TITLE=" Article MIDDLE EAST LAW AND GOVERNANC Title: Corruption and Tax Evasion in Croatia Institutional Settings and Practical Experiences" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>3711<TD align=left class=sc>EVE<TD>17<TD>0<TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=evn><TD>3712<TD align=left class=sc>EVEN<TD>5<TD>0<TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=odd><TD>3713<TD align=left class=sc>EVENING<TD><a TITLE=" Article ISTORIYA-HISTORY Title: THE BALKANS IN THE EVENING BEFORE MODERNIZATION" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3714<TD align=left class=sc>EVENT<TD>4<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.1%' class=ank>113</a>
+<TR valign=top align=right class=odd><TD>3715<TD align=left class=sc>EVENTFUL<TD><a TITLE=" Article CURRENT HISTORY (1916-1940) Title: An Eventful Month in the Balkans" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3716<TD align=left class=sc>EVENTS<TD>12<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.1%' class=ank>53</a>
+<TR valign=top align=right class=odd><TD>3717<TD align=left class=sc>EVENTS—THE<TD><a TITLE=" Article J GEOGR Title: The Geography of Current Events&acirc;&#128;&#148;The Balkan War" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3718<TD align=left class=sc>EVER<TD>4<TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>23</a>
+<TR valign=top align=right class=odd><TD>3719<TD align=left class=sc>EVERY<TD>3<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3720<TD align=left class=sc>EVERYBODY<TD><a TITLE=" Article TURKISH POLICY QUARTERLY Title: VISA-FREE TRAVEL FOR TURKEY: IN EVERYBODY&#39;S INTEREST" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="wd-name.html">Word</a></SPAN><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>3721<TD align=left class=sc>EVERYDAY<TD>12<TD>0<TD><a title=' 0.0%' class=ank>19</a>
+<TR valign=top align=right class=evn><TD>3722<TD align=left class=sc>EVERYONE<TD><a TITLE=" Article SECURITY AND HUMAN RIGHTS Title: Building Bridges for Everyone: Switzerland&#39;s Chairmanship of the OSCE in 2014" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3723<TD align=left class=sc>EVERYTHING<TD><a TITLE=" Article CULTURE HEALTH &amp; SEXUALITY Title: ?Until we have laws ? everything is useless!?: intersectionality, self-identified needs and inequity among sexual and gender minorities in Macedonia" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=evn><TD>3724<TD align=left class=sc>EVES<TD><a TITLE=" Article MISCELANEA DE ESTUDIOS ARABES Title: De casta le viene a la galga: Sephardic Adams vs. their Eves, either traditional or modern" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>3725<TD align=left class=sc>EVIDENCE<TD><a href=# OnClick="opeLod('', '3724', 'EVIDENCE');return false">178</a><TD><a title=' 1.8%' class=ank>143</a><TD><a title=' 2.8%' class=ank>2399</a>
+<TR valign=top align=right class=evn><TD>3726<TD align=left class=sc>EVIDENCES<TD><a TITLE=" Article JOURNAL OF RISK AND FINANCIAL Title: Financing Growth through Remittances and Foreign Direct Investment: Evidences from Balkan Countries" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=odd><TD>3727<TD align=left class=sc>EVIDENTIAL<TD>3<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>11</a>
+<TR valign=top align=right class=evn><TD>3728<TD align=left class=sc>EVIDENTIALITY<TD><a TITLE=" Article JOURNAL OF PRAGMATICS Title: On the grammaticalization of evidentiality" href=javascript:opeNod(1374)>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.1%' class=ank>109</a>
+<TR valign=top align=right class=odd><TD>3729<TD align=left class=sc>EVIL<TD>2<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3730<TD align=left class=sc>EVLIYA<TD>2<TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3731<TD align=left class=sc>EVOCATION<TD><a TITLE=" Article REVUE D HISTOIRE MODERNE ET C Title: FOREIGN-POLICY AND EVOCATION OF REVOLUTIONARY DANGERS - BISMARCK DIPLOMACY THROUGHOUT BALKAN CRISIS (1875-1878)" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3732<TD align=left class=sc>EVOLUTION<TD>40<TD><a title=' 0.8%' class=ank>62</a><TD><a title=' 0.8%' class=ank>661</a>
+<TR valign=top align=right class=odd><TD>3733<TD align=left class=sc>EVOLUTIONARY<TD>3<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>3734<TD align=left class=sc>EVOLUTIONIST<TD><a TITLE=" Article TURKISH JOURNAL OF SOCIOLOGY- Title: The Evolutionist Journal of the Constitutional Era: Ulum-1 Iktisadiye ve Ictimaiye Mecmuasi" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3735<TD align=left class=sc>EVOLVING<TD>3<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>3736<TD align=left class=sc>EVRENOS<TD><a TITLE=" Article BELLETEN Title: Debate on the Origin of Evrenos Beg and a Re-evaluation" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3737<TD align=left class=sc>EVSTRATIEV<TD><a TITLE=" Article BULGARIAN HISTORICAL REVIEW-R Title: Ivan Evstratiev Geshov and the Bulgarian Red Cross organization" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3738<TD align=left class=sc>EXAMINATION<TD>9<TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.4%' class=ank>304</a>
+<TR valign=top align=right class=odd><TD>3739<TD align=left class=sc>EXAMINING<TD>8<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.0%' class=ank>41</a>
+<TR valign=top align=right class=evn><TD>3740<TD align=left class=sc>EXAMPLE<TD>40<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>91</a>
+<TR valign=top align=right class=odd><TD>3741<TD align=left class=sc>EXAMPLES<TD>18<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.1%' class=ank>62</a>
+<TR valign=top align=right class=evn><TD>3742<TD align=left class=sc>EXCAVATED<TD><a TITLE=" Article PRAEHISTORISCHE ZEITSCHRIFT Title: Origin of a silver Stollhof-type disc excavated at Vanovice (South Moravia)" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3743<TD align=left class=sc>EXCAVATING<TD><a TITLE=" Article ANTIQUITY Title: Connecting Early Neolithic worlds: excavating Mala (Nova) Peina in Dalmatian Zagora, Croatia" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>3744<TD align=left class=sc>EXCAVATIONS<TD>9<TD><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.1%' class=ank>72</a>
+<TR valign=top align=right class=odd><TD>3745<TD align=left class=sc>EXCELLENCE<TD><a TITLE=" Article AMFITEATRU ECONOMIC Title: THE IMPACT AND EFFICIENCY OF PUBLIC ADMINISTRATION EXCELLENCE ON FOSTERING SMEs IN EU COUNTRIES" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>27</a>
+<TR valign=top align=right class=evn><TD>3746<TD align=left class=sc>EXCEPT<TD><a TITLE=" Article CHUZHDOEZIKOVO OBUCHENIE-FORE Title: TOWARDS THE HISTORY OF THE PREPOSITION EXCEPT" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3747<TD align=left class=sc>EXCEPTION<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>3748<TD align=left class=sc>EXCEPTIONALISM<TD>2<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.0%' class=ank>14</a>
+<TR valign=top align=right class=odd><TD>3749<TD align=left class=sc>EXCEPTIONALLY<TD><a TITLE=" Article PROCEEDINGS OF THE NATIONAL A Title: Exceptionally high levels of lead pollution in the Balkans from the Early Bronze Age to the Industrial Revolution" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=evn><TD>3750<TD align=left class=sc>EXCERPTED<TD><a TITLE=" Article PALAEOBULGARICA-STAROBALGARIS Title: MATERIALS TO THE CATALOG DESCRIPTION OF MANUSCRIPTS EXCERPTED FOR BIBLIOTHECA HOMILETICA BALCANO-SLAVICA (BHomBS) I. Triodion Panegyric from the Hilandar Monastery No. 190" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="wd-name.html">Word</a></SPAN><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>3751<TD align=left class=sc>EXCERPTS<TD><a TITLE=" Article BULL INT SOC CROIX-ROUGE Title: Extraits du Rapport de M. de Marval sur sa mission dans les Balkans Remarques et observations / Excerpts from M. de Marval&#39;s Report on his mission to the Balkans Remarks and observations" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3752<TD align=left class=sc>EXCESS<TD>3<TD>0<TD><a title=' 0.1%' class=ank>51</a>
+<TR valign=top align=right class=odd><TD>3753<TD align=left class=sc>EXCHANGE<TD>19<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>64</a>
+<TR valign=top align=right class=evn><TD>3754<TD align=left class=sc>EXCHANGES<TD>4<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=odd><TD>3755<TD align=left class=sc>EXCISE<TD><a TITLE=" Article EMPIRICA Title: Excise duties harmonisation and smoking in a model with cross-border arbitrage" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3756<TD align=left class=sc>EXCITING<TD><a TITLE=" BOOK CHAPTER IMAGES IN USE: TOWARDS THE CR Title: Walls, doors and exciting encounters Balkanism and its edges in Bulgarian political cartoons on European integration" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>3757<TD align=left class=sc>EXCLUSION<TD>7<TD><a title=' 0.2%' class=ank>18</a><TD><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=evn><TD>3758<TD align=left class=sc>EXCLUSIONARY<TD>3<TD>0<TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=odd><TD>3759<TD align=left class=sc>EXCLUSIVENESS<TD><a TITLE=" Article HISTORICKY CASOPIS Title: Historical Exclusiveness in the Ideology of the Elites of Illyrianism of the First Half of the 19th Century" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3760<TD align=left class=sc>EXCLUSIVES<TD><a TITLE=" Article FOLIA LINGUISTICA ET LITTERAR Title: MEMORY OF THE BALKANS, MEMORIES OF FRANCE(ES): TOWARDS RECOGNITION OF MULTIPLE AND NON EXCLUSIVES MEMORIES" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3761<TD align=left class=sc>EXCURSIONS<TD><a TITLE=" Article THE AMERICAN SCHOLAR Title: Alarms and Excursions in the Balkans" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3762<TD align=left class=sc>EXCURSUSES<TD><a TITLE=" Article VIZANTIISKII VREMENNIK Title: THE &quot;RUS&#39;&quot; EXCURSUSES OF LEO THE DEACON AND THE TRADITIONS OF THE MEN&#39;S UNIONS IN THE SLAVIC WORLD" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>3763<TD align=left class=sc>EXECUTED<TD><a TITLE=" Article SOUTHEASTERN EUROPE Title: Promoting Democracy in the Western Balkans after the Global Financial Crisis: Good Intentions Badly Executed?" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>3764<TD align=left class=sc>EXECUTIONER<TD>2<TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>3765<TD align=left class=sc>EXECUTIVE<TD><a TITLE=" Article EAST EUROPEAN POLITICS Title: Migration threat priming and Macedonian public preferences towards executive powers" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>3766<TD align=left class=sc>EXEGESIS<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>3767<TD align=left class=sc>EXEMPLARITY<TD><a TITLE=" Article PRIMERJALNA KNJIZEVNOST Title: The &quot;Erased&quot; between the Politics of Denial and the Exemplarity of the Novel" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3768<TD align=left class=sc>EXEMPLIFIED<TD><a TITLE=" Article FOLIA LINGUISTICA ET LITTERAR Title: THE APOLITICAL UNIVERSITY AND HOW TO OVERCOME IT - EXEMPLIFIED BY STUDENTS WHO TEACH THEMSELVES GERMAN PHONETICS AND PHONOLOGY CRITICALLY" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3769<TD align=left class=sc>EXERCISE<TD><a TITLE=" Article PLOS ONE Title: The epidemiology of muscle-strengthening exercise in Europe: A 28-country comparison including 280,605 adults" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>13</a>
+<TR valign=top align=right class=evn><TD>3770<TD align=left class=sc>EXERCISES<TD><a TITLE=" Article SPORTIS-SCIENTIFIC TECHNICAL  Title: Optimising martial arts training by using gymnastics exercises" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>3771<TD align=left class=sc>EXERTING<TD><a TITLE=" Article ZEITGESCHICHTE Title: Combat Dynamics as a Spiral of Violence. On the Significance of Spatial, Temporal and Situation-specific Factors of Exerting Violence During World War I" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>3772<TD align=left class=sc>EXHIBITION<TD><a TITLE=" Review MUSEUM INTERNATIONAL Title: Imagining the Balkans: Identities and Memory in the Long 19(th) Century: Reviewing National Ideas Through a Regional Exhibition Project" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>3773<TD align=left class=sc>EXILE<TD>7<TD><a title=' 0.5%' class=ank>42</a><TD><a title=' 0.7%' class=ank>597</a>
+<TR valign=top align=right class=evn><TD>3774<TD align=left class=sc>EXILES<TD>3<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>3775<TD align=left class=sc>EXILIC<TD><a TITLE=" Article SECURITY DIALOGUE Title: Go west, go east: War&#39;s exilic subjects" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>3776<TD align=left class=sc>EXIST<TD><a TITLE=" Article FORUM FOR WORLD LITERATURE ST Title: Do &quot;Minor Literatures&quot; Still Exist?" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3777<TD align=left class=sc>EXISTENCE<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>3778<TD align=left class=sc>EXISTENTIAL<TD><a TITLE=" Article BRITISH JOURNAL OF SOCIOLOGY Title: From occupational to existential class: How to analyze class structure in hybrid societies (The case of Serbia)" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>3779<TD align=left class=sc>EXISTENTIALISM<TD><a TITLE=" Article WORLD LITERATURE STUDIES Title: The young Eugen Ionescu between Dada existentialism and the Balkan tradition of the absurd" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3780<TD align=left class=sc>EXISTING<TD>2<TD>0<TD><a title=' 0.0%' class=ank>18</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="wd-name.html">Word</a></SPAN><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>3781<TD align=left class=sc>EXISTS<TD><a TITLE=" Article SOUTHEASTERN EUROPE Title: The State is Captured Before It Exists Observations on Power, Resources, and Trust Networks in the Balkans" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3782<TD align=left class=sc>EXIT<TD>3<TD>0<TD><a title=' 0.2%' class=ank>131</a>
+<TR valign=top align=right class=odd><TD>3783<TD align=left class=sc>EXODUS<TD><a TITLE=" Article PATTERNS OF PREJUDICE Title: Anti-Turkish obsession and the exodus of Balkan Muslims" href=javascript:na() class=nu>1</a><TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>3784<TD align=left class=sc>EXOGENOUS<TD><a TITLE=" Article FINANCE A UVER-CZECH JOURNAL  Title: Has CEFTA Increased Members&#39; Mutual Trade? Evidence with an Enlarged Set of Plausibly Exogenous Instruments" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>3785<TD align=left class=sc>EXORCISM<TD><a TITLE=" BOOK CHAPTER BEYOND MOSQUE, CHURCH, AND ST Title: From Exorcism to Historicism: The Legacy of Empire and the Pains of Nation-Making in the Balkans" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>3786<TD align=left class=sc>EXOTIC<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>3787<TD align=left class=sc>EXPANDED<TD><a TITLE=" BOOK CHAPTER EUROPE AND THE POST-YUGOSLAV  Title: Expanded Accession Conditionality: The European Union&#39;s Leverage on Refugee Return to Croatia" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3788<TD align=left class=sc>EXPANDING<TD>3<TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>21</a>
+<TR valign=top align=right class=odd><TD>3789<TD align=left class=sc>EXPANSES<TD><a TITLE=" Article POLIS-POLITICHESKIYE ISSLEDOV Title: Limitrophes - Intercivilizational Expanses of the Old and New Worlds" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>3790<TD align=left class=sc>EXPANSION<TD>24<TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.3%' class=ank>279</a>
+<TR valign=top align=right class=odd><TD>3791<TD align=left class=sc>EXPANSIONISM<TD><a TITLE=" Article INTERNATIONAL HISTORY REVIEW Title: The Policy of Serbian Expansionism, with Specific Reference to Albanians in the Decade Preceding the Balkan Wars" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>3792<TD align=left class=sc>EXPANSIVE<TD><a TITLE=" Article EUROPEAN PLANNING STUDIES Title: Expansive spatial planning: The new European transnational spatial visions" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=odd><TD>3793<TD align=left class=sc>EXPATRIATES<TD><a TITLE=" Article EUROPEAN MANAGEMENT REVIEW Title: Expatriates of Host-Country Origin in South Eastern Europe: Management Rationales in the Finance Sector" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>3794<TD align=left class=sc>EXPECTATION<TD><a TITLE=" BOOK CHAPTER SCALING THE BALKANS: ESSAYS O Title: 1917 in the Balkans: Divergent &quot;Horizons of Expectation&quot;" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3795<TD align=left class=sc>EXPECTATIONS<TD>3<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=evn><TD>3796<TD align=left class=sc>EXPECTED<TD>3<TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=odd><TD>3797<TD align=left class=sc>EXPEDITION<TD>2<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>3798<TD align=left class=sc>EXPEDITIONARY<TD><a TITLE=" Article NOVEISHAYA ISTORIYA ROSSII-MO Title: Russian Expeditionary Corps in France During the World War I" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>3799<TD align=left class=sc>EXPEDITIONS<TD>2<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>3800<TD align=left class=sc>EXPENDITURE<TD>5<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.1%' class=ank>64</a>
+</TABLE>
+<div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>19</b> of 59 &nbsp;<a href=wd-name.html class=nu>1</a>&nbsp;<span class=nonprn>: [  &nbsp;<a href=wd-name-11.html class=nu>11</a> &nbsp;<a href=wd-name-12.html class=nu>12</a> &nbsp;<a href=wd-name-13.html class=nu>13</a> &nbsp;<a href=wd-name-14.html class=nu>14</a> &nbsp;<a href=wd-name-15.html class=nu>15</a> &nbsp;<a href=wd-name-16.html class=nu>16</a> &nbsp;<a href=wd-name-17.html class=nu>17</a> &nbsp;<a href=wd-name-18.html class=nu>18</a> &nbsp;19 &nbsp;<a href=wd-name-20.html class=nu>20</a> ]</span> &nbsp;<a href=wd-name-21.html class=nu>21</a>&nbsp; &nbsp;<a href=wd-name-31.html class=nu>31</a>&nbsp; &nbsp;<a href=wd-name-41.html class=nu>41</a>&nbsp; &nbsp;<a href=wd-name-51.html class=nu>51</a>&nbsp;</div>
+</BODY>

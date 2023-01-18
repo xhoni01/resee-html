@@ -1,0 +1,591 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><HEAD><TITLE>HistCite - RESEE: A Bibliographic Database on Balkan – Southeast European Studies</TITLE></HEAD>
+<BODY VLINK=blue OnLoad="focus()">
+<STYLE>
+body {
+	margin: 2px 10px; padding: 0;
+	background: #fff;
+}
+body, td, th {
+	font-size: 10pt; font-family: Verdana;
+}
+input, select, textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ui {
+	font-size: 10pt; font-family: Verdana;
+}
+.ui input, .ui select, .ui textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ci_title {
+	font-size: 8pt; font-weight: bold;
+}
+.ci_il {
+	color: black; text-decoration: none;	/* msie6 ! inherit */
+}
+.helpa { text-decoration: none;
+	cursor: help;
+}
+.helpt { background: #ffff77; padding: 4px;
+}
+.nu { text-decoration: none; 
+}
+.sc, .sc a { color: #904644 }
+.fnd { background-color: #beb;
+	padding: 0 3px 2px 2px;
+}
+td div.fndCR {
+	padding-left: 2em;
+//	text-indent: -2em;
+}
+.odd { background-color: #eeeeee }
+.evn { background-color: #dddddd }
+div.odd { padding: 5px; margin-bottom: 2px }
+div.evn { padding: 5px; margin-bottom: 2px }
+.yr { padding: 0; font-weight: bold }
+.ank:hover { cursor: pointer; text-decoration: none; color: inherit; }
+a {
+	text-decoration: none;
+}
+a:hover, a:hover .sc {
+	text-decoration: underline; color: blue;
+}
+.scr:hover, td a.scr:hover { color:#000; text-decoration:none; } /* FF td */
+@media print {
+	.nonprn, .ephemeral, .x, .ui { display: none; }
+	.index { border: solid #fff 0; }
+	body { font-size: 10pt; }
+	td, th { font-size: 10pt; }
+	.ci_title { font-size: 8pt; }
+}
+</STYLE>
+<SCRIPT>
+var root=location.href; root = root.replace(/index.*/, ''); root = root.replace(/list.*/, '');
+function about () { window.open(root+'about.html','about','width=440,height=370,resizable=yes,scrollbars=yes') }
+	// This is a list of XMLHttpRequest-creation factory functions to try
+_factories = [
+    function() { return new XMLHttpRequest(); },
+    function() { return new ActiveXObject("Msxml2.XMLHTTP"); },
+    function() { return new ActiveXObject("Microsoft.XMLHTTP"); }
+];
+
+// When we find a factory that works, store it here.
+_factory = null;
+
+// Create and return a new XMLHttpRequest object.
+//
+// The first time we're called, try the list of factory functions until
+// we find one that returns a non-null value and does not throw an
+// exception. Once we find a working factory, remember it for later use.
+//
+newRequest = function() {
+    if (_factory != null) return _factory();
+
+    for(var i = 0; i < _factories.length; i++) {
+        try {
+            var factory = _factories[i];
+            var request = factory();
+            if (request != null) {
+                _factory = factory;
+                return request;
+            }
+        }
+        catch(e) {
+            continue;
+        }
+    }
+    // If we get here, none of the factory candidates succeeded,
+    // so throw an exception now and for all future calls.
+    _factory = function() {
+        //throw new Error("XMLHttpRequest not supported");
+        alert("XMLHttpRequest not supported");
+    }
+    _factory(); // Throw an error
+}
+
+function gethelp (url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+//    alert('OK');
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+function gettip (ent, url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+		ent.innerHTML = req.responseText;
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+</SCRIPT>
+<STYLE>
+div#tipshade {
+	position: fixed; top: 208px; left: 208px;
+	margin: 0px; width: 420px; height: 180px;
+	border: solid gray 2px;
+	background: gray;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 19; display: none;
+}
+div#tipoday {
+	position: fixed; top: 200px; left: 200px;
+	margin: 0px; width: 420px; height: 180px; padding: 0;
+	background: white;
+	border: solid #e44959 2px;
+	font: 10pt Verdana; cursor: default;
+	z-index: 20; display: none;
+}
+div#tiptitle {
+	background: #e44959; color: white; font-weight: bold;
+	padding-left: 4px;
+}
+div#tiptitle span.x {
+	background: white;
+}
+div#tipbox {
+	position: relative; /* top: 5px; */ margin: 8px;
+	max-height: 120px; overflow: auto;
+}
+div#tipctrl {
+	position: absolute; bottom: 0; margin: 4px;
+}
+div#tipctrl td {
+	font-size: 10px;
+}
+div#tipctrl form { margin: 0; }
+span.nw { white-space: nowrap; }
+</STYLE>
+<div id="tipshade" class="ui"> </div>
+<div id="tipoday" class="ui" align=left>
+<div id="tiptitle">HistCite Tip of the Day<span class="x"><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;" title="Close">X</a></span></div>
+<div id="tipbox">Tip of the day</div>
+<div id="tipctrl">
+<table align=bottom width=100%>
+<tr><td width=40% nowrap><form name=ft><label><input type=checkbox OnChange="nextStart(this);" checked> Show tip at next start</label></form></td>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=-1');>Previous Tip</a>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=1');>Next Tip</a>
+<td align=right><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;">Close</a>&nbsp;</td>
+</tr></table></div></div>
+<SCRIPT> var otip;
+function getit () { otip = document.getElementById('tipbox'); gettip(otip,'/tip.txt?next=0'); }
+function nextStart (start) {
+	if(start.checked == true) {
+		on = 1;
+	} else {
+		on = 0;
+	}
+	gethelp('/tipStart?on=' + on);
+}
+function tip_show () {
+	var W, H;
+	if(window.innerWidth) {
+		W = window.innerWidth; H = window.innerHeight;
+	} else {
+		var dd = document.documentElement;
+		W = dd.clientWidth; H = dd.clientHeight;
+	}
+//	alert(W + ' x ' + H);
+	var left = (W-420)/2;
+	var top = (H-180)/2;
+	var tipB = document.getElementById('tipshade');
+	var tipT = document.getElementById('tipoday');
+	tipB.style.left = left + 8 + 'px';
+	tipB.style.top = top + 8 + 'px';
+	tipT.style.left = left + 'px';
+	tipT.style.top = top + 'px';
+	tipB.style.display='block';
+	tipT.style.display='block';
+	getit();
+}
+</SCRIPT>
+
+<style>
+div#af_boxshado {
+	position: fixed; left:148px; top:128px; width: 460px; height: 110px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 11; display: none;
+}
+div#af_box {
+	position: fixed; left:140px; top:120px; width: 460px; height: 110px;
+	background: white; border: solid #999 2px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+div#af_box input {
+	font: 10px Verdana;
+}
+div#af_box_title {
+	background: #d3d3d3; padding-left: 4px; font-weight: bold;
+}
+div#af_box_title span.x {
+	background: white;
+}
+div#af_form {
+	width: 445px; height: 70px;
+	padding: 8px; overflow: auto;
+}
+div#af_form #sub{
+	display: block; margin: 12px 0 0 0;
+}
+div#starh2 {
+	position: absolute; left: 88px; top: 78px; width: 420px; height: 156px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	padding: 8px;
+	z-index: 12; display: none;
+}
+div#starh {
+	position: absolute; left: 80px; top: 70px; width: 420px; height: 156px; overflow: auto;
+	border: outset gray 2px;
+	padding: 8px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+</style>
+<div id="af_boxshado"> </div>
+<div id="af_box">
+<div id="af_box_title">Add File<span class="x"><a onClick="af_close()" title="Close">X</a></span>
+<!--<a href=javascript:na() onMouseOver="na();" onClick="toggle('starh');" class=helpa style="color:#000">-->
+<a onClick="toggle('starh');" class=helpa style="color:#000"><span class="x" id=mstarh style="top:0;right:14px;">?</span><span class="x" id=lstarh style="top:0;right:14px;display:none">_</span></a>
+</div>
+<div id="af_form">
+<FORM action=/input method=GET OnSubmit="return false" name=af style="margin:0">
+	Use [Browse...] to select a file with bibliography data:<br>
+	<INPUT type=hidden name=inputpath>
+	<INPUT type=file name=inputset size=48 OnChange="af.sub.focus()" value="">
+	<INPUT type=submit value="Add File" OnClick="afSubmit();return false" name=sub id="sub">
+</div><div id=starh2> </div>
+<div id=starh class=helpt>
+Use wildcard '*' to add more than one file at a time.
+For example, if you have <code>file1</code>,
+<code>file2</code>, etc. all in the same folder or directory;
+first, locate one of the files with the [Browse...] button.  Then alter the
+file path in the box above to include '*' character (eg. <code>file*</code>).
+Wildcard '?' to blanket only one character works too.<br>
+<b>Note</b>: In Windows you can select multiple files and "drag and drop" them 
+onto HistCite icon or shortcut.  The program would start and load those files.
+</div>
+</FORM><SCRIPT>
+var af = document.af;
+function afSubmit() {
+	if ("" == af.inputset.value ) { alert("Select a file."); return }
+	af.inputpath.value = af.inputset.value;
+	af.submit();
+}
+function af_show() {
+	document.getElementById('af_boxshado').style.display = 'block';
+	document.getElementById('af_box').style.display = 'block';
+	a = document.af.inputset.value;
+	document.af.inputset.focus();
+}
+function af_close() {
+	document.getElementById('af_boxshado').style.display = 'none';
+	document.getElementById('af_box').style.display = 'none';
+}
+</SCRIPT></div>
+
+<SCRIPT>
+function glossary () { window.open(root+'glossary.html','gloss','width=640,height=570,resizable=yes,scrollbars=yes') }
+function opeNod (a) { window.open(root+'node/'+a+'.html',a,'width=770,height=570,resizable=yes,scrollbars=yes') }
+function opeLod (dp, a) { if(''==dp) d='au'; else d=dp; var w = d; w = w.replace(/[-\/]/g, '');
+	window.open(root+d+'/'+a+'.html',w+a,'width=640,height=546,resizable=yes,scrollbars=yes') }
+function na(){}
+</SCRIPT>
+<STYLE>
+#head {
+	position: left:0; padding-left:4px; background:#fff;
+	z-index:2; margin:0 0 8px 0; border-bottom:solid #000 1px;
+}
+#title {
+	padding-bottom: 4px; font-size: 1.3em; font-weight: bold;
+	max-width: 600px; /* non default overflow gives odd z-effects in FF */
+}
+#desc {
+	position: absolute; left: 4px; top: 1.8em;
+	padding: 2px 8px 4px 8px; white-space: normal; max-width: 480px;
+	background: #ffffcc; font-weight: normal; font-size: 10pt;
+	border: solid #000 1px;
+	display: none; z-index: 11;
+}
+#atitle { cursor: text;}
+#atitle, #stats {
+	text-decoration: none; color: #000;
+}
+#stats2 {
+	position: absolute; right: 0px; padding: 0;
+	background: white;
+	display: none; z-index: 11;
+}
+#atitle:hover #desc, #stats:hover #stats2 {
+	display: block;
+}
+@media print {
+	#head { position: static; }
+	#menu_pm { line-height: 0; }
+	#back { display: none; }
+}
+</STYLE>
+<!-- FF 3 only? fix -->
+<div id=head style="width:99%">
+<TABLE width=100% cellpadding=0 cellspacing=0 style="margin:0 0 3px 0">
+<TR valign=top><TD align=left width=60%>
+<div id=title><a id=atitle >RESEE: A Bibliographic Database on Balkan – Southeast European Studies<div id=desc>-------Search: Databases searching procedure and formats------
+*| Search query
+"balkan*" OR "southeast* europe*" OR "south east* europe*" (TITLE-ABS-KEY) 
+Web of Science Core Collection (SSCI, A&HCI, ESCI, BKCI-SSH)
+Scopus
+Constellate (JSTOR and Portico)
+
+Note: The earliest publication date from WoS for the articles was 1957 whereas for the books 2003.
+To complement our database with entries before 1957, we search the Constellate (Jstor and Portico) and Scopus database, finding and adding a further 445 articles.
+Characters were normalize, and English translation of the titles were added for entries in other languages than English. And for Constellate data we kept only Articles and Books from Humanities and Social Sciences.
+The Scopus and Constellate metadata files were converted into WoS (.txt) format.
+We also added manually 59 new entries (9 articles and 50 books) that were missing from the search but showed to be among the most cited references (local citation score greater than 10)
+
+---------Merging variants in the same cited references--------
+Given that databases have problems with the completeness of references and linkages (Van Eck and Waltman 2017), we used CRExplorer to clean the data and reduce the problems posed by variants in the same cited references (Thor et al. 2016)
+The cited references (CRs) in our data contained variants, especially the references on books. 
+We use the manual cleaning-up procedure, setting the clustering algorithm with a Levenshtein threshold of 0.75. 
+We also manually checked and unified variants of the same cited references (CRs), especially for books that received a local citation of more than 20 or had different years or editions and translations into other languages. 
+After the cleaning, we unify the variants of the same CRs, about 12% of the initial cited references.</div></a></div>
+<TD align=center><a href=# OnClick="window.open('../graph/list.html','graph','resizable=yes,scrollbars=yes')" class=nonprn>Historiographs</a><TD nowrap align=right rowspan=2 width=5%><div class=nonprn><a href=javascript:glossary()>Glossary</a>&nbsp;&nbsp;<a href="http://www.histcite.com/HTMLHelp/guide.html" target=guide>HistCite Guide</a>&nbsp;&nbsp;<a href=# OnClick="about(); return false">About</a></div><a id=stats>
+Grand Totals: LCS 8009, GCS 85894, CR 328237<br>Collection span: 1854 - 2022<br></a><TR><TD colspan=2 width=95%><b>All-Author List</b> (10107)</TABLE></div><div align=right>24 December 2022</div>
+<div class="index" style=""><a href=../index-tl.html>Records</a>: 8378, Authors: 10107, <a href=so-pubs.html>Journals</a>: 2650, <a href=or-pubs.html>Cited References</a>: 248863, <a href=wd-pubs.html>Words</a>: 11723
+<br><span class=nonprn><a href=py-pubs.html title=' Publication Years: 127 '>Yearly output</a>
+|&nbsp;<a href=dt-pubs.html title=' Document Types: 14 '>Document Type</a>
+|&nbsp;<a href=la-pubs.html title=' Languages: 6 '>Language</a>
+|&nbsp;<a href=in-pubs.html title=' Institutions: 62 '>Institution</a>
+|&nbsp;<a href=i2-pubs.html title=' Institution with Subdivisions: 64 '>Institution with Subdivision</a>
+|&nbsp;<a href=co-pubs.html title=' Countries: 8 '>Country</a></span></div><div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>2</b> of 51<span class=nonprn>: [  &nbsp;<a href=au-lcs.html class=nu>1</a> &nbsp;2 &nbsp;3 &nbsp;4 &nbsp;5 &nbsp;6 &nbsp;7 &nbsp;8 &nbsp;9 &nbsp;10 ]</span> &nbsp;11&nbsp; &nbsp;21&nbsp; &nbsp;31&nbsp; &nbsp;41&nbsp; &nbsp;51&nbsp;</div>
+<TABLE border=0 cellpadding=5 cellspacing=2 style="border: 2px solid #cccccc;margin: 4px 0;">
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="au-name.html">Author</a><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>201<TD align=left>Milosavljevic M<TD>6<TD class=sc><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=evn><TD>202<TD align=left>Panagopoulou E<TD>2<TD class=sc><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.1%' class=ank>93</a>
+<TR valign=top align=right class=odd><TD>203<TD align=left>Tasic N<TD>4<TD class=sc><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.0%' class=ank>32</a>
+<TR valign=top align=right class=evn><TD>204<TD align=left>Tooze A<TD>2<TD class=sc><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=odd><TD>205<TD align=left>Troncota M<TD>5<TD class=sc><a title=' 0.1%' class=ank>10</a><TD><a title=' 0.0%' class=ank>19</a>
+<TR valign=top align=right class=evn><TD>206<TD align=left>Ajdarpasic S<TD>4<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>15</a>
+<TR valign=top align=right class=odd><TD>207<TD align=left>Babb J<TD><a TITLE=" Article JOURNAL OF HUMAN EVOLUTION Title: A human mandible (BH-1) from the Pleistocene deposits of Mala Balanica cave (Sicevo Gorge, Nis, Serbia)" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>43</a>
+<TR valign=top align=right class=evn><TD>208<TD align=left>Bakic D<TD>6<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>20</a>
+<TR valign=top align=right class=odd><TD>209<TD align=left>Berkoz L<TD>4<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>66</a>
+<TR valign=top align=right class=evn><TD>210<TD align=left>Cetinkaya YD<TD>3<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>19</a>
+<TR valign=top align=right class=odd><TD>211<TD align=left>Cowan JK<TD><a TITLE=" Article AMERICAN ETHNOLOGIST Title: Fixing national subjects in the 1920s southern Balkans: Also an international practice" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>22</a>
+<TR valign=top align=right class=evn><TD>212<TD align=left>Ellis M<TD>2<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>121</a>
+<TR valign=top align=right class=odd><TD>213<TD align=left>Finney P<TD>3<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=evn><TD>214<TD align=left>Guibert P<TD>2<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>51</a>
+<TR valign=top align=right class=odd><TD>215<TD align=left>Heyd V<TD>3<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>75</a>
+<TR valign=top align=right class=evn><TD>216<TD align=left>Joseph BD<TD>6<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=odd><TD>217<TD align=left>Kalotay K<TD>2<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=evn><TD>218<TD align=left>Kuzmanovic Z<TD>6<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>15</a>
+<TR valign=top align=right class=odd><TD>219<TD align=left>Mercier N<TD>2<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>76</a>
+<TR valign=top align=right class=evn><TD>220<TD align=left>Mihailovic B<TD>3<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>52</a>
+<TR valign=top align=right class=odd><TD>221<TD align=left>Morley MW<TD>2<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>76</a>
+<TR valign=top align=right class=evn><TD>222<TD align=left>Petrovic M<TD>5<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>15</a>
+<TR valign=top align=right class=odd><TD>223<TD align=left>Petrovski D<TD><a TITLE=" Article ECONOMIC SYSTEMS Title: International stock market integration: Central and South Eastern Europe compared" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>61</a>
+<TR valign=top align=right class=evn><TD>224<TD align=left>Pickering PM<TD>5<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>103</a>
+<TR valign=top align=right class=odd><TD>225<TD align=left>Pridham G<TD>2<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>226<TD align=left>Rakocevic Z<TD><a TITLE=" Article JOURNAL OF HUMAN EVOLUTION Title: A human mandible (BH-1) from the Pleistocene deposits of Mala Balanica cave (Sicevo Gorge, Nis, Serbia)" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>43</a>
+<TR valign=top align=right class=odd><TD>227<TD align=left>Schimmelfennig F<TD>3<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>73</a>
+<TR valign=top align=right class=evn><TD>228<TD align=left>Totev S<TD>3<TD class=sc><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.0%' class=ank>27</a>
+<TR valign=top align=right class=odd><TD>229<TD align=left>Bayliss A<TD>2<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>72</a>
+<TR valign=top align=right class=evn><TD>230<TD align=left>Bonsall C<TD>3<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>28</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="au-name.html">Author</a><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>231<TD align=left>BOTEV N<TD>2<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>70</a>
+<TR valign=top align=right class=evn><TD>232<TD align=left>Bussiere M<TD><a TITLE=" Article REVIEW OF DEVELOPMENT ECONOMI Title: EU enlargement and trade integration: Lessons from a gravity model" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=odd><TD>233<TD align=left>Buturac G<TD>6<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>27</a>
+<TR valign=top align=right class=evn><TD>234<TD align=left>Demekas DG<TD><a TITLE=" Article JOURNAL OF COMPARATIVE ECONOM Title: Foreign direct investment in European transition economies - The role of policies" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>70</a>
+<TR valign=top align=right class=odd><TD>235<TD align=left>Dmitrovic T<TD>4<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.2%' class=ank>135</a>
+<TR valign=top align=right class=evn><TD>236<TD align=left>Draskovic M<TD>7<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>32</a>
+<TR valign=top align=right class=odd><TD>237<TD align=left>Fidrmuc J<TD><a TITLE=" Article REVIEW OF DEVELOPMENT ECONOMI Title: EU enlargement and trade integration: Lessons from a gravity model" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=evn><TD>238<TD align=left>Filipovic V<TD>6<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>60</a>
+<TR valign=top align=right class=odd><TD>239<TD align=left>Garasanin M<TD><a TITLE=" Article ANTIQUITY Title: A pot in house 54 at Lepenski Vir I (Serbia)" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>17</a>
+<TR valign=top align=right class=evn><TD>240<TD align=left>Hatziprokopiou P<TD>2<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=odd><TD>241<TD align=left>Horvath B<TD><a TITLE=" Article JOURNAL OF COMPARATIVE ECONOM Title: Foreign direct investment in European transition economies - The role of policies" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>70</a>
+<TR valign=top align=right class=evn><TD>242<TD align=left>Hudson J<TD><a TITLE=" Article SOUTH EAST EUROPEAN JOURNAL O Title: Evaluating the Impact of the Informal Economy on Businesses in South East Europe: Some Lessons from the 2009 World Bank Enterprise Survey" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>43</a>
+<TR valign=top align=right class=odd><TD>243<TD align=left>Kocic M<TD>2<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=evn><TD>244<TD align=left>Kolsto P<TD>3<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=odd><TD>245<TD align=left>Labrianidis L<TD>6<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>74</a>
+<TR valign=top align=right class=evn><TD>246<TD align=left>Lendvai N<TD>2<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>63</a>
+<TR valign=top align=right class=odd><TD>247<TD align=left>Mathur R<TD>4<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>58</a>
+<TR valign=top align=right class=evn><TD>248<TD align=left>Orviska M<TD><a TITLE=" Article SOUTH EAST EUROPEAN JOURNAL O Title: Evaluating the Impact of the Informal Economy on Businesses in South East Europe: Some Lessons from the 2009 World Bank Enterprise Survey" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>43</a>
+<TR valign=top align=right class=odd><TD>249<TD align=left>Petrakos GC<TD><a TITLE=" Article EUROPEAN URBAN AND REGIONAL S Title: The regional structure of Albania, Bulgaria and Greece: Implications for cross-border cooperation and development" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=evn><TD>250<TD align=left>Popovic D<TD>5<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>62</a>
+<TR valign=top align=right class=odd><TD>251<TD align=left>Popovic O<TD>6<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>252<TD align=left>Radovanovic I<TD><a TITLE=" Article ANTIQUITY Title: A pot in house 54 at Lepenski Vir I (Serbia)" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>17</a>
+<TR valign=top align=right class=odd><TD>253<TD align=left>Ribakova E<TD><a TITLE=" Article JOURNAL OF COMPARATIVE ECONOM Title: Foreign direct investment in European transition economies - The role of policies" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>70</a>
+<TR valign=top align=right class=evn><TD>254<TD align=left>Ruma I<TD><a TITLE=" Article TURKISH POLICY QUARTERLY Title: TURKISH FOREIGN POLICY TOWARDS THE BALKANS: NEW ACTIVISM, NEO-OTTOMANISM OR/SO WHAT?" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=odd><TD>255<TD align=left>Runnels C<TD>4<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>94</a>
+<TR valign=top align=right class=evn><TD>256<TD align=left>Schnatz B<TD><a TITLE=" Article REVIEW OF DEVELOPMENT ECONOMI Title: EU enlargement and trade integration: Lessons from a gravity model" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=odd><TD>257<TD align=left>Seroka J<TD>2<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>13</a>
+<TR valign=top align=right class=evn><TD>258<TD align=left>Stefanovic D<TD><a TITLE=" Article EUROPEAN HISTORY QUARTERLY Title: Seeing the Albanians through Serbian eyes: The inventors of the tradition of intolerance and their critics, 1804-1939" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.0%' class=ank>11</a>
+<TR valign=top align=right class=odd><TD>259<TD align=left>Teyssandier N<TD>2<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=evn><TD>260<TD align=left>Vida I<TD>4<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.2%' class=ank>135</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="au-name.html">Author</a><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>261<TD align=left>Whittle A<TD>2<TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>72</a>
+<TR valign=top align=right class=evn><TD>262<TD align=left>Wright R<TD><a TITLE=" Article; Proceedings Paper ANNALS OF THE ASSOCIATION OF  Title: The balkanization metaphor in the analysis of US immigration" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>60</a>
+<TR valign=top align=right class=odd><TD>263<TD align=left>Wu Y<TD><a TITLE=" Article JOURNAL OF COMPARATIVE ECONOM Title: Foreign direct investment in European transition economies - The role of policies" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>70</a>
+<TR valign=top align=right class=evn><TD>264<TD align=left>Yigit TM<TD><a TITLE=" Article ECONOMICS OF TRANSITION Title: The effects of transition and political instability on foreign direct investment inflows - Central Europe and the Balkans" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=odd><TD>265<TD align=left>Bache I<TD>3<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>73</a>
+<TR valign=top align=right class=evn><TD>266<TD align=left>Baker C<TD>9<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>62</a>
+<TR valign=top align=right class=odd><TD>267<TD align=left>Barbulescu IG<TD>2<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=evn><TD>268<TD align=left>Barclay A<TD><a TITLE=" Article ANTIQUITY Title: The end of the affair: formal chronological modelling for the top of the Neolithic tell of Vinca-Belo Brdo" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=odd><TD>269<TD align=left>Biermann R<TD>3<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>97</a>
+<TR valign=top align=right class=evn><TD>270<TD align=left>Borzel TA<TD>3<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>91</a>
+<TR valign=top align=right class=odd><TD>271<TD align=left>Brown K<TD>3<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>18</a>
+<TR valign=top align=right class=evn><TD>272<TD align=left>BUKVIC L<TD><a TITLE=" Article JOURNAL OF FIELD ARCHAEOLOGY Title: EXCAVATIONS AT OPOVO, 1985-1987 - SOCIOECONOMIC CHANGE IN THE BALKAN NEOLITHIC" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=odd><TD>273<TD align=left>Chapman J<TD>6<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>90</a>
+<TR valign=top align=right class=evn><TD>274<TD align=left>Clayer N<TD>3<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=odd><TD>275<TD align=left>Dordevic V<TD>5<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=evn><TD>276<TD align=left>Douka K<TD><a TITLE=" Article ANTIQUITY Title: Franchthi Cave revisited: the age of the Aurignacian in south-eastern Europe" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>26</a>
+<TR valign=top align=right class=odd><TD>277<TD align=left>Eric O<TD>4<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=evn><TD>278<TD align=left>Geddes A<TD>2<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>15</a>
+<TR valign=top align=right class=odd><TD>279<TD align=left>Indenbaum G<TD><a TITLE=" Article; Proceedings Paper JOURNAL OF ARCHAEOLOGICAL SCI Title: Copper production form polymetallic sulphide ores in the northeastern Balkan eneolithic culture" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>23</a>
+<TR valign=top align=right class=evn><TD>280<TD align=left>Ivanova M<TD>4<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>77</a>
+<TR valign=top align=right class=odd><TD>281<TD align=left>Ivanova S<TD>4<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>16</a>
+<TR valign=top align=right class=evn><TD>282<TD align=left>Klimczak L<TD>3<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=odd><TD>283<TD align=left>Kolosova V<TD><a TITLE=" Article; Proceedings Paper JOURNAL OF ARCHAEOLOGICAL SCI Title: Copper production form polymetallic sulphide ores in the northeastern Balkan eneolithic culture" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>23</a>
+<TR valign=top align=right class=evn><TD>284<TD align=left>Kozlowski JK<TD>5<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>43</a>
+<TR valign=top align=right class=odd><TD>285<TD align=left>Lyberaki A<TD>2<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>26</a>
+<TR valign=top align=right class=evn><TD>286<TD align=left>Mandic D<TD>2<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>27</a>
+<TR valign=top align=right class=odd><TD>287<TD align=left>Maric M<TD>3<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=evn><TD>288<TD align=left>MELLAART J<TD><a TITLE=" Article ANTIQUITY Title: ANATOLIA AND THE BALKANS" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=odd><TD>289<TD align=left>Otte M<TD>4<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>74</a>
+<TR valign=top align=right class=evn><TD>290<TD align=left>Pallis AA<TD><a TITLE=" Article THE GEOGRAPHICAL JOURNAL Title: Racial Migrations in the Balkans during the Years 1912-1924" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>7</a><TD>0
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="au-name.html">Author</a><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>291<TD align=left>Panagiotou R<TD>3<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=evn><TD>292<TD align=left>Penezic K<TD>4<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>29</a>
+<TR valign=top align=right class=odd><TD>293<TD align=left>Popovic G<TD>4<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=evn><TD>294<TD align=left>Prica I<TD>5<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=odd><TD>295<TD align=left>Rangelov I<TD>4<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>18</a>
+<TR valign=top align=right class=evn><TD>296<TD align=left>Reimer P<TD><a TITLE=" Article ANTIQUITY Title: The end of the affair: formal chronological modelling for the top of the Neolithic tell of Vinca-Belo Brdo" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=odd><TD>297<TD align=left>RIVERO LML<TD><a TITLE=" Article NATURAL LANGUAGE &amp; LINGUISTIC Title: CLAUSE STRUCTURE AND V-MOVEMENT IN THE LANGUAGES OF THE BALKANS" href=javascript:opeNod(966)>1</a><TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>101</a>
+<TR valign=top align=right class=evn><TD>298<TD align=left>Ryndina N<TD><a TITLE=" Article; Proceedings Paper JOURNAL OF ARCHAEOLOGICAL SCI Title: Copper production form polymetallic sulphide ores in the northeastern Balkan eneolithic culture" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>23</a>
+<TR valign=top align=right class=odd><TD>299<TD align=left>Salamon NK<TD>2<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=evn><TD>300<TD align=left>STELI P<TD><a TITLE=" Article JOURNAL OF FIELD ARCHAEOLOGY Title: EXCAVATIONS AT OPOVO, 1985-1987 - SOCIOECONOMIC CHANGE IN THE BALKAN NEOLITHIC" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=odd><TD>301<TD align=left>Szamosi LT<TD>4<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>70</a>
+<TR valign=top align=right class=evn><TD>302<TD align=left>Taylor A<TD>3<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>34</a>
+<TR valign=top align=right class=odd><TD>303<TD align=left>Tinios P<TD><a TITLE=" Article JOURNAL OF ETHNIC AND MIGRATI Title: Inflow of migrants and outflow of investment: Aspects of interdependence between Greece and the Balkans" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>19</a>
+<TR valign=top align=right class=evn><TD>304<TD align=left>Tomic OM<TD>6<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>99</a>
+<TR valign=top align=right class=odd><TD>305<TD align=left>Touquet H<TD>2<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>27</a>
+<TR valign=top align=right class=evn><TD>306<TD align=left>Tziampiris A<TD>2<TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=odd><TD>307<TD align=left>Vanhaeren M<TD><a TITLE=" Article ANTIQUITY Title: Franchthi Cave revisited: the age of the Aurignacian in south-eastern Europe" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>26</a>
+<TR valign=top align=right class=evn><TD>308<TD align=left>Alguacil M<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>20</a>
+<TR valign=top align=right class=odd><TD>309<TD align=left>Balasescu A<TD>6<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>89</a>
+<TR valign=top align=right class=evn><TD>310<TD align=left>Bastian J<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=odd><TD>311<TD align=left>Bogoev J<TD>4<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=evn><TD>312<TD align=left>Brami M<TD><a TITLE=" Article PRAEHISTORISCHE ZEITSCHRIFT Title: The origins of Europe&#39;s first farmers: The role of Hacilar and Western Anatolia, fifty years on" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=odd><TD>313<TD align=left>Bryce D<TD>4<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=evn><TD>314<TD align=left>Bulatovic J<TD>6<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>17</a>
+<TR valign=top align=right class=odd><TD>315<TD align=left>Collantes-Celador G<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>34</a>
+<TR valign=top align=right class=evn><TD>316<TD align=left>Curta F<TD>9<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>58</a>
+<TR valign=top align=right class=odd><TD>317<TD align=left>Dangerfield M<TD><a TITLE=" Article JCMS-JOURNAL OF COMMON MARKET Title: Subregional integration and EU enlargement: Where next for CEFTA?" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>14</a>
+<TR valign=top align=right class=evn><TD>318<TD align=left>Drakulic S<TD>4<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=odd><TD>319<TD align=left>Draskovic V<TD>4<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>21</a>
+<TR valign=top align=right class=evn><TD>320<TD align=left>Dzhekova R<TD><a TITLE=" Article SOUTH EAST EUROPEAN JOURNAL O Title: EXPLAINING THE UNDECLARED ECONOMY IN BULGARIA: AN INSTITUTIONAL ASYMMETRY PERSPECTIVE" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>13</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="au-name.html">Author</a><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>321<TD align=left>Eizenberg L<TD><a TITLE=" Article ANTHROPOLOGIE Title: The least common denominator: An investigation of the variability of Early Upper Palaeolithic bladelet assemblages from Eurasia based on the sites of Kozarnika (Eastern Balkans) and Yafteh (Central Zagros)" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>23</a>
+<TR valign=top align=right class=evn><TD>322<TD align=left>GARASANIN MV<TD><a TITLE=" Article ANTIQUITY Title: THE NEOLITHIC IN ANATOLIA AND THE BALKANS" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=odd><TD>323<TD align=left>Gjevori E<TD>2<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=evn><TD>324<TD align=left>Gordon C<TD><a TITLE=" Article ETHNOPOLITICS Title: The Stabilization and Association Process in the Western Balkans: An Effective Instrument of Postconflict Management?" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=odd><TD>325<TD align=left>Ioannides I<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=evn><TD>326<TD align=left>Ivekovic I<TD><a TITLE=" Article SOCIAL COMPASS Title: Nationalism and the political use and abuse of religion: The politicization of orthodoxy, catholicism and Islam in Yugoslav successor states" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>32</a>
+<TR valign=top align=right class=odd><TD>327<TD align=left>Janicijevic B<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>59</a>
+<TR valign=top align=right class=evn><TD>328<TD align=left>Kedir A<TD><a TITLE=" Article EUROPEAN JOURNAL OF INDUSTRIA Title: Evaluating the extent and nature of the informalization of employment relations in South-East Europe" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=odd><TD>329<TD align=left>Klaric IM<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>59</a>
+<TR valign=top align=right class=evn><TD>330<TD align=left>Kosak M<TD>2<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=odd><TD>331<TD align=left>Lauc LB<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>59</a>
+<TR valign=top align=right class=evn><TD>332<TD align=left>Le Brun-Ricalens F<TD><a TITLE=" Article ANTHROPOLOGIE Title: The least common denominator: An investigation of the variability of Early Upper Palaeolithic bladelet assemblages from Eurasia based on the sites of Kozarnika (Eastern Balkans) and Yafteh (Central Zagros)" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>23</a>
+<TR valign=top align=right class=odd><TD>333<TD align=left>MANIATIS Y<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: TECHNOLOGICAL EXAMINATION OF NEOLITHIC BRONZE-AGE POTTERY FROM CENTRAL AND SOUTHEAST EUROPE AND FROM THE NEAR-EAST" href=javascript:opeNod(655)>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.3%' class=ank>271</a>
+<TR valign=top align=right class=evn><TD>334<TD align=left>Marcic S<TD><a TITLE=" Article JOURNAL OF BALKAN AND NEAR EA Title: Informal Institutions in the Western Balkans: An Obstacle to Democratic Consolidation" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=odd><TD>335<TD align=left>Marinova E<TD>6<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>59</a>
+<TR valign=top align=right class=evn><TD>336<TD align=left>Mishkova D<TD>7<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>27</a>
+<TR valign=top align=right class=odd><TD>337<TD align=left>Novakovic P<TD><a TITLE=" BOOK CHAPTER COMPARATIVE ARCHAEOLOGIES: A  Title: Archaeology in the New Countries of Southeastern Europe: A Historical Perspective" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>16</a>
+<TR valign=top align=right class=evn><TD>338<TD align=left>Pavlicevic D<TD><a TITLE=" Article ASIA EUROPE JOURNAL Title: Structural power and the China-EU-Western Balkans triangular relations" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>14</a>
+<TR valign=top align=right class=odd><TD>339<TD align=left>Pawelec M<TD><a TITLE=" Article JCMS-JOURNAL OF COMMON MARKET Title: Does National Identity Matter? Political Conditionality and the Crucial Case of Serbia&#39;s (Non-)Co-operation with the ICTY" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=evn><TD>340<TD align=left>Petrevski G<TD>4<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=odd><TD>341<TD align=left>Ponomareva E<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>342<TD align=left>Psychogios AG<TD>5<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>85</a>
+<TR valign=top align=right class=odd><TD>343<TD align=left>Quiles A<TD><a TITLE=" Article ANTIQUITY Title: Early seventh-millennium AMS dates from domestic seeds in the Initial Neolithic at Franchthi Cave (Argolid, Greece)" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>37</a>
+<TR valign=top align=right class=evn><TD>344<TD align=left>REMAK J<TD><a TITLE=" Article JOURNAL OF MODERN HISTORY Title: 1914-THIRD BALKAN WAR - ORIGINS RECONSIDERED" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=odd><TD>345<TD align=left>RESIS A<TD><a TITLE=" Article AMERICAN HISTORICAL REVIEW Title: CHURCHILL-STALIN SECRET PERCENTAGES AGREEMENT ON BALKANS, MOSCOW, OCTOBER 1944" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=evn><TD>346<TD align=left>Ristic I<TD>2<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>17</a>
+<TR valign=top align=right class=odd><TD>347<TD align=left>Rudan P<TD>4<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>106</a>
+<TR valign=top align=right class=evn><TD>348<TD align=left>Sadriu B<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>11</a>
+<TR valign=top align=right class=odd><TD>349<TD align=left>Shimbov B<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>20</a>
+<TR valign=top align=right class=evn><TD>350<TD align=left>Sirakov N<TD>2<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>13</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="au-name.html">Author</a><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>351<TD align=left>Sitlivy V<TD>2<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>26</a>
+<TR valign=top align=right class=evn><TD>352<TD align=left>Sotiropoulos DA<TD>2<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>20</a>
+<TR valign=top align=right class=odd><TD>353<TD align=left>Stojarova V<TD>11<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>21</a>
+<TR valign=top align=right class=evn><TD>354<TD align=left>Suarez C<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>20</a>
+<TR valign=top align=right class=odd><TD>355<TD align=left>TITE MS<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: TECHNOLOGICAL EXAMINATION OF NEOLITHIC BRONZE-AGE POTTERY FROM CENTRAL AND SOUTHEAST EUROPE AND FROM THE NEAR-EAST" href=javascript:opeNod(655)>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.3%' class=ank>271</a>
+<TR valign=top align=right class=evn><TD>356<TD align=left>Tosic J<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>18</a>
+<TR valign=top align=right class=odd><TD>357<TD align=left>Tsanova T<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>59</a>
+<TR valign=top align=right class=evn><TD>358<TD align=left>Tzankov T<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>52</a>
+<TR valign=top align=right class=odd><TD>359<TD align=left>Valenta M<TD>4<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>26</a>
+<TR valign=top align=right class=evn><TD>360<TD align=left>Vidovic T<TD><a TITLE=" Article REFUGEE SURVEY QUARTERLY Title: The Reluctant Asylum-Seekers: Migrants at the Southeastern Frontiers of the European Migration System" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>21</a>
+<TR valign=top align=right class=odd><TD>361<TD align=left>Vishnyakov Y<TD>2<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>362<TD align=left>Visoka G<TD>2<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>20</a>
+<TR valign=top align=right class=odd><TD>363<TD align=left>Vorley T<TD><a TITLE=" Article EUROPEAN JOURNAL OF INDUSTRIA Title: Evaluating the extent and nature of the informalization of employment relations in South-East Europe" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>364<TD align=left>Xhumari M<TD><a TITLE=" Article EUROPEAN JOURNAL OF SOCIAL SE Title: SOCIAL SECURITY POLICY AND PENSION REFORMS IN THE WESTERN BALKANS" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>365<TD align=left>Zivaljevic I<TD>4<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.1%' class=ank>63</a>
+<TR valign=top align=right class=evn><TD>366<TD align=left>Zrinscak S<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>32</a>
+<TR valign=top align=right class=odd><TD>367<TD align=left>Zuparic-Iljic D<TD>3<TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=evn><TD>368<TD align=left>Zwyns N<TD><a TITLE=" Article ANTHROPOLOGIE Title: The least common denominator: An investigation of the variability of Early Upper Palaeolithic bladelet assemblages from Eurasia based on the sites of Kozarnika (Eastern Balkans) and Yafteh (Central Zagros)" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>23</a>
+<TR valign=top align=right class=odd><TD>369<TD align=left>Aasland A<TD>3<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=evn><TD>370<TD align=left>Anghelinu M<TD>2<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>34</a>
+<TR valign=top align=right class=odd><TD>371<TD align=left>Bailey SE<TD><a TITLE=" Article JOURNAL OF HUMAN EVOLUTION Title: New Neanderthal remains from Mani peninsula, Southern Greece: The Kalamakia Middle Paleolithic cave site" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=evn><TD>372<TD align=left>Baltean I<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: First chronometric dates (TL and OSL) for the Aurignacian open-air site of Romanesti-Dumbravita I, Romania" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=odd><TD>373<TD align=left>Barlas D<TD>4<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>20</a>
+<TR valign=top align=right class=evn><TD>374<TD align=left>Bildt C<TD>3<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>13</a>
+<TR valign=top align=right class=odd><TD>375<TD align=left>Bobroff R<TD><a TITLE=" Article RUSSIAN REVIEW Title: Behind the Balkan Wars: Russian policy toward Bulgaria and the Turkish Straits, 1912-13" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>11</a>
+<TR valign=top align=right class=evn><TD>376<TD align=left>Bojnec S<TD>3<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>95</a>
+<TR valign=top align=right class=odd><TD>377<TD align=left>Botric V<TD>6<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>27</a>
+<TR valign=top align=right class=evn><TD>378<TD align=left>Brehard S<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: What&#39;s behind the tell phenomenon? An archaeozoological approach of Eneolithic sites in Romania" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>18</a>
+<TR valign=top align=right class=odd><TD>379<TD align=left>Chabai V<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: First chronometric dates (TL and OSL) for the Aurignacian open-air site of Romanesti-Dumbravita I, Romania" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=evn><TD>380<TD align=left>Cohen LJ<TD>5<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>8</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="au-name.html">Author</a><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>381<TD align=left>Cottarelli C<TD><a TITLE=" Article; Proceedings Paper JOURNAL OF BANKING &amp; FINANCE Title: Early birds, late risers, and sleeping beauties: Bank credit growth to the private sector in Central and Eastern Europe and in the Balkans" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>88</a>
+<TR valign=top align=right class=evn><TD>382<TD align=left>Damiani M<TD>2<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=odd><TD>383<TD align=left>Damjanovski I<TD>2<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>384<TD align=left>Darlas A<TD>2<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>96</a>
+<TR valign=top align=right class=odd><TD>385<TD align=left>Dell'Ariccia G<TD><a TITLE=" Article; Proceedings Paper JOURNAL OF BANKING &amp; FINANCE Title: Early birds, late risers, and sleeping beauties: Bank credit growth to the private sector in Central and Eastern Europe and in the Balkans" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>88</a>
+<TR valign=top align=right class=evn><TD>386<TD align=left>Dzankic J<TD>4<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>13</a>
+<TR valign=top align=right class=odd><TD>387<TD align=left>Ekinci MU<TD><a TITLE=" Article INSIGHT TURKEY Title: A Golden Age of Relations: Turkey and the Western Balkans During the AK Party Period" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=evn><TD>388<TD align=left>El Zaatari S<TD><a TITLE=" Article JOURNAL OF HUMAN EVOLUTION Title: New Neanderthal remains from Mani peninsula, Southern Greece: The Kalamakia Middle Paleolithic cave site" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=odd><TD>389<TD align=left>Erjavec E<TD>2<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>16</a>
+<TR valign=top align=right class=evn><TD>390<TD align=left>Fawn R<TD>3<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=odd><TD>391<TD align=left>Fiorenza L<TD><a TITLE=" Article JOURNAL OF HUMAN EVOLUTION Title: New Neanderthal remains from Mani peninsula, Southern Greece: The Kalamakia Middle Paleolithic cave site" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=evn><TD>392<TD align=left>Frary LJ<TD>2<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>11</a>
+<TR valign=top align=right class=odd><TD>393<TD align=left>Grgic M<TD><a TITLE=" Article TERRITORY POLITICS GOVERNANCE Title: Chinese infrastructural investments in the Balkans: political implications of the highway project in Montenegro" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>15</a>
+<TR valign=top align=right class=evn><TD>394<TD align=left>Grillot SR<TD>4<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>13</a>
+<TR valign=top align=right class=odd><TD>395<TD align=left>Guisan C<TD><a TITLE=" Article JCMS-JOURNAL OF COMMON MARKET Title: From the European Coal and Steel Community to Kosovo: Reconciliation and Its Discontents" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=evn><TD>396<TD align=left>Hajdarpasic E<TD>2<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>22</a>
+<TR valign=top align=right class=odd><TD>397<TD align=left>Hauck T<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: First chronometric dates (TL and OSL) for the Aurignacian open-air site of Romanesti-Dumbravita I, Romania" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=evn><TD>398<TD align=left>Herrera RJ<TD>3<TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=odd><TD>399<TD align=left>Hilgers A<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: First chronometric dates (TL and OSL) for the Aurignacian open-air site of Romanesti-Dumbravita I, Romania" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=evn><TD>400<TD align=left>Hodgkins J<TD><a TITLE=" BOOK CHAPTER PALEOANTHROPOLOGY OF THE BALK Title: The Human Fossil Record of Bulgaria and the Formulation of Biogeographic Hypotheses" href=javascript:na() class=nu>1</a><TD class=sc><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>11</a>
+</TABLE>
+<div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>2</b> of 51<span class=nonprn>: [  &nbsp;<a href=au-lcs.html class=nu>1</a> &nbsp;2 &nbsp;3 &nbsp;4 &nbsp;5 &nbsp;6 &nbsp;7 &nbsp;8 &nbsp;9 &nbsp;10 ]</span> &nbsp;11&nbsp; &nbsp;21&nbsp; &nbsp;31&nbsp; &nbsp;41&nbsp; &nbsp;51&nbsp;</div>
+</BODY>

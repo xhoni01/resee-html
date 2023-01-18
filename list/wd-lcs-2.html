@@ -1,0 +1,592 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><HEAD><TITLE>HistCite - RESEE: A Bibliographic Database on Balkan – Southeast European Studies</TITLE></HEAD>
+<BODY VLINK=blue OnLoad="focus()">
+<STYLE>
+body {
+	margin: 2px 10px; padding: 0;
+	background: #fff;
+}
+body, td, th {
+	font-size: 10pt; font-family: Verdana;
+}
+input, select, textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ui {
+	font-size: 10pt; font-family: Verdana;
+}
+.ui input, .ui select, .ui textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ci_title {
+	font-size: 8pt; font-weight: bold;
+}
+.ci_il {
+	color: black; text-decoration: none;	/* msie6 ! inherit */
+}
+.helpa { text-decoration: none;
+	cursor: help;
+}
+.helpt { background: #ffff77; padding: 4px;
+}
+.nu { text-decoration: none; 
+}
+.sc, .sc a { color: #904644 }
+.fnd { background-color: #beb;
+	padding: 0 3px 2px 2px;
+}
+td div.fndCR {
+	padding-left: 2em;
+//	text-indent: -2em;
+}
+.odd { background-color: #eeeeee }
+.evn { background-color: #dddddd }
+div.odd { padding: 5px; margin-bottom: 2px }
+div.evn { padding: 5px; margin-bottom: 2px }
+.yr { padding: 0; font-weight: bold }
+.ank:hover { cursor: pointer; text-decoration: none; color: inherit; }
+a {
+	text-decoration: none;
+}
+a:hover, a:hover .sc {
+	text-decoration: underline; color: blue;
+}
+.scr:hover, td a.scr:hover { color:#000; text-decoration:none; } /* FF td */
+@media print {
+	.nonprn, .ephemeral, .x, .ui { display: none; }
+	.index { border: solid #fff 0; }
+	body { font-size: 10pt; }
+	td, th { font-size: 10pt; }
+	.ci_title { font-size: 8pt; }
+}
+</STYLE>
+<SCRIPT>
+var root=location.href; root = root.replace(/index.*/, ''); root = root.replace(/list.*/, '');
+function about () { window.open(root+'about.html','about','width=440,height=370,resizable=yes,scrollbars=yes') }
+	// This is a list of XMLHttpRequest-creation factory functions to try
+_factories = [
+    function() { return new XMLHttpRequest(); },
+    function() { return new ActiveXObject("Msxml2.XMLHTTP"); },
+    function() { return new ActiveXObject("Microsoft.XMLHTTP"); }
+];
+
+// When we find a factory that works, store it here.
+_factory = null;
+
+// Create and return a new XMLHttpRequest object.
+//
+// The first time we're called, try the list of factory functions until
+// we find one that returns a non-null value and does not throw an
+// exception. Once we find a working factory, remember it for later use.
+//
+newRequest = function() {
+    if (_factory != null) return _factory();
+
+    for(var i = 0; i < _factories.length; i++) {
+        try {
+            var factory = _factories[i];
+            var request = factory();
+            if (request != null) {
+                _factory = factory;
+                return request;
+            }
+        }
+        catch(e) {
+            continue;
+        }
+    }
+    // If we get here, none of the factory candidates succeeded,
+    // so throw an exception now and for all future calls.
+    _factory = function() {
+        //throw new Error("XMLHttpRequest not supported");
+        alert("XMLHttpRequest not supported");
+    }
+    _factory(); // Throw an error
+}
+
+function gethelp (url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+//    alert('OK');
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+function gettip (ent, url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+		ent.innerHTML = req.responseText;
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+</SCRIPT>
+<STYLE>
+div#tipshade {
+	position: fixed; top: 208px; left: 208px;
+	margin: 0px; width: 420px; height: 180px;
+	border: solid gray 2px;
+	background: gray;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 19; display: none;
+}
+div#tipoday {
+	position: fixed; top: 200px; left: 200px;
+	margin: 0px; width: 420px; height: 180px; padding: 0;
+	background: white;
+	border: solid #e44959 2px;
+	font: 10pt Verdana; cursor: default;
+	z-index: 20; display: none;
+}
+div#tiptitle {
+	background: #e44959; color: white; font-weight: bold;
+	padding-left: 4px;
+}
+div#tiptitle span.x {
+	background: white;
+}
+div#tipbox {
+	position: relative; /* top: 5px; */ margin: 8px;
+	max-height: 120px; overflow: auto;
+}
+div#tipctrl {
+	position: absolute; bottom: 0; margin: 4px;
+}
+div#tipctrl td {
+	font-size: 10px;
+}
+div#tipctrl form { margin: 0; }
+span.nw { white-space: nowrap; }
+</STYLE>
+<div id="tipshade" class="ui"> </div>
+<div id="tipoday" class="ui" align=left>
+<div id="tiptitle">HistCite Tip of the Day<span class="x"><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;" title="Close">X</a></span></div>
+<div id="tipbox">Tip of the day</div>
+<div id="tipctrl">
+<table align=bottom width=100%>
+<tr><td width=40% nowrap><form name=ft><label><input type=checkbox OnChange="nextStart(this);" checked> Show tip at next start</label></form></td>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=-1');>Previous Tip</a>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=1');>Next Tip</a>
+<td align=right><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;">Close</a>&nbsp;</td>
+</tr></table></div></div>
+<SCRIPT> var otip;
+function getit () { otip = document.getElementById('tipbox'); gettip(otip,'/tip.txt?next=0'); }
+function nextStart (start) {
+	if(start.checked == true) {
+		on = 1;
+	} else {
+		on = 0;
+	}
+	gethelp('/tipStart?on=' + on);
+}
+function tip_show () {
+	var W, H;
+	if(window.innerWidth) {
+		W = window.innerWidth; H = window.innerHeight;
+	} else {
+		var dd = document.documentElement;
+		W = dd.clientWidth; H = dd.clientHeight;
+	}
+//	alert(W + ' x ' + H);
+	var left = (W-420)/2;
+	var top = (H-180)/2;
+	var tipB = document.getElementById('tipshade');
+	var tipT = document.getElementById('tipoday');
+	tipB.style.left = left + 8 + 'px';
+	tipB.style.top = top + 8 + 'px';
+	tipT.style.left = left + 'px';
+	tipT.style.top = top + 'px';
+	tipB.style.display='block';
+	tipT.style.display='block';
+	getit();
+}
+</SCRIPT>
+
+<style>
+div#af_boxshado {
+	position: fixed; left:148px; top:128px; width: 460px; height: 110px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 11; display: none;
+}
+div#af_box {
+	position: fixed; left:140px; top:120px; width: 460px; height: 110px;
+	background: white; border: solid #999 2px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+div#af_box input {
+	font: 10px Verdana;
+}
+div#af_box_title {
+	background: #d3d3d3; padding-left: 4px; font-weight: bold;
+}
+div#af_box_title span.x {
+	background: white;
+}
+div#af_form {
+	width: 445px; height: 70px;
+	padding: 8px; overflow: auto;
+}
+div#af_form #sub{
+	display: block; margin: 12px 0 0 0;
+}
+div#starh2 {
+	position: absolute; left: 88px; top: 78px; width: 420px; height: 156px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	padding: 8px;
+	z-index: 12; display: none;
+}
+div#starh {
+	position: absolute; left: 80px; top: 70px; width: 420px; height: 156px; overflow: auto;
+	border: outset gray 2px;
+	padding: 8px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+</style>
+<div id="af_boxshado"> </div>
+<div id="af_box">
+<div id="af_box_title">Add File<span class="x"><a onClick="af_close()" title="Close">X</a></span>
+<!--<a href=javascript:na() onMouseOver="na();" onClick="toggle('starh');" class=helpa style="color:#000">-->
+<a onClick="toggle('starh');" class=helpa style="color:#000"><span class="x" id=mstarh style="top:0;right:14px;">?</span><span class="x" id=lstarh style="top:0;right:14px;display:none">_</span></a>
+</div>
+<div id="af_form">
+<FORM action=/input method=GET OnSubmit="return false" name=af style="margin:0">
+	Use [Browse...] to select a file with bibliography data:<br>
+	<INPUT type=hidden name=inputpath>
+	<INPUT type=file name=inputset size=48 OnChange="af.sub.focus()" value="">
+	<INPUT type=submit value="Add File" OnClick="afSubmit();return false" name=sub id="sub">
+</div><div id=starh2> </div>
+<div id=starh class=helpt>
+Use wildcard '*' to add more than one file at a time.
+For example, if you have <code>file1</code>,
+<code>file2</code>, etc. all in the same folder or directory;
+first, locate one of the files with the [Browse...] button.  Then alter the
+file path in the box above to include '*' character (eg. <code>file*</code>).
+Wildcard '?' to blanket only one character works too.<br>
+<b>Note</b>: In Windows you can select multiple files and "drag and drop" them 
+onto HistCite icon or shortcut.  The program would start and load those files.
+</div>
+</FORM><SCRIPT>
+var af = document.af;
+function afSubmit() {
+	if ("" == af.inputset.value ) { alert("Select a file."); return }
+	af.inputpath.value = af.inputset.value;
+	af.submit();
+}
+function af_show() {
+	document.getElementById('af_boxshado').style.display = 'block';
+	document.getElementById('af_box').style.display = 'block';
+	a = document.af.inputset.value;
+	document.af.inputset.focus();
+}
+function af_close() {
+	document.getElementById('af_boxshado').style.display = 'none';
+	document.getElementById('af_box').style.display = 'none';
+}
+</SCRIPT></div>
+
+<SCRIPT>
+function glossary () { window.open(root+'glossary.html','gloss','width=640,height=570,resizable=yes,scrollbars=yes') }
+function opeNod (a) { window.open(root+'node/'+a+'.html',a,'width=770,height=570,resizable=yes,scrollbars=yes') }
+function opeLod (dp, a) { if(''==dp) d='wd'; else d=dp; var w = d; w = w.replace(/[-\/]/g, '');
+	window.open(root+d+'/'+a+'.html',w+a,'width=640,height=546,resizable=yes,scrollbars=yes') }
+function na(){}
+</SCRIPT>
+<STYLE>
+#head {
+	position: left:0; padding-left:4px; background:#fff;
+	z-index:2; margin:0 0 8px 0; border-bottom:solid #000 1px;
+}
+#title {
+	padding-bottom: 4px; font-size: 1.3em; font-weight: bold;
+	max-width: 600px; /* non default overflow gives odd z-effects in FF */
+}
+#desc {
+	position: absolute; left: 4px; top: 1.8em;
+	padding: 2px 8px 4px 8px; white-space: normal; max-width: 480px;
+	background: #ffffcc; font-weight: normal; font-size: 10pt;
+	border: solid #000 1px;
+	display: none; z-index: 11;
+}
+#atitle { cursor: text;}
+#atitle, #stats {
+	text-decoration: none; color: #000;
+}
+#stats2 {
+	position: absolute; right: 0px; padding: 0;
+	background: white;
+	display: none; z-index: 11;
+}
+#atitle:hover #desc, #stats:hover #stats2 {
+	display: block;
+}
+@media print {
+	#head { position: static; }
+	#menu_pm { line-height: 0; }
+	#back { display: none; }
+}
+</STYLE>
+<!-- FF 3 only? fix -->
+<div id=head style="width:99%">
+<TABLE width=100% cellpadding=0 cellspacing=0 style="margin:0 0 3px 0">
+<TR valign=top><TD align=left width=60%>
+<div id=title><a id=atitle >RESEE: A Bibliographic Database on Balkan – Southeast European Studies<div id=desc>-------Search: Databases searching procedure and formats------
+*| Search query
+"balkan*" OR "southeast* europe*" OR "south east* europe*" (TITLE-ABS-KEY) 
+Web of Science Core Collection (SSCI, A&HCI, ESCI, BKCI-SSH)
+Scopus
+Constellate (JSTOR and Portico)
+
+Note: The earliest publication date from WoS for the articles was 1957 whereas for the books 2003.
+To complement our database with entries before 1957, we search the Constellate (Jstor and Portico) and Scopus database, finding and adding a further 445 articles.
+Characters were normalize, and English translation of the titles were added for entries in other languages than English. And for Constellate data we kept only Articles and Books from Humanities and Social Sciences.
+The Scopus and Constellate metadata files were converted into WoS (.txt) format.
+We also added manually 59 new entries (9 articles and 50 books) that were missing from the search but showed to be among the most cited references (local citation score greater than 10)
+
+---------Merging variants in the same cited references--------
+Given that databases have problems with the completeness of references and linkages (Van Eck and Waltman 2017), we used CRExplorer to clean the data and reduce the problems posed by variants in the same cited references (Thor et al. 2016)
+The cited references (CRs) in our data contained variants, especially the references on books. 
+We use the manual cleaning-up procedure, setting the clustering algorithm with a Levenshtein threshold of 0.75. 
+We also manually checked and unified variants of the same cited references (CRs), especially for books that received a local citation of more than 20 or had different years or editions and translations into other languages. 
+After the cleaning, we unify the variants of the same CRs, about 12% of the initial cited references.</div></a></div>
+<TD align=center><a href=# OnClick="window.open('../graph/list.html','graph','resizable=yes,scrollbars=yes')" class=nonprn>Historiographs</a><TD nowrap align=right rowspan=2 width=5%><div class=nonprn><a href=# OnClick="window.open('../help/wd.html','help','width=690,height=590,resizable=yes,scrollbars=yes')">Help</a>&nbsp;&nbsp;
+<a href=javascript:glossary()>Glossary</a>&nbsp;&nbsp;<a href="http://www.histcite.com/HTMLHelp/guide.html" target=guide>HistCite Guide</a>&nbsp;&nbsp;<a href=# OnClick="about(); return false">About</a></div><a id=stats>
+Grand Totals: LCS 8009, GCS 85894, CR 328237<br>Collection span: 1854 - 2022<br></a><TR><TD colspan=2 width=95%><b>Word(<a href=# title=" Titles " class=helpa>i</a>) List</b> (11723) Word&nbsp;count:&nbsp;64404, All&nbsp;words&nbsp;count:&nbsp;103007</TABLE></div><div align=right>24 December 2022</div>
+<div class="index" style=""><a href=../index-tl.html>Records</a>: 8378, <a href=au-pubs.html>Authors</a>: 10107, <a href=so-pubs.html>Journals</a>: 2650, <a href=or-pubs.html>Cited References</a>: 248863, Words: 11723
+<br><span class=nonprn><a href=py-pubs.html title=' Publication Years: 127 '>Yearly output</a>
+|&nbsp;<a href=dt-pubs.html title=' Document Types: 14 '>Document Type</a>
+|&nbsp;<a href=la-pubs.html title=' Languages: 6 '>Language</a>
+|&nbsp;<a href=in-pubs.html title=' Institutions: 62 '>Institution</a>
+|&nbsp;<a href=i2-pubs.html title=' Institution with Subdivisions: 64 '>Institution with Subdivision</a>
+|&nbsp;<a href=co-pubs.html title=' Countries: 8 '>Country</a></span></div><div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>2</b> of 59<span class=nonprn>: [  &nbsp;<a href=wd-lcs.html class=nu>1</a> &nbsp;2 &nbsp;3 &nbsp;4 &nbsp;5 &nbsp;6 &nbsp;7 &nbsp;8 &nbsp;9 &nbsp;10 ]</span> &nbsp;11&nbsp; &nbsp;21&nbsp; &nbsp;31&nbsp; &nbsp;41&nbsp; &nbsp;51&nbsp;</div>
+<TABLE border=0 cellpadding=5 cellspacing=2 style="border: 2px solid #cccccc;margin: 4px 0;">
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="wd-name.html">Word</a><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>201<TD align=left>BALKANIZATION<TD><a href=# OnClick="opeLod('', '882', 'BALKANIZATION');return false">51</a><TD class=sc><a title=' 0.6%' class=ank>49</a><TD><a title=' 0.7%' class=ank>599</a>
+<TR valign=top align=right class=evn><TD>202<TD align=left>DAYTON<TD>15<TD class=sc><a title=' 0.6%' class=ank>49</a><TD><a title=' 1.5%' class=ank>1296</a>
+<TR valign=top align=right class=odd><TD>203<TD align=left>DIRECT<TD><a href=# OnClick="opeLod('', '2961', 'DIRECT');return false">64</a><TD class=sc><a title=' 0.6%' class=ank>49</a><TD><a title=' 0.5%' class=ank>405</a>
+<TR valign=top align=right class=evn><TD>204<TD align=left>FAKE<TD><a TITLE=" Article JOURNAL OF EUROPEAN PUBLIC PO Title: Fake, partial and imposed compliance: the limits of the EU&#39;s normative power in the Western Balkans" href=javascript:opeNod(2570)>1</a><TD class=sc><a title=' 0.6%' class=ank>49</a><TD><a title=' 0.1%' class=ank>102</a>
+<TR valign=top align=right class=odd><TD>205<TD align=left>IMPOSED<TD>2<TD class=sc><a title=' 0.6%' class=ank>49</a><TD><a title=' 0.1%' class=ank>110</a>
+<TR valign=top align=right class=evn><TD>206<TD align=left>LAMB<TD>3<TD class=sc><a title=' 0.6%' class=ank>49</a><TD><a title=' 0.9%' class=ank>736</a>
+<TR valign=top align=right class=odd><TD>207<TD align=left>PARTIAL<TD>2<TD class=sc><a title=' 0.6%' class=ank>49</a><TD><a title=' 0.1%' class=ank>102</a>
+<TR valign=top align=right class=evn><TD>208<TD align=left>STORY<TD>20<TD class=sc><a title=' 0.6%' class=ank>49</a><TD><a title=' 2.3%' class=ank>1933</a>
+<TR valign=top align=right class=odd><TD>209<TD align=left>METALLURGY<TD>11<TD class=sc><a title=' 0.6%' class=ank>48</a><TD><a title=' 0.3%' class=ank>291</a>
+<TR valign=top align=right class=evn><TD>210<TD align=left>MILOSEVIC<TD>6<TD class=sc><a title=' 0.6%' class=ank>48</a><TD><a title=' 2.1%' class=ank>1846</a>
+<TR valign=top align=right class=odd><TD>211<TD align=left>MYTH<TD>18<TD class=sc><a title=' 0.6%' class=ank>48</a><TD><a title=' 1.3%' class=ank>1116</a>
+<TR valign=top align=right class=evn><TD>212<TD align=left>SALONICA<TD>9<TD class=sc><a title=' 0.6%' class=ank>48</a><TD><a title=' 0.0%' class=ank>13</a>
+<TR valign=top align=right class=odd><TD>213<TD align=left>VOLUME<TD>8<TD class=sc><a title=' 0.6%' class=ank>48</a><TD><a title=' 0.3%' class=ank>269</a>
+<TR valign=top align=right class=evn><TD>214<TD align=left>CAVE<TD>20<TD class=sc><a title=' 0.6%' class=ank>47</a><TD><a title=' 0.6%' class=ank>503</a>
+<TR valign=top align=right class=odd><TD>215<TD align=left>CHARACTERISTICS<TD>27<TD class=sc><a title=' 0.6%' class=ank>47</a><TD><a title=' 1.4%' class=ank>1223</a>
+<TR valign=top align=right class=evn><TD>216<TD align=left>COUNTRY<TD>40<TD class=sc><a title=' 0.6%' class=ank>47</a><TD><a title=' 0.8%' class=ank>699</a>
+<TR valign=top align=right class=odd><TD>217<TD align=left>GREY<TD>8<TD class=sc><a title=' 0.6%' class=ank>47</a><TD><a title=' 0.8%' class=ank>712</a>
+<TR valign=top align=right class=evn><TD>218<TD align=left>ESTABLISHMENT<TD>13<TD class=sc><a title=' 0.6%' class=ank>46</a><TD><a title=' 0.6%' class=ank>482</a>
+<TR valign=top align=right class=odd><TD>219<TD align=left>GROWTH<TD><a href=# OnClick="opeLod('', '4634', 'GROWTH');return false">93</a><TD class=sc><a title=' 0.6%' class=ank>46</a><TD><a title=' 1.1%' class=ank>938</a>
+<TR valign=top align=right class=evn><TD>220<TD align=left>WEST<TD><a href=# OnClick="opeLod('', '11490', 'WEST');return false">53</a><TD class=sc><a title=' 0.6%' class=ank>46</a><TD><a title=' 0.3%' class=ank>300</a>
+<TR valign=top align=right class=odd><TD>221<TD align=left>1430–1950<TD><a TITLE=" BOOK SALONICA CITY GHOSTS Title: Salonica, City of Ghosts: Christians, Muslims and Jews, 600 1430&acirc;&#128;&#147;1950" href=javascript:opeNod(1618)>1</a><TD class=sc><a title=' 0.6%' class=ank>45</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>222<TD align=left>FALCON<TD>3<TD class=sc><a title=' 0.6%' class=ank>45</a><TD><a title=' 0.8%' class=ank>710</a>
+<TR valign=top align=right class=odd><TD>223<TD align=left>FDI<TD>31<TD class=sc><a title=' 0.6%' class=ank>45</a><TD><a title=' 0.4%' class=ank>347</a>
+<TR valign=top align=right class=evn><TD>224<TD align=left>INVESTMENT<TD><a href=# OnClick="opeLod('', '5518', 'INVESTMENT');return false">58</a><TD class=sc><a title=' 0.6%' class=ank>45</a><TD><a title=' 0.4%' class=ank>357</a>
+<TR valign=top align=right class=odd><TD>225<TD align=left>LEVERAGE<TD>7<TD class=sc><a title=' 0.6%' class=ank>45</a><TD><a title=' 0.2%' class=ank>167</a>
+<TR valign=top align=right class=evn><TD>226<TD align=left>MEDIA<TD><a href=# OnClick="opeLod('', '6559', 'MEDIA');return false">64</a><TD class=sc><a title=' 0.6%' class=ank>45</a><TD><a title=' 0.7%' class=ank>591</a>
+<TR valign=top align=right class=odd><TD>227<TD align=left>BABEL<TD>4<TD class=sc><a title=' 0.5%' class=ank>44</a><TD><a title=' 0.2%' class=ank>212</a>
+<TR valign=top align=right class=evn><TD>228<TD align=left>CONQUERING<TD>3<TD class=sc><a title=' 0.5%' class=ank>44</a><TD><a title=' 0.1%' class=ank>117</a>
+<TR valign=top align=right class=odd><TD>229<TD align=left>DEMOGRAFIK<TD><a TITLE=" BOOK OTTOMAN POPULATION 1 Title: Osmanli nufusu, (1830-1914) : demografik ve sosyal ozellikleri - Ottoman population, 1830-1914 : demographic and social characteristics" href=javascript:opeNod(739)>1</a><TD class=sc><a title=' 0.5%' class=ank>44</a><TD><a title=' 1.3%' class=ank>1098</a>
+<TR valign=top align=right class=evn><TD>230<TD align=left>IMPOSSIBLE<TD>4<TD class=sc><a title=' 0.5%' class=ank>44</a><TD><a title=' 0.1%' class=ank>76</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="wd-name.html">Word</a><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>231<TD align=left>MERCHANT<TD>4<TD class=sc><a title=' 0.5%' class=ank>44</a><TD><a title=' 0.1%' class=ank>127</a>
+<TR valign=top align=right class=evn><TD>232<TD align=left>NUFUSU<TD><a TITLE=" BOOK OTTOMAN POPULATION 1 Title: Osmanli nufusu, (1830-1914) : demografik ve sosyal ozellikleri - Ottoman population, 1830-1914 : demographic and social characteristics" href=javascript:opeNod(739)>1</a><TD class=sc><a title=' 0.5%' class=ank>44</a><TD><a title=' 1.3%' class=ank>1098</a>
+<TR valign=top align=right class=odd><TD>233<TD align=left>OSMANLI<TD><a TITLE=" BOOK OTTOMAN POPULATION 1 Title: Osmanli nufusu, (1830-1914) : demografik ve sosyal ozellikleri - Ottoman population, 1830-1914 : demographic and social characteristics" href=javascript:opeNod(739)>1</a><TD class=sc><a title=' 0.5%' class=ank>44</a><TD><a title=' 1.3%' class=ank>1098</a>
+<TR valign=top align=right class=evn><TD>234<TD align=left>OZELLIKLERI<TD><a TITLE=" BOOK OTTOMAN POPULATION 1 Title: Osmanli nufusu, (1830-1914) : demografik ve sosyal ozellikleri - Ottoman population, 1830-1914 : demographic and social characteristics" href=javascript:opeNod(739)>1</a><TD class=sc><a title=' 0.5%' class=ank>44</a><TD><a title=' 1.3%' class=ank>1098</a>
+<TR valign=top align=right class=odd><TD>235<TD align=left>SOSYAL<TD><a TITLE=" BOOK OTTOMAN POPULATION 1 Title: Osmanli nufusu, (1830-1914) : demografik ve sosyal ozellikleri - Ottoman population, 1830-1914 : demographic and social characteristics" href=javascript:opeNod(739)>1</a><TD class=sc><a title=' 0.5%' class=ank>44</a><TD><a title=' 1.3%' class=ank>1098</a>
+<TR valign=top align=right class=evn><TD>236<TD align=left>SPACE<TD><a href=# OnClick="opeLod('', '9921', 'SPACE');return false">51</a><TD class=sc><a title=' 0.5%' class=ank>44</a><TD><a title=' 0.3%' class=ank>248</a>
+<TR valign=top align=right class=odd><TD>237<TD align=left>DISINTEGRATION<TD>7<TD class=sc><a title=' 0.5%' class=ank>43</a><TD><a title=' 0.6%' class=ank>531</a>
+<TR valign=top align=right class=evn><TD>238<TD align=left>RACES<TD>2<TD class=sc><a title=' 0.5%' class=ank>43</a><TD><a title=' 0.3%' class=ank>284</a>
+<TR valign=top align=right class=odd><TD>239<TD align=left>REVENGE<TD>2<TD class=sc><a title=' 0.5%' class=ank>43</a><TD><a title=' 1.4%' class=ank>1168</a>
+<TR valign=top align=right class=evn><TD>240<TD align=left>ROUTE<TD>32<TD class=sc><a title=' 0.5%' class=ank>43</a><TD><a title=' 0.2%' class=ank>214</a>
+<TR valign=top align=right class=odd><TD>241<TD align=left>TEN<TD>7<TD class=sc><a title=' 0.5%' class=ank>43</a><TD><a title=' 0.1%' class=ank>79</a>
+<TR valign=top align=right class=evn><TD>242<TD align=left>TITO<TD>4<TD class=sc><a title=' 0.5%' class=ank>43</a><TD><a title=' 0.2%' class=ank>193</a>
+<TR valign=top align=right class=odd><TD>243<TD align=left>VIEW<TD>31<TD class=sc><a title=' 0.5%' class=ank>43</a><TD><a title=' 0.1%' class=ank>86</a>
+<TR valign=top align=right class=evn><TD>244<TD align=left>VILLAGE<TD>20<TD class=sc><a title=' 0.5%' class=ank>43</a><TD><a title=' 1.6%' class=ank>1341</a>
+<TR valign=top align=right class=odd><TD>245<TD align=left>ASSOCIATION<TD>17<TD class=sc><a title=' 0.5%' class=ank>42</a><TD><a title=' 0.2%' class=ank>136</a>
+<TR valign=top align=right class=evn><TD>246<TD align=left>BLOOD<TD>6<TD class=sc><a title=' 0.5%' class=ank>42</a><TD><a title=' 0.4%' class=ank>309</a>
+<TR valign=top align=right class=odd><TD>247<TD align=left>CHRISTIANITY<TD>9<TD class=sc><a title=' 0.5%' class=ank>42</a><TD><a title=' 0.0%' class=ank>42</a>
+<TR valign=top align=right class=evn><TD>248<TD align=left>EXILE<TD>7<TD class=sc><a title=' 0.5%' class=ank>42</a><TD><a title=' 0.7%' class=ank>597</a>
+<TR valign=top align=right class=odd><TD>249<TD align=left>FIELDS<TD>5<TD class=sc><a title=' 0.5%' class=ank>42</a><TD><a title=' 0.3%' class=ank>275</a>
+<TR valign=top align=right class=evn><TD>250<TD align=left>FILM<TD>20<TD class=sc><a title=' 0.5%' class=ank>42</a><TD><a title=' 0.5%' class=ank>409</a>
+<TR valign=top align=right class=odd><TD>251<TD align=left>NATIONHOOD<TD>5<TD class=sc><a title=' 0.5%' class=ank>42</a><TD><a title=' 0.3%' class=ank>279</a>
+<TR valign=top align=right class=evn><TD>252<TD align=left>COMPETITIVE<TD>5<TD class=sc><a title=' 0.5%' class=ank>41</a><TD><a title=' 0.2%' class=ank>210</a>
+<TR valign=top align=right class=odd><TD>253<TD align=left>FAKING<TD><a TITLE=" BOOK BOSNIA FAKING DEMOCR Title: Bosnia Faking Democracy After Dayton" href=javascript:opeNod(1185)>1</a><TD class=sc><a title=' 0.5%' class=ank>41</a><TD><a title=' 1.4%' class=ank>1230</a>
+<TR valign=top align=right class=evn><TD>254<TD align=left>FINANCIAL<TD><a href=# OnClick="opeLod('', '4035', 'FINANCIAL');return false">73</a><TD class=sc><a title=' 0.5%' class=ank>41</a><TD><a title=' 0.5%' class=ank>448</a>
+<TR valign=top align=right class=odd><TD>255<TD align=left>HERDING<TD>4<TD class=sc><a title=' 0.5%' class=ank>41</a><TD><a title=' 0.5%' class=ank>420</a>
+<TR valign=top align=right class=evn><TD>256<TD align=left>HILLS<TD><a TITLE=" BOOK FIELDS WHEAT HILLS B Title: Fields of Wheat, Hills of Blood. Passages to Nationhood in Greek Macedonia, 1870-1990" href=javascript:opeNod(1098)>1</a><TD class=sc><a title=' 0.5%' class=ank>41</a><TD><a title=' 0.3%' class=ank>266</a>
+<TR valign=top align=right class=odd><TD>257<TD align=left>PASSAGES<TD>2<TD class=sc><a title=' 0.5%' class=ank>41</a><TD><a title=' 0.3%' class=ank>266</a>
+<TR valign=top align=right class=evn><TD>258<TD align=left>WHEAT<TD>2<TD class=sc><a title=' 0.5%' class=ank>41</a><TD><a title=' 0.3%' class=ank>272</a>
+<TR valign=top align=right class=odd><TD>259<TD align=left>MEMORY<TD><a href=# OnClick="opeLod('', '6610', 'MEMORY');return false">45</a><TD class=sc><a title=' 0.5%' class=ank>40</a><TD><a title=' 0.4%' class=ank>362</a>
+<TR valign=top align=right class=evn><TD>260<TD align=left>RISE<TD>25<TD class=sc><a title=' 0.5%' class=ank>40</a><TD><a title=' 0.2%' class=ank>177</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="wd-name.html">Word</a><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>261<TD align=left>SULTANS<TD>2<TD class=sc><a title=' 0.5%' class=ank>40</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>262<TD align=left>TWICE<TD><a TITLE=" BOOK YUGOSLAVIA HIST TWIC Title: Yugoslavia as History Twice there was a country" href=javascript:opeNod(1082)>1</a><TD class=sc><a title=' 0.5%' class=ank>40</a><TD><a title=' 0.6%' class=ank>548</a>
+<TR valign=top align=right class=odd><TD>263<TD align=left>CINEMA<TD>19<TD class=sc><a title=' 0.5%' class=ank>39</a><TD><a title=' 0.5%' class=ank>436</a>
+<TR valign=top align=right class=evn><TD>264<TD align=left>FARMING<TD>14<TD class=sc><a title=' 0.5%' class=ank>39</a><TD><a title=' 0.8%' class=ank>687</a>
+<TR valign=top align=right class=odd><TD>265<TD align=left>IMMIGRATION<TD>24<TD class=sc><a title=' 0.5%' class=ank>39</a><TD><a title=' 1.0%' class=ank>849</a>
+<TR valign=top align=right class=evn><TD>266<TD align=left>INFORMAL<TD>34<TD class=sc><a title=' 0.5%' class=ank>39</a><TD><a title=' 0.3%' class=ank>259</a>
+<TR valign=top align=right class=odd><TD>267<TD align=left>PUZZLES<TD>2<TD class=sc><a title=' 0.5%' class=ank>39</a><TD><a title=' 0.1%' class=ank>71</a>
+<TR valign=top align=right class=evn><TD>268<TD align=left>ALTERNATIVE<TD>14<TD class=sc><a title=' 0.5%' class=ank>38</a><TD><a title=' 0.1%' class=ank>97</a>
+<TR valign=top align=right class=odd><TD>269<TD align=left>BRITISH<TD><a href=# OnClick="opeLod('', '1329', 'BRITISH');return false">57</a><TD class=sc><a title=' 0.5%' class=ank>38</a><TD><a title=' 0.4%' class=ank>367</a>
+<TR valign=top align=right class=evn><TD>270<TD align=left>HERCEGOVINA<TD>5<TD class=sc><a title=' 0.5%' class=ank>38</a><TD><a title=' 0.6%' class=ank>550</a>
+<TR valign=top align=right class=odd><TD>271<TD align=left>INSTITUTIONAL<TD><a href=# OnClick="opeLod('', '5363', 'INSTITUTIONAL');return false">48</a><TD class=sc><a title=' 0.5%' class=ank>38</a><TD><a title=' 0.4%' class=ank>305</a>
+<TR valign=top align=right class=evn><TD>272<TD align=left>MONTENEGRO<TD><a href=# OnClick="opeLod('', '6905', 'MONTENEGRO');return false">62</a><TD class=sc><a title=' 0.5%' class=ank>38</a><TD><a title=' 0.2%' class=ank>137</a>
+<TR valign=top align=right class=odd><TD>273<TD align=left>POLICIES<TD><a href=# OnClick="opeLod('', '8116', 'POLICIES');return false">62</a><TD class=sc><a title=' 0.5%' class=ank>38</a><TD><a title=' 0.5%' class=ank>395</a>
+<TR valign=top align=right class=evn><TD>274<TD align=left>BETRAYED<TD><a TITLE=" BOOK BOSNIA HERCEGOVINA T Title: Bosnia and Hercegovina: A Tradition Betrayed" href=javascript:opeNod(941)>1</a><TD class=sc><a title=' 0.5%' class=ank>37</a><TD><a title=' 0.6%' class=ank>513</a>
+<TR valign=top align=right class=odd><TD>275<TD align=left>BORDER<TD><a href=# OnClick="opeLod('', '1228', 'BORDER');return false">58</a><TD class=sc><a title=' 0.5%' class=ank>37</a><TD><a title=' 0.5%' class=ank>405</a>
+<TR valign=top align=right class=evn><TD>276<TD align=left>DEMOCRATIZATION<TD>23<TD class=sc><a title=' 0.5%' class=ank>37</a><TD><a title=' 0.5%' class=ank>462</a>
+<TR valign=top align=right class=odd><TD>277<TD align=left>GLOBAL<TD><a href=# OnClick="opeLod('', '4494', 'GLOBAL');return false">78</a><TD class=sc><a title=' 0.5%' class=ank>37</a><TD><a title=' 0.9%' class=ank>790</a>
+<TR valign=top align=right class=evn><TD>278<TD align=left>IMAGINED<TD>6<TD class=sc><a title=' 0.5%' class=ank>37</a><TD><a title=' 0.2%' class=ank>207</a>
+<TR valign=top align=right class=odd><TD>279<TD align=left>MESOLITHIC<TD>17<TD class=sc><a title=' 0.5%' class=ank>37</a><TD><a title=' 0.4%' class=ank>320</a>
+<TR valign=top align=right class=evn><TD>280<TD align=left>ODYSSEY<TD>6<TD class=sc><a title=' 0.5%' class=ank>37</a><TD><a title=' 0.8%' class=ank>658</a>
+<TR valign=top align=right class=odd><TD>281<TD align=left>REGION<TD><a href=# OnClick="opeLod('', '8858', 'REGION');return false">128</a><TD class=sc><a title=' 0.5%' class=ank>37</a><TD><a title=' 0.6%' class=ank>487</a>
+<TR valign=top align=right class=evn><TD>282<TD align=left>FLAMES<TD>3<TD class=sc><a title=' 0.4%' class=ank>36</a><TD><a title=' 0.5%' class=ank>390</a>
+<TR valign=top align=right class=odd><TD>283<TD align=left>INSTITUTIONS<TD>29<TD class=sc><a title=' 0.4%' class=ank>36</a><TD><a title=' 0.3%' class=ank>221</a>
+<TR valign=top align=right class=evn><TD>284<TD align=left>LINGUISTIQUE<TD><a TITLE=" BOOK LINGUISTIQUE BALKANI Title: Linguistique balkanique, problemes et resultats" href=javascript:opeNod(264)>1</a><TD class=sc><a title=' 0.4%' class=ank>36</a><TD><a title=' 0.7%' class=ank>634</a>
+<TR valign=top align=right class=odd><TD>285<TD align=left>PROBLEMES<TD><a TITLE=" BOOK LINGUISTIQUE BALKANI Title: Linguistique balkanique, problemes et resultats" href=javascript:opeNod(264)>1</a><TD class=sc><a title=' 0.4%' class=ank>36</a><TD><a title=' 0.7%' class=ank>634</a>
+<TR valign=top align=right class=evn><TD>286<TD align=left>RESULTATS<TD><a TITLE=" BOOK LINGUISTIQUE BALKANI Title: Linguistique balkanique, problemes et resultats" href=javascript:opeNod(264)>1</a><TD class=sc><a title=' 0.4%' class=ank>36</a><TD><a title=' 0.7%' class=ank>634</a>
+<TR valign=top align=right class=odd><TD>287<TD align=left>EMERGING<TD>39<TD class=sc><a title=' 0.4%' class=ank>35</a><TD><a title=' 0.6%' class=ank>484</a>
+<TR valign=top align=right class=evn><TD>288<TD align=left>FEDERALISM<TD>3<TD class=sc><a title=' 0.4%' class=ank>35</a><TD><a title=' 0.7%' class=ank>638</a>
+<TR valign=top align=right class=odd><TD>289<TD align=left>PEACE<TD><a href=# OnClick="opeLod('', '7823', 'PEACE');return false">77</a><TD class=sc><a title=' 0.4%' class=ank>35</a><TD><a title=' 0.5%' class=ank>389</a>
+<TR valign=top align=right class=evn><TD>290<TD align=left>PRAGMATIC<TD>2<TD class=sc><a title=' 0.4%' class=ank>35</a><TD><a title=' 0.1%' class=ank>48</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="wd-name.html">Word</a><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>291<TD align=left>SITES<TD>20<TD class=sc><a title=' 0.4%' class=ank>35</a><TD><a title=' 0.3%' class=ank>252</a>
+<TR valign=top align=right class=evn><TD>292<TD align=left>STABILITY<TD>40<TD class=sc><a title=' 0.4%' class=ank>35</a><TD><a title=' 0.2%' class=ank>139</a>
+<TR valign=top align=right class=odd><TD>293<TD align=left>CORRUPTION<TD>31<TD class=sc><a title=' 0.4%' class=ank>34</a><TD><a title=' 0.2%' class=ank>157</a>
+<TR valign=top align=right class=evn><TD>294<TD align=left>INTERNAL<TD>21<TD class=sc><a title=' 0.4%' class=ank>34</a><TD><a title=' 0.5%' class=ank>388</a>
+<TR valign=top align=right class=odd><TD>295<TD align=left>MARKETS<TD><a href=# OnClick="opeLod('', '6468', 'MARKETS');return false">48</a><TD class=sc><a title=' 0.4%' class=ank>34</a><TD><a title=' 0.4%' class=ank>375</a>
+<TR valign=top align=right class=evn><TD>296<TD align=left>ROAD<TD>37<TD class=sc><a title=' 0.4%' class=ank>34</a><TD><a title=' 0.3%' class=ank>220</a>
+<TR valign=top align=right class=odd><TD>297<TD align=left>EFFECTS<TD><a href=# OnClick="opeLod('', '3324', 'EFFECTS');return false">66</a><TD class=sc><a title=' 0.4%' class=ank>33</a><TD><a title=' 0.5%' class=ank>442</a>
+<TR valign=top align=right class=evn><TD>298<TD align=left>GENDER<TD><a href=# OnClick="opeLod('', '4375', 'GENDER');return false">56</a><TD class=sc><a title=' 0.4%' class=ank>33</a><TD><a title=' 0.5%' class=ank>464</a>
+<TR valign=top align=right class=odd><TD>299<TD align=left>LOCAL<TD><a href=# OnClick="opeLod('', '6240', 'LOCAL');return false">71</a><TD class=sc><a title=' 0.4%' class=ank>33</a><TD><a title=' 0.4%' class=ank>332</a>
+<TR valign=top align=right class=evn><TD>300<TD align=left>PRE<TD>31<TD class=sc><a title=' 0.4%' class=ank>33</a><TD><a title=' 0.2%' class=ank>181</a>
+<TR valign=top align=right class=odd><TD>301<TD align=left>DEMOCRATIC<TD>25<TD class=sc><a title=' 0.4%' class=ank>32</a><TD><a title=' 0.2%' class=ank>176</a>
+<TR valign=top align=right class=evn><TD>302<TD align=left>DETERMINANTS<TD><a href=# OnClick="opeLod('', '2840', 'DETERMINANTS');return false">56</a><TD class=sc><a title=' 0.4%' class=ank>32</a><TD><a title=' 0.5%' class=ank>396</a>
+<TR valign=top align=right class=odd><TD>303<TD align=left>DOMESTIC<TD>27<TD class=sc><a title=' 0.4%' class=ank>32</a><TD><a title=' 0.4%' class=ank>378</a>
+<TR valign=top align=right class=evn><TD>304<TD align=left>ISSUES<TD>32<TD class=sc><a title=' 0.4%' class=ank>32</a><TD><a title=' 0.2%' class=ank>200</a>
+<TR valign=top align=right class=odd><TD>305<TD align=left>LIBERAL<TD>18<TD class=sc><a title=' 0.4%' class=ank>32</a><TD><a title=' 0.1%' class=ank>111</a>
+<TR valign=top align=right class=evn><TD>306<TD align=left>SOUTHERN<TD><a href=# OnClick="opeLod('', '9909', 'SOUTHERN');return false">42</a><TD class=sc><a title=' 0.4%' class=ank>32</a><TD><a title=' 0.3%' class=ank>294</a>
+<TR valign=top align=right class=odd><TD>307<TD align=left>STABILISATION<TD>2<TD class=sc><a title=' 0.4%' class=ank>32</a><TD><a title=' 0.1%' class=ank>62</a>
+<TR valign=top align=right class=evn><TD>308<TD align=left>DIFFERENCE<TD>10<TD class=sc><a title=' 0.4%' class=ank>31</a><TD><a title=' 0.5%' class=ank>446</a>
+<TR valign=top align=right class=odd><TD>309<TD align=left>MODEL<TD><a href=# OnClick="opeLod('', '6844', 'MODEL');return false">54</a><TD class=sc><a title=' 0.4%' class=ank>31</a><TD><a title=' 0.6%' class=ank>522</a>
+<TR valign=top align=right class=evn><TD>310<TD align=left>OBSTACLES<TD>11<TD class=sc><a title=' 0.4%' class=ank>31</a><TD><a title=' 0.1%' class=ank>83</a>
+<TR valign=top align=right class=odd><TD>311<TD align=left>RELIGIOUS<TD><a href=# OnClick="opeLod('', '8918', 'RELIGIOUS');return false">57</a><TD class=sc><a title=' 0.4%' class=ank>31</a><TD><a title=' 0.3%' class=ank>238</a>
+<TR valign=top align=right class=evn><TD>312<TD align=left>SETTLEMENT<TD><a href=# OnClick="opeLod('', '9577', 'SETTLEMENT');return false">42</a><TD class=sc><a title=' 0.4%' class=ank>31</a><TD><a title=' 0.4%' class=ank>318</a>
+<TR valign=top align=right class=odd><TD>313<TD align=left>DYNAMICS<TD>38<TD class=sc><a title=' 0.4%' class=ank>30</a><TD><a title=' 0.4%' class=ank>372</a>
+<TR valign=top align=right class=evn><TD>314<TD align=left>MIDDLE<TD><a href=# OnClick="opeLod('', '6694', 'MIDDLE');return false">68</a><TD class=sc><a title=' 0.4%' class=ank>30</a><TD><a title=' 0.6%' class=ank>480</a>
+<TR valign=top align=right class=odd><TD>315<TD align=left>MUTUAL<TD>9<TD class=sc><a title=' 0.4%' class=ank>30</a><TD><a title=' 0.3%' class=ank>267</a>
+<TR valign=top align=right class=evn><TD>316<TD align=left>SERBIAN<TD><a href=# OnClick="opeLod('', '9552', 'SERBIAN');return false">102</a><TD class=sc><a title=' 0.4%' class=ank>30</a><TD><a title=' 0.2%' class=ank>195</a>
+<TR valign=top align=right class=odd><TD>317<TD align=left>TIME<TD><a href=# OnClick="opeLod('', '10648', 'TIME');return false">48</a><TD class=sc><a title=' 0.4%' class=ank>30</a><TD><a title=' 0.3%' class=ank>245</a>
+<TR valign=top align=right class=evn><TD>318<TD align=left>ANATOLIA<TD>38<TD class=sc><a title=' 0.4%' class=ank>29</a><TD><a title=' 0.4%' class=ank>337</a>
+<TR valign=top align=right class=odd><TD>319<TD align=left>EVALUATING<TD>17<TD class=sc><a title=' 0.4%' class=ank>29</a><TD><a title=' 0.3%' class=ank>217</a>
+<TR valign=top align=right class=evn><TD>320<TD align=left>LINGUISTIC<TD>28<TD class=sc><a title=' 0.4%' class=ank>29</a><TD><a title=' 0.3%' class=ank>274</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="wd-name.html">Word</a><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>321<TD align=left>OLD<TD><a href=# OnClick="opeLod('', '7439', 'OLD');return false">44</a><TD class=sc><a title=' 0.4%' class=ank>29</a><TD><a title=' 0.2%' class=ank>187</a>
+<TR valign=top align=right class=evn><TD>322<TD align=left>RELIGION<TD>32<TD class=sc><a title=' 0.4%' class=ank>29</a><TD><a title=' 0.2%' class=ank>140</a>
+<TR valign=top align=right class=odd><TD>323<TD align=left>STRUCTURE<TD><a href=# OnClick="opeLod('', '10169', 'STRUCTURE');return false">41</a><TD class=sc><a title=' 0.4%' class=ank>29</a><TD><a title=' 0.3%' class=ank>293</a>
+<TR valign=top align=right class=evn><TD>324<TD align=left>SYSTEM<TD><a href=# OnClick="opeLod('', '10385', 'SYSTEM');return false">57</a><TD class=sc><a title=' 0.4%' class=ank>29</a><TD><a title=' 0.4%' class=ank>305</a>
+<TR valign=top align=right class=odd><TD>325<TD align=left>ASSESSING<TD>20<TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.2%' class=ank>138</a>
+<TR valign=top align=right class=evn><TD>326<TD align=left>BORDERS<TD>40<TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.2%' class=ank>192</a>
+<TR valign=top align=right class=odd><TD>327<TD align=left>CONTACT<TD>14<TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.3%' class=ank>276</a>
+<TR valign=top align=right class=evn><TD>328<TD align=left>INVESTMENTS<TD>30<TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.2%' class=ank>152</a>
+<TR valign=top align=right class=odd><TD>329<TD align=left>LANGUAGES<TD><a href=# OnClick="opeLod('', '6014', 'LANGUAGES');return false">47</a><TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.2%' class=ank>146</a>
+<TR valign=top align=right class=evn><TD>330<TD align=left>MIND<TD>5<TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.1%' class=ank>79</a>
+<TR valign=top align=right class=odd><TD>331<TD align=left>NORMS<TD>14<TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.3%' class=ank>253</a>
+<TR valign=top align=right class=evn><TD>332<TD align=left>PACT<TD>24<TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.1%' class=ank>48</a>
+<TR valign=top align=right class=odd><TD>333<TD align=left>PRESENT<TD>37<TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.3%' class=ank>248</a>
+<TR valign=top align=right class=evn><TD>334<TD align=left>PROMOTION<TD>25<TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.1%' class=ank>112</a>
+<TR valign=top align=right class=odd><TD>335<TD align=left>REFORM<TD><a href=# OnClick="opeLod('', '8837', 'REFORM');return false">50</a><TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.3%' class=ank>249</a>
+<TR valign=top align=right class=evn><TD>336<TD align=left>RUSSIAN<TD><a href=# OnClick="opeLod('', '9272', 'RUSSIAN');return false">111</a><TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.1%' class=ank>78</a>
+<TR valign=top align=right class=odd><TD>337<TD align=left>SLOVENIAN<TD>18<TD class=sc><a title=' 0.3%' class=ank>28</a><TD><a title=' 0.1%' class=ank>88</a>
+<TR valign=top align=right class=evn><TD>338<TD align=left>BEAUTIFUL<TD>2<TD class=sc><a title=' 0.3%' class=ank>27</a><TD><a title=' 0.1%' class=ank>44</a>
+<TR valign=top align=right class=odd><TD>339<TD align=left>EURASIA<TD>17<TD class=sc><a title=' 0.3%' class=ank>27</a><TD><a title=' 0.4%' class=ank>342</a>
+<TR valign=top align=right class=evn><TD>340<TD align=left>ISLAMIC<TD>30<TD class=sc><a title=' 0.3%' class=ank>27</a><TD><a title=' 0.2%' class=ank>181</a>
+<TR valign=top align=right class=odd><TD>341<TD align=left>MEMBER<TD>17<TD class=sc><a title=' 0.3%' class=ank>27</a><TD><a title=' 0.1%' class=ank>77</a>
+<TR valign=top align=right class=evn><TD>342<TD align=left>MILK<TD>3<TD class=sc><a title=' 0.3%' class=ank>27</a><TD><a title=' 0.5%' class=ank>438</a>
+<TR valign=top align=right class=odd><TD>343<TD align=left>NON<TD><a href=# OnClick="opeLod('', '7285', 'NON');return false">64</a><TD class=sc><a title=' 0.3%' class=ank>27</a><TD><a title=' 0.3%' class=ank>224</a>
+<TR valign=top align=right class=evn><TD>344<TD align=left>PALEOLITHIC<TD>21<TD class=sc><a title=' 0.3%' class=ank>27</a><TD><a title=' 0.5%' class=ank>392</a>
+<TR valign=top align=right class=odd><TD>345<TD align=left>PUBLIC<TD><a href=# OnClick="opeLod('', '8562', 'PUBLIC');return false">96</a><TD class=sc><a title=' 0.3%' class=ank>27</a><TD><a title=' 0.4%' class=ank>325</a>
+<TR valign=top align=right class=evn><TD>346<TD align=left>TUDMAN<TD>2<TD class=sc><a title=' 0.3%' class=ank>27</a><TD><a title=' 0.1%' class=ank>44</a>
+<TR valign=top align=right class=odd><TD>347<TD align=left>BYZANTIUM<TD>16<TD class=sc><a title=' 0.3%' class=ank>26</a><TD><a title=' 0.2%' class=ank>205</a>
+<TR valign=top align=right class=evn><TD>348<TD align=left>MODERNITIES<TD>3<TD class=sc><a title=' 0.3%' class=ank>26</a><TD><a title=' 0.1%' class=ank>64</a>
+<TR valign=top align=right class=odd><TD>349<TD align=left>MODERNITY<TD>18<TD class=sc><a title=' 0.3%' class=ank>26</a><TD><a title=' 0.1%' class=ank>119</a>
+<TR valign=top align=right class=evn><TD>350<TD align=left>MUSIC<TD>38<TD class=sc><a title=' 0.3%' class=ank>26</a><TD><a title=' 0.1%' class=ank>93</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="wd-name.html">Word</a><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>351<TD align=left>PAST<TD><a href=# OnClick="opeLod('', '7770', 'PAST');return false">50</a><TD class=sc><a title=' 0.3%' class=ank>26</a><TD><a title=' 0.3%' class=ank>236</a>
+<TR valign=top align=right class=evn><TD>352<TD align=left>PRACTICE<TD>32<TD class=sc><a title=' 0.3%' class=ank>26</a><TD><a title=' 2.3%' class=ank>1951</a>
+<TR valign=top align=right class=odd><TD>353<TD align=left>RAJ<TD><a TITLE=" Article JOURNAL OF DEMOCRACY Title: Travails of the European Raj" href=javascript:opeNod(1515)>1</a><TD class=sc><a title=' 0.3%' class=ank>26</a><TD><a title=' 0.2%' class=ank>181</a>
+<TR valign=top align=right class=evn><TD>354<TD align=left>REINSTATING<TD>3<TD class=sc><a title=' 0.3%' class=ank>26</a><TD><a title=' 0.1%' class=ank>53</a>
+<TR valign=top align=right class=odd><TD>355<TD align=left>TECHNOLOGICAL<TD>11<TD class=sc><a title=' 0.3%' class=ank>26</a><TD><a title=' 0.4%' class=ank>364</a>
+<TR valign=top align=right class=evn><TD>356<TD align=left>TRAVAILS<TD>3<TD class=sc><a title=' 0.3%' class=ank>26</a><TD><a title=' 0.2%' class=ank>188</a>
+<TR valign=top align=right class=odd><TD>357<TD align=left>TWO<TD><a href=# OnClick="opeLod('', '10972', 'TWO');return false">80</a><TD class=sc><a title=' 0.3%' class=ank>26</a><TD><a title=' 0.3%' class=ank>289</a>
+<TR valign=top align=right class=evn><TD>358<TD align=left>ACTIVISM<TD>9<TD class=sc><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.1%' class=ank>69</a>
+<TR valign=top align=right class=odd><TD>359<TD align=left>AUTHORITARIANISM<TD>8<TD class=sc><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.1%' class=ank>119</a>
+<TR valign=top align=right class=evn><TD>360<TD align=left>BORROWING<TD><a TITLE=" Article JOURNAL OF SOUTHERN EUROPE AN Title: EU enlargement in the Western Balkans: strategies of borrowing and inventing" href=javascript:opeNod(2305)>1</a><TD class=sc><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=odd><TD>361<TD align=left>CROSS<TD><a href=# OnClick="opeLod('', '2444', 'CROSS');return false">61</a><TD class=sc><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.4%' class=ank>354</a>
+<TR valign=top align=right class=evn><TD>362<TD align=left>DAY<TD>12<TD class=sc><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.2%' class=ank>191</a>
+<TR valign=top align=right class=odd><TD>363<TD align=left>EQUITY<TD>11<TD class=sc><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.2%' class=ank>160</a>
+<TR valign=top align=right class=evn><TD>364<TD align=left>EXTRACTIVE<TD>2<TD class=sc><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.2%' class=ank>132</a>
+<TR valign=top align=right class=odd><TD>365<TD align=left>ITALIAN<TD><a href=# OnClick="opeLod('', '5596', 'ITALIAN');return false">42</a><TD class=sc><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.2%' class=ank>154</a>
+<TR valign=top align=right class=evn><TD>366<TD align=left>LEGACY<TD>19<TD class=sc><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.3%' class=ank>230</a>
+<TR valign=top align=right class=odd><TD>367<TD align=left>POTTERY<TD>27<TD class=sc><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.5%' class=ank>397</a>
+<TR valign=top align=right class=evn><TD>368<TD align=left>SECTOR<TD><a href=# OnClick="opeLod('', '9463', 'SECTOR');return false">60</a><TD class=sc><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.5%' class=ank>430</a>
+<TR valign=top align=right class=odd><TD>369<TD align=left>SELF<TD><a href=# OnClick="opeLod('', '9506', 'SELF');return false">46</a><TD class=sc><a title=' 0.3%' class=ank>25</a><TD><a title=' 0.2%' class=ank>202</a>
+<TR valign=top align=right class=evn><TD>370<TD align=left>AGREEMENT<TD>18<TD class=sc><a title=' 0.3%' class=ank>24</a><TD><a title=' 0.1%' class=ank>72</a>
+<TR valign=top align=right class=odd><TD>371<TD align=left>BANKING<TD>34<TD class=sc><a title=' 0.3%' class=ank>24</a><TD><a title=' 0.3%' class=ank>239</a>
+<TR valign=top align=right class=evn><TD>372<TD align=left>BOUNDARIES<TD>21<TD class=sc><a title=' 0.3%' class=ank>24</a><TD><a title=' 0.1%' class=ank>107</a>
+<TR valign=top align=right class=odd><TD>373<TD align=left>COURSE<TD>12<TD class=sc><a title=' 0.3%' class=ank>24</a><TD><a title=' 0.3%' class=ank>224</a>
+<TR valign=top align=right class=evn><TD>374<TD align=left>HERITAGE<TD><a href=# OnClick="opeLod('', '4822', 'HERITAGE');return false">47</a><TD class=sc><a title=' 0.3%' class=ank>24</a><TD><a title=' 0.3%' class=ank>218</a>
+<TR valign=top align=right class=odd><TD>375<TD align=left>INDUCED<TD>3<TD class=sc><a title=' 0.3%' class=ank>24</a><TD><a title=' 0.3%' class=ank>251</a>
+<TR valign=top align=right class=evn><TD>376<TD align=left>MACEDONIAN<TD><a href=# OnClick="opeLod('', '6322', 'MACEDONIAN');return false">54</a><TD class=sc><a title=' 0.3%' class=ank>24</a><TD><a title=' 0.1%' class=ank>101</a>
+<TR valign=top align=right class=odd><TD>377<TD align=left>METHODS<TD>8<TD class=sc><a title=' 0.3%' class=ank>24</a><TD><a title=' 0.3%' class=ank>249</a>
+<TR valign=top align=right class=evn><TD>378<TD align=left>RACE<TD>18<TD class=sc><a title=' 0.3%' class=ank>24</a><TD><a title=' 0.2%' class=ank>140</a>
+<TR valign=top align=right class=odd><TD>379<TD align=left>REPRESENTATION<TD>23<TD class=sc><a title=' 0.3%' class=ank>24</a><TD><a title=' 0.4%' class=ank>327</a>
+<TR valign=top align=right class=evn><TD>380<TD align=left>RUSSIA<TD><a href=# OnClick="opeLod('', '9271', 'RUSSIA');return false">81</a><TD class=sc><a title=' 0.3%' class=ank>24</a><TD><a title=' 0.2%' class=ank>158</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><a href="wd-name.html">Word</a><TH><a href="wd-pubs.html" TITLE=" Records ">Recs</a><TH><SPAN class=sc><a href="wd-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a></SPAN><TH><a href="wd-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>381<TD align=left>SURVEY<TD>20<TD class=sc><a title=' 0.3%' class=ank>24</a><TD><a title=' 0.1%' class=ank>114</a>
+<TR valign=top align=right class=evn><TD>382<TD align=left>ALBANIANS<TD>19<TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.2%' class=ank>132</a>
+<TR valign=top align=right class=odd><TD>383<TD align=left>ARCHAEOLOGY<TD>19<TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.1%' class=ank>101</a>
+<TR valign=top align=right class=evn><TD>384<TD align=left>DANUBE<TD><a href=# OnClick="opeLod('', '2589', 'DANUBE');return false">50</a><TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.2%' class=ank>192</a>
+<TR valign=top align=right class=odd><TD>385<TD align=left>EMPIRICAL<TD>39<TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.4%' class=ank>378</a>
+<TR valign=top align=right class=evn><TD>386<TD align=left>ENVIRONMENTAL<TD>34<TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.3%' class=ank>235</a>
+<TR valign=top align=right class=odd><TD>387<TD align=left>ERA<TD>32<TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.1%' class=ank>102</a>
+<TR valign=top align=right class=evn><TD>388<TD align=left>EU’S<TD><a TITLE=" Article EUROPEAN FOREIGN AFFAIRS REVI Title: The Rocky Road to Europe: The EU&acirc;&#128;&#153;s Stabilisation and Association Process for the Western Balkans and the Principle of Conditionality" href=javascript:opeNod(1571)>1</a><TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.1%' class=ank>53</a>
+<TR valign=top align=right class=odd><TD>389<TD align=left>MIGRANTS<TD><a href=# OnClick="opeLod('', '6701', 'MIGRANTS');return false">42</a><TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.3%' class=ank>299</a>
+<TR valign=top align=right class=evn><TD>390<TD align=left>MILLENNIUM<TD>19<TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.5%' class=ank>452</a>
+<TR valign=top align=right class=odd><TD>391<TD align=left>PRINCIPLE<TD><a TITLE=" Article EUROPEAN FOREIGN AFFAIRS REVI Title: The Rocky Road to Europe: The EU&acirc;&#128;&#153;s Stabilisation and Association Process for the Western Balkans and the Principle of Conditionality" href=javascript:opeNod(1571)>1</a><TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.1%' class=ank>53</a>
+<TR valign=top align=right class=evn><TD>392<TD align=left>PRODUCTION<TD>31<TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.2%' class=ank>155</a>
+<TR valign=top align=right class=odd><TD>393<TD align=left>QUEST<TD>15<TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.1%' class=ank>90</a>
+<TR valign=top align=right class=evn><TD>394<TD align=left>REINFORCEMENT<TD><a TITLE=" Article LANGUAGES IN CONTACT Title: LINGUISTIC BALKANIZATION: CONTACT-INDUCED CHANGE BY MUTUAL REINFORCEMENT" href=javascript:opeNod(1302)>1</a><TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.3%' class=ank>246</a>
+<TR valign=top align=right class=odd><TD>395<TD align=left>RESEARCH<TD><a href=# OnClick="opeLod('', '9006', 'RESEARCH');return false">83</a><TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.3%' class=ank>236</a>
+<TR valign=top align=right class=evn><TD>396<TD align=left>RIGHTS<TD><a href=# OnClick="opeLod('', '9143', 'RIGHTS');return false">42</a><TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.2%' class=ank>174</a>
+<TR valign=top align=right class=odd><TD>397<TD align=left>ROCKY<TD>3<TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.1%' class=ank>55</a>
+<TR valign=top align=right class=evn><TD>398<TD align=left>TEMPORALITY<TD>4<TD class=sc><a title=' 0.3%' class=ank>23</a><TD><a title=' 0.1%' class=ank>80</a>
+<TR valign=top align=right class=odd><TD>399<TD align=left>BACKWARDNESS<TD>2<TD class=sc><a title=' 0.3%' class=ank>22</a><TD><a title=' 0.1%' class=ank>77</a>
+<TR valign=top align=right class=evn><TD>400<TD align=left>BANK<TD>24<TD class=sc><a title=' 0.3%' class=ank>22</a><TD><a title=' 0.5%' class=ank>416</a>
+</TABLE>
+<div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>2</b> of 59<span class=nonprn>: [  &nbsp;<a href=wd-lcs.html class=nu>1</a> &nbsp;2 &nbsp;3 &nbsp;4 &nbsp;5 &nbsp;6 &nbsp;7 &nbsp;8 &nbsp;9 &nbsp;10 ]</span> &nbsp;11&nbsp; &nbsp;21&nbsp; &nbsp;31&nbsp; &nbsp;41&nbsp; &nbsp;51&nbsp;</div>
+</BODY>

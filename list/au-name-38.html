@@ -1,0 +1,591 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><HEAD><TITLE>HistCite - RESEE: A Bibliographic Database on Balkan – Southeast European Studies</TITLE></HEAD>
+<BODY VLINK=blue OnLoad="focus()">
+<STYLE>
+body {
+	margin: 2px 10px; padding: 0;
+	background: #fff;
+}
+body, td, th {
+	font-size: 10pt; font-family: Verdana;
+}
+input, select, textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ui {
+	font-size: 10pt; font-family: Verdana;
+}
+.ui input, .ui select, .ui textarea {
+	font-size: 10px; font-family: Verdana;
+}
+.ci_title {
+	font-size: 8pt; font-weight: bold;
+}
+.ci_il {
+	color: black; text-decoration: none;	/* msie6 ! inherit */
+}
+.helpa { text-decoration: none;
+	cursor: help;
+}
+.helpt { background: #ffff77; padding: 4px;
+}
+.nu { text-decoration: none; 
+}
+.sc, .sc a { color: #904644 }
+.fnd { background-color: #beb;
+	padding: 0 3px 2px 2px;
+}
+td div.fndCR {
+	padding-left: 2em;
+//	text-indent: -2em;
+}
+.odd { background-color: #eeeeee }
+.evn { background-color: #dddddd }
+div.odd { padding: 5px; margin-bottom: 2px }
+div.evn { padding: 5px; margin-bottom: 2px }
+.yr { padding: 0; font-weight: bold }
+.ank:hover { cursor: pointer; text-decoration: none; color: inherit; }
+a {
+	text-decoration: none;
+}
+a:hover, a:hover .sc {
+	text-decoration: underline; color: blue;
+}
+.scr:hover, td a.scr:hover { color:#000; text-decoration:none; } /* FF td */
+@media print {
+	.nonprn, .ephemeral, .x, .ui { display: none; }
+	.index { border: solid #fff 0; }
+	body { font-size: 10pt; }
+	td, th { font-size: 10pt; }
+	.ci_title { font-size: 8pt; }
+}
+</STYLE>
+<SCRIPT>
+var root=location.href; root = root.replace(/index.*/, ''); root = root.replace(/list.*/, '');
+function about () { window.open(root+'about.html','about','width=440,height=370,resizable=yes,scrollbars=yes') }
+	// This is a list of XMLHttpRequest-creation factory functions to try
+_factories = [
+    function() { return new XMLHttpRequest(); },
+    function() { return new ActiveXObject("Msxml2.XMLHTTP"); },
+    function() { return new ActiveXObject("Microsoft.XMLHTTP"); }
+];
+
+// When we find a factory that works, store it here.
+_factory = null;
+
+// Create and return a new XMLHttpRequest object.
+//
+// The first time we're called, try the list of factory functions until
+// we find one that returns a non-null value and does not throw an
+// exception. Once we find a working factory, remember it for later use.
+//
+newRequest = function() {
+    if (_factory != null) return _factory();
+
+    for(var i = 0; i < _factories.length; i++) {
+        try {
+            var factory = _factories[i];
+            var request = factory();
+            if (request != null) {
+                _factory = factory;
+                return request;
+            }
+        }
+        catch(e) {
+            continue;
+        }
+    }
+    // If we get here, none of the factory candidates succeeded,
+    // so throw an exception now and for all future calls.
+    _factory = function() {
+        //throw new Error("XMLHttpRequest not supported");
+        alert("XMLHttpRequest not supported");
+    }
+    _factory(); // Throw an error
+}
+
+function gethelp (url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+//    alert('OK');
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+function gettip (ent, url) {
+	var req = newRequest();
+	req.open("GET", url, true);
+
+	req.onreadystatechange=function() {
+  if (req.readyState==4) {
+   if (req.status == 200) {
+		ent.innerHTML = req.responseText;
+   } else {
+		alert("Err " + req.status + ": " + req.responseText);
+   }
+  }
+ }
+
+	req.send(null);
+}
+
+</SCRIPT>
+<STYLE>
+div#tipshade {
+	position: fixed; top: 208px; left: 208px;
+	margin: 0px; width: 420px; height: 180px;
+	border: solid gray 2px;
+	background: gray;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 19; display: none;
+}
+div#tipoday {
+	position: fixed; top: 200px; left: 200px;
+	margin: 0px; width: 420px; height: 180px; padding: 0;
+	background: white;
+	border: solid #e44959 2px;
+	font: 10pt Verdana; cursor: default;
+	z-index: 20; display: none;
+}
+div#tiptitle {
+	background: #e44959; color: white; font-weight: bold;
+	padding-left: 4px;
+}
+div#tiptitle span.x {
+	background: white;
+}
+div#tipbox {
+	position: relative; /* top: 5px; */ margin: 8px;
+	max-height: 120px; overflow: auto;
+}
+div#tipctrl {
+	position: absolute; bottom: 0; margin: 4px;
+}
+div#tipctrl td {
+	font-size: 10px;
+}
+div#tipctrl form { margin: 0; }
+span.nw { white-space: nowrap; }
+</STYLE>
+<div id="tipshade" class="ui"> </div>
+<div id="tipoday" class="ui" align=left>
+<div id="tiptitle">HistCite Tip of the Day<span class="x"><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;" title="Close">X</a></span></div>
+<div id="tipbox">Tip of the day</div>
+<div id="tipctrl">
+<table align=bottom width=100%>
+<tr><td width=40% nowrap><form name=ft><label><input type=checkbox OnChange="nextStart(this);" checked> Show tip at next start</label></form></td>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=-1');>Previous Tip</a>
+<td nowrap align=right><a href=javascript:gettip(otip,'/tip.txt?next=1');>Next Tip</a>
+<td align=right><a href=# OnClick="document.getElementById('tipshade').style.display='none';document.getElementById('tipoday').style.display='none';return false;">Close</a>&nbsp;</td>
+</tr></table></div></div>
+<SCRIPT> var otip;
+function getit () { otip = document.getElementById('tipbox'); gettip(otip,'/tip.txt?next=0'); }
+function nextStart (start) {
+	if(start.checked == true) {
+		on = 1;
+	} else {
+		on = 0;
+	}
+	gethelp('/tipStart?on=' + on);
+}
+function tip_show () {
+	var W, H;
+	if(window.innerWidth) {
+		W = window.innerWidth; H = window.innerHeight;
+	} else {
+		var dd = document.documentElement;
+		W = dd.clientWidth; H = dd.clientHeight;
+	}
+//	alert(W + ' x ' + H);
+	var left = (W-420)/2;
+	var top = (H-180)/2;
+	var tipB = document.getElementById('tipshade');
+	var tipT = document.getElementById('tipoday');
+	tipB.style.left = left + 8 + 'px';
+	tipB.style.top = top + 8 + 'px';
+	tipT.style.left = left + 'px';
+	tipT.style.top = top + 'px';
+	tipB.style.display='block';
+	tipT.style.display='block';
+	getit();
+}
+</SCRIPT>
+
+<style>
+div#af_boxshado {
+	position: fixed; left:148px; top:128px; width: 460px; height: 110px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	z-index: 11; display: none;
+}
+div#af_box {
+	position: fixed; left:140px; top:120px; width: 460px; height: 110px;
+	background: white; border: solid #999 2px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+div#af_box input {
+	font: 10px Verdana;
+}
+div#af_box_title {
+	background: #d3d3d3; padding-left: 4px; font-weight: bold;
+}
+div#af_box_title span.x {
+	background: white;
+}
+div#af_form {
+	width: 445px; height: 70px;
+	padding: 8px; overflow: auto;
+}
+div#af_form #sub{
+	display: block; margin: 12px 0 0 0;
+}
+div#starh2 {
+	position: absolute; left: 88px; top: 78px; width: 420px; height: 156px;
+	background: gray; border: solid gray 2px;
+	opacity: .50; filter: alpha(opacity=50); -moz-opacity: 0.5;
+	padding: 8px;
+	z-index: 12; display: none;
+}
+div#starh {
+	position: absolute; left: 80px; top: 70px; width: 420px; height: 156px; overflow: auto;
+	border: outset gray 2px;
+	padding: 8px;
+	font: 10pt Verdana;
+	z-index: 12; display: none;
+}
+</style>
+<div id="af_boxshado"> </div>
+<div id="af_box">
+<div id="af_box_title">Add File<span class="x"><a onClick="af_close()" title="Close">X</a></span>
+<!--<a href=javascript:na() onMouseOver="na();" onClick="toggle('starh');" class=helpa style="color:#000">-->
+<a onClick="toggle('starh');" class=helpa style="color:#000"><span class="x" id=mstarh style="top:0;right:14px;">?</span><span class="x" id=lstarh style="top:0;right:14px;display:none">_</span></a>
+</div>
+<div id="af_form">
+<FORM action=/input method=GET OnSubmit="return false" name=af style="margin:0">
+	Use [Browse...] to select a file with bibliography data:<br>
+	<INPUT type=hidden name=inputpath>
+	<INPUT type=file name=inputset size=48 OnChange="af.sub.focus()" value="">
+	<INPUT type=submit value="Add File" OnClick="afSubmit();return false" name=sub id="sub">
+</div><div id=starh2> </div>
+<div id=starh class=helpt>
+Use wildcard '*' to add more than one file at a time.
+For example, if you have <code>file1</code>,
+<code>file2</code>, etc. all in the same folder or directory;
+first, locate one of the files with the [Browse...] button.  Then alter the
+file path in the box above to include '*' character (eg. <code>file*</code>).
+Wildcard '?' to blanket only one character works too.<br>
+<b>Note</b>: In Windows you can select multiple files and "drag and drop" them 
+onto HistCite icon or shortcut.  The program would start and load those files.
+</div>
+</FORM><SCRIPT>
+var af = document.af;
+function afSubmit() {
+	if ("" == af.inputset.value ) { alert("Select a file."); return }
+	af.inputpath.value = af.inputset.value;
+	af.submit();
+}
+function af_show() {
+	document.getElementById('af_boxshado').style.display = 'block';
+	document.getElementById('af_box').style.display = 'block';
+	a = document.af.inputset.value;
+	document.af.inputset.focus();
+}
+function af_close() {
+	document.getElementById('af_boxshado').style.display = 'none';
+	document.getElementById('af_box').style.display = 'none';
+}
+</SCRIPT></div>
+
+<SCRIPT>
+function glossary () { window.open(root+'glossary.html','gloss','width=640,height=570,resizable=yes,scrollbars=yes') }
+function opeNod (a) { window.open(root+'node/'+a+'.html',a,'width=770,height=570,resizable=yes,scrollbars=yes') }
+function opeLod (dp, a) { if(''==dp) d='au'; else d=dp; var w = d; w = w.replace(/[-\/]/g, '');
+	window.open(root+d+'/'+a+'.html',w+a,'width=640,height=546,resizable=yes,scrollbars=yes') }
+function na(){}
+</SCRIPT>
+<STYLE>
+#head {
+	position: left:0; padding-left:4px; background:#fff;
+	z-index:2; margin:0 0 8px 0; border-bottom:solid #000 1px;
+}
+#title {
+	padding-bottom: 4px; font-size: 1.3em; font-weight: bold;
+	max-width: 600px; /* non default overflow gives odd z-effects in FF */
+}
+#desc {
+	position: absolute; left: 4px; top: 1.8em;
+	padding: 2px 8px 4px 8px; white-space: normal; max-width: 480px;
+	background: #ffffcc; font-weight: normal; font-size: 10pt;
+	border: solid #000 1px;
+	display: none; z-index: 11;
+}
+#atitle { cursor: text;}
+#atitle, #stats {
+	text-decoration: none; color: #000;
+}
+#stats2 {
+	position: absolute; right: 0px; padding: 0;
+	background: white;
+	display: none; z-index: 11;
+}
+#atitle:hover #desc, #stats:hover #stats2 {
+	display: block;
+}
+@media print {
+	#head { position: static; }
+	#menu_pm { line-height: 0; }
+	#back { display: none; }
+}
+</STYLE>
+<!-- FF 3 only? fix -->
+<div id=head style="width:99%">
+<TABLE width=100% cellpadding=0 cellspacing=0 style="margin:0 0 3px 0">
+<TR valign=top><TD align=left width=60%>
+<div id=title><a id=atitle >RESEE: A Bibliographic Database on Balkan – Southeast European Studies<div id=desc>-------Search: Databases searching procedure and formats------
+*| Search query
+"balkan*" OR "southeast* europe*" OR "south east* europe*" (TITLE-ABS-KEY) 
+Web of Science Core Collection (SSCI, A&HCI, ESCI, BKCI-SSH)
+Scopus
+Constellate (JSTOR and Portico)
+
+Note: The earliest publication date from WoS for the articles was 1957 whereas for the books 2003.
+To complement our database with entries before 1957, we search the Constellate (Jstor and Portico) and Scopus database, finding and adding a further 445 articles.
+Characters were normalize, and English translation of the titles were added for entries in other languages than English. And for Constellate data we kept only Articles and Books from Humanities and Social Sciences.
+The Scopus and Constellate metadata files were converted into WoS (.txt) format.
+We also added manually 59 new entries (9 articles and 50 books) that were missing from the search but showed to be among the most cited references (local citation score greater than 10)
+
+---------Merging variants in the same cited references--------
+Given that databases have problems with the completeness of references and linkages (Van Eck and Waltman 2017), we used CRExplorer to clean the data and reduce the problems posed by variants in the same cited references (Thor et al. 2016)
+The cited references (CRs) in our data contained variants, especially the references on books. 
+We use the manual cleaning-up procedure, setting the clustering algorithm with a Levenshtein threshold of 0.75. 
+We also manually checked and unified variants of the same cited references (CRs), especially for books that received a local citation of more than 20 or had different years or editions and translations into other languages. 
+After the cleaning, we unify the variants of the same CRs, about 12% of the initial cited references.</div></a></div>
+<TD align=center><a href=# OnClick="window.open('../graph/list.html','graph','resizable=yes,scrollbars=yes')" class=nonprn>Historiographs</a><TD nowrap align=right rowspan=2 width=5%><div class=nonprn><a href=javascript:glossary()>Glossary</a>&nbsp;&nbsp;<a href="http://www.histcite.com/HTMLHelp/guide.html" target=guide>HistCite Guide</a>&nbsp;&nbsp;<a href=# OnClick="about(); return false">About</a></div><a id=stats>
+Grand Totals: LCS 8009, GCS 85894, CR 328237<br>Collection span: 1854 - 2022<br></a><TR><TD colspan=2 width=95%><b>All-Author List</b> (10107)</TABLE></div><div align=right>24 December 2022</div>
+<div class="index" style=""><a href=../index-tl.html>Records</a>: 8378, Authors: 10107, <a href=so-pubs.html>Journals</a>: 2650, <a href=or-pubs.html>Cited References</a>: 248863, <a href=wd-pubs.html>Words</a>: 11723
+<br><span class=nonprn><a href=py-pubs.html title=' Publication Years: 127 '>Yearly output</a>
+|&nbsp;<a href=dt-pubs.html title=' Document Types: 14 '>Document Type</a>
+|&nbsp;<a href=la-pubs.html title=' Languages: 6 '>Language</a>
+|&nbsp;<a href=in-pubs.html title=' Institutions: 62 '>Institution</a>
+|&nbsp;<a href=i2-pubs.html title=' Institution with Subdivisions: 64 '>Institution with Subdivision</a>
+|&nbsp;<a href=co-pubs.html title=' Countries: 8 '>Country</a></span></div><div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>38</b> of 51 &nbsp;<a href=au-name.html class=nu>1</a>&nbsp; &nbsp;<a href=au-name-11.html class=nu>11</a>&nbsp; &nbsp;<a href=au-name-21.html class=nu>21</a>&nbsp;<span class=nonprn>: [  &nbsp;<a href=au-name-31.html class=nu>31</a> &nbsp;<a href=au-name-32.html class=nu>32</a> &nbsp;<a href=au-name-33.html class=nu>33</a> &nbsp;<a href=au-name-34.html class=nu>34</a> &nbsp;<a href=au-name-35.html class=nu>35</a> &nbsp;<a href=au-name-36.html class=nu>36</a> &nbsp;<a href=au-name-37.html class=nu>37</a> &nbsp;38 &nbsp;<a href=au-name-39.html class=nu>39</a> &nbsp;<a href=au-name-40.html class=nu>40</a> ]</span> &nbsp;<a href=au-name-41.html class=nu>41</a>&nbsp; &nbsp;<a href=au-name-51.html class=nu>51</a>&nbsp;</div>
+<TABLE border=0 cellpadding=5 cellspacing=2 style="border: 2px solid #cccccc;margin: 4px 0;">
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="au-name.html">Author</a></SPAN><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>7401<TD align=left class=sc>Rajte M<TD><a TITLE=" Article CHILD ABUSE &amp; NEGLECT Title: Measuring violence against children: The adequacy of the International Society for the Prevention of Child Abuse and Neglect (ISPCAN) child abuse screening tool - Child version in 9 Balkan countries" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=evn><TD>7402<TD align=left class=sc>Rajter M<TD>2<TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>7403<TD align=left class=sc>Rakic M<TD><a TITLE=" Article STUDIES IN CONFLICT &amp; TERRORI Title: Wahhabism as a Militant Form of Islam on Europe&#39;s Doorstep" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7404<TD align=left class=sc>Rakicevik G<TD><a TITLE=" Article SOUTH EAST EUROPEAN JOURNAL O Title: The Adoption of Service Learning in Universities Around The World" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7405<TD align=left class=sc>Rakipi R<TD><a TITLE=" Article JOURNAL OF ECONOMIC AND SOCIA Title: Trends and Challenges of Female Unemployment in the Republic of Macedonia: A Regional Comparative Study" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7406<TD align=left class=sc>Rakita B<TD><a TITLE=" Article MARKET-TRZISTE Title: THE ROLE OF SOCIAL AND BUSINESS NETWORKS IN THE INTERNATIONALIZATION OF BORN GLOBAL FIRMS: EVIDENCE FROM SERBIA" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7407<TD align=left class=sc>Rakocevic V<TD><a TITLE=" BOOK CHAPTER NEW SILK ROAD: EUROPEAN PERSP Title: Montenegro in Economic and Maritime Silk Road in 21st Century and Endangering Factors of Security" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7408<TD align=left class=sc>Rakocevic Z<TD><a TITLE=" Article JOURNAL OF HUMAN EVOLUTION Title: A human mandible (BH-1) from the Pleistocene deposits of Mala Balanica cave (Sicevo Gorge, Nis, Serbia)" href=javascript:na() class=nu>1</a><TD><a title=' 0.1%' class=ank>9</a><TD><a title=' 0.1%' class=ank>43</a>
+<TR valign=top align=right class=odd><TD>7409<TD align=left class=sc>Rakosi G<TD><a TITLE=" Article ACTA LINGUISTICA HUNGARICA Title: On dative causers in Hungarian" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>7410<TD align=left class=sc>Ralev M<TD><a TITLE=" Article SERBIAN JOURNAL OF MANAGEMENT Title: WORKSPACE AS A FACTOR OF JOB SATISFACTION IN THE BANKING AND ICT INDUSTRIES IN MACEDONIA" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=odd><TD>7411<TD align=left class=sc>Raleva M<TD>3<TD>0<TD><a title=' 0.0%' class=ank>15</a>
+<TR valign=top align=right class=evn><TD>7412<TD align=left class=sc>Ramadani G<TD><a TITLE=" Article JOURNAL OF CENTRAL BANKING TH Title: Disinflationary Spillovers from The Euro Area into the Countries of Southeastern Europe" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>7413<TD align=left class=sc>Ramadani V<TD>4<TD>0<TD><a title=' 0.1%' class=ank>104</a>
+<TR valign=top align=right class=evn><TD>7414<TD align=left class=sc>Ramaj V<TD><a TITLE=" Article EKONOMSKI VJESNIK Title: THE IMPACT OF HUMAN RESOURCES ON THE EXPORT PERFORMANCE OF KOSOVO SMEs" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=odd><TD>7415<TD align=left class=sc>Rambousek A<TD><a TITLE=" Article COGNITIVE STUDIES-ETUDES COGN Title: SUSTAINABLE LONG-TERM WORDNET DEVELOPMENT AND MAINTENANCE: CASE STUDY OF THE CZECH WORDNET" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7416<TD align=left class=sc>Ramet SP<TD>12<TD><a title=' 1.0%' class=ank>79</a><TD><a title=' 1.0%' class=ank>830</a>
+<TR valign=top align=right class=odd><TD>7417<TD align=left class=sc>Ramfos A<TD><a TITLE=" BOOK CHAPTER INNOVATIONS IN SMES AND CONDU Title: An Open Source E-Procurement Application Framework for B2B and G2B" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>7418<TD align=left class=sc>RAMIREZ D<TD><a TITLE=" Article STANFORD LAW REVIEW Title: MULTICULTURAL EMPOWERMENT - ITS NOT JUST BLACK-AND-WHITE ANYMORE" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.1%' class=ank>70</a>
+<TR valign=top align=right class=odd><TD>7419<TD align=left class=sc>Ramirez-Orellana A<TD><a TITLE=" Article REVISTA DE ECONOMIA MUNDIAL Title: LINK BETWEEN ELECTRICITY CONSUMPTION, ENERGY USE, AND ECONOMIC GROWTH: EVIDENCE THROUGH PANEL DATA FOR CENTRAL EUROPE AND THE BALKANS" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7420<TD align=left class=sc>Rammelt HP<TD><a TITLE=" Article EAST EUROPEAN POLITICS AND SO Title: &quot;Vrem o tara ca afara!&quot;: How Contention in Romania Redefines State-Building through a Pro-European Discourse" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>7421<TD align=left class=sc>Ramsak J<TD><a TITLE=" Article ANNALES-ANALI ZA ISTRSKE IN M Title: &quot;FROM SKADARLIJA TO DOWNING STREET&quot;: GREAT BRITAIN AND THE BEGINNING OF THE YUGOSLAV CRISIS, 1980-1985" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>7422<TD align=left class=sc>Ramsey CB<TD><a TITLE=" Article JOURNAL OF WORLD PREHISTORY Title: Between the Vinca and Linearbandkeramik Worlds: The Diversity of Practices and Identities in the 54th-53rd Centuries cal BC in Southwest Hungary and Beyond" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=odd><TD>7423<TD align=left class=sc>Ramsthaler F<TD><a TITLE=" Article INTERNATIONAL JOURNAL OF OSTE Title: A possible case of symbolic trepanation in Neolithic Central Germany" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7424<TD align=left class=sc>Ranacher P<TD><a TITLE=" Article JOURNAL OF THE ROYAL SOCIETY  Title: Contact-tracing in cultural evolution: a Bayesian mixture model to detect geographic areas of language contact" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=odd><TD>7425<TD align=left class=sc>Randazzo E<TD><a TITLE=" BOOK CHAPTER EU GLOBAL STRATEGY AND HUMAN  Title: EU in the Western Balkans Hybrid development, hybrid security and hybrid justice" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7426<TD align=left class=sc>Randazzo F<TD><a TITLE=" Article NOVEISHAYA ISTORIYA ROSSII-MO Title: The Italian Diplomacy between Russia and the Central Empires during the World Conflict Outbreak" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7427<TD align=left class=sc>Randelovic S<TD>2<TD>0<TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=evn><TD>7428<TD align=left class=sc>Randjelovic S<TD><a TITLE=" Article INTERNATIONAL JOURNAL OF EMER Title: Determinants of variation in public investment in emerging Europe" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>7429<TD align=left class=sc>Rangelov I<TD>4<TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>18</a>
+<TR valign=top align=right class=evn><TD>7430<TD align=left class=sc>Ranic M<TD><a TITLE=" Article FOOD POLICY Title: Capacity development in food and nutrition in central and Eastern Europe: A decade of achievements" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="au-name.html">Author</a></SPAN><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>7431<TD align=left class=sc>Ranisavljevic D<TD><a TITLE=" Article; Early Access GLOBAL BUSINESS REVIEW Title: Nexus of Bank Income Structure and Risk: Evidence from Balkans" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7432<TD align=left class=sc>RANKI G<TD><a TITLE=" Article ACTA HISTORICA ACADEMIAE SCIE Title: SURMOUNTING THE ECONOMIC-CRISIS IN SOUTHEAST EUROPE IN THE 1930S" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=odd><TD>7433<TD align=left class=sc>Ranogajec J<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: Mummified animal skin with tar content from the castle of the late medieval town of Novo Brdo (Central Balkans)" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7434<TD align=left class=sc>Rant V<TD><a TITLE=" Article SOUTHEAST EUROPEAN AND BLACK  Title: The Western Balkans and the EU budget: the effects of enlargement" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7435<TD align=left class=sc>Rapone C<TD><a TITLE=" Article AMERICAN JOURNAL OF HUMAN BIO Title: A genetic portrait of the South-Eastern Carpathians based on autosomal short tandem repeats loci used in forensics" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7436<TD align=left class=sc>Rapti E<TD><a TITLE=" Article PROBLEMS OF EDUCATION IN THE  Title: ALBANIAN UNIVERSITY STUDENTS&#39; ETHNIC DISTANCE AND STEREOTYPES COMPARED WITH OTHER BALKAN NATIONS" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>7437<TD align=left class=sc>Rashkova ER<TD>2<TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>7438<TD align=left class=sc>Rasidagic EK<TD>2<TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=odd><TD>7439<TD align=left class=sc>Raskovic M<TD>2<TD>0<TD><a title=' 0.1%' class=ank>44</a>
+<TR valign=top align=right class=evn><TD>7440<TD align=left class=sc>Raspor S<TD><a TITLE=" Article TOTAL QUALITY MANAGEMENT &amp; BU Title: Exploring perceived service quality, perceived value, and repurchase intention in higher education using structural equation modelling" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>40</a>
+<TR valign=top align=right class=odd><TD>7441<TD align=left class=sc>RASSON JA<TD><a TITLE=" Article AMERICAN ANTIQUITY Title: ANNUAL-REVIEW OF OLD-WORLD ARCHAEOLOGY .1. EX-BALCANIS-LUX, RECENT DEVELOPMENTS IN NEOLITHIC AND CHALCOLITHIC RESEARCH IN SOUTHEAST EUROPE" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=evn><TD>7442<TD align=left class=sc>Rast-Eicher A<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: Sheep wool in Bronze Age and Iron Age Europe" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=odd><TD>7443<TD align=left class=sc>Rastislav S<TD><a TITLE=" Article GEOGRAPHICA PANNONICA Title: Serbian Medieval Urban Settlements" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7444<TD align=left class=sc>Rat MM<TD><a TITLE=" Article URBAN ECOSYSTEMS Title: Urban flora in the Southeast Europe and its correlation with urbanization" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>11</a>
+<TR valign=top align=right class=odd><TD>7445<TD align=left class=sc>Rathbun BC<TD><a TITLE=" Article GERMAN POLITICS AND SOCIETY Title: The Myth of German Pacifism" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>7446<TD align=left class=sc>Ratkaj I<TD><a TITLE=" Article MITTEILUNGEN DER OSTERREICHIS Title: Informal housing as routine? Multiple urban transitions in the Belgrade metropolitan area (with Kaluderica as an example)" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>7447<TD align=left class=sc>Ratkovic N<TD><a TITLE=" Article AREA ABIERTA Title: Women&#39;s Participation in Wikipedia: Cross-Border Balkan Perspective" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7448<TD align=left class=sc>Ratz DV<TD><a TITLE=" Article VESTNIK PERMSKOGO UNIVERSITET Title: MUNICH PACT OF 1938 IN THE ASSESSMENTS OF SOVIET AND RUSSIAN HISTORIANS" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7449<TD align=left class=sc>Ratzmann N<TD><a TITLE=" Article SOUTHEAST EUROPEAN AND BLACK  Title: Reforming Moldovan social assistance: Poor Laws for the European fringe?" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7450<TD align=left class=sc>Raveane A<TD><a TITLE=" Article ANNALS OF HUMAN BIOLOGY Title: Reconstructing the genetic history of Italians: new insights from a male (Y-chromosome) perspective" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>11</a>
+<TR valign=top align=right class=odd><TD>7451<TD align=left class=sc>Ravettto-Biagioli K<TD><a TITLE=" Article SCREEN Title: Laughing into an abyss: Cinema and Balkanization (Films from Eastern Europe that reveal the impact of Stalinism in the region from the beginning to today)" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7452<TD align=left class=sc>Ray A<TD><a TITLE=" Article RELIGIONS OF SOUTH ASIA Title: The Cultural Matrix of the Online Hindutva Discourse in India" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7453<TD align=left class=sc>Raymond F<TD><a TITLE=" Article CYBERGEO-EUROPEAN JOURNAL OF  Title: Intense rainfalls in the Mediterranean Basin: which trends between 1950 and 2013?" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=evn><TD>7454<TD align=left class=sc>Raymond G<TD><a TITLE=" Article FRENCH CULTURAL STUDIES Title: Sarkozy-de Gaulle: Recycling the Resistance myth" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=odd><TD>7455<TD align=left class=sc>Razou A<TD><a TITLE=" Article PROCEEDINGS OF THE NATIONAL A Title: Maritime route of colonization of Europe" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.1%' class=ank>51</a>
+<TR valign=top align=right class=evn><TD>7456<TD align=left class=sc>Razsa M<TD>2<TD><a title=' 0.3%' class=ank>22</a><TD><a title=' 0.1%' class=ank>63</a>
+<TR valign=top align=right class=odd><TD>7457<TD align=left class=sc>Razumov SN<TD><a TITLE=" Article RUSIN Title: The EARLIEST BARROW GOLD IN THE LOWER DNIESTER REGION AS AN INDICATOR OF INTERCULTURAL RELATIONS" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7458<TD align=left class=sc>Reardon J<TD><a TITLE=" Article INTERNATIONAL BUSINESS REVIEW Title: Purchase behavior in favor of domestic products in the West Balkans" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.1%' class=ank>57</a>
+<TR valign=top align=right class=odd><TD>7459<TD align=left class=sc>Reba JM<TD><a TITLE=" Article NASLEDE Title: FEMINIST AMERICA IN JELENA DIMITRIJEVIC&#39;S TRAVELOGUE" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7460<TD align=left class=sc>Recalde M<TD><a TITLE=" Article ENERGY POLICY Title: Structural energy poverty vulnerability and excess winter mortality in the European Union: Exploring the association between structural determinants and health" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.1%' class=ank>49</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="au-name.html">Author</a></SPAN><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>7461<TD align=left class=sc>Rechel B<TD>2<TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7462<TD align=left class=sc>Recher V<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7463<TD align=left class=sc>Redding A<TD><a TITLE=" Article ANGELAKI-JOURNAL OF THE THEOR Title: East of the sun and West of the moon - The Balkans and cultural studies" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7464<TD align=left class=sc>Redlich J<TD><a TITLE=" Article FOREIGN AFFAIRS Title: Hapsburg Policy in the Balkans before the War: Selections from the Diaries of the Late Dr. Josef M. Baernreither" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7465<TD align=left class=sc>Redmond G<TD>2<TD>0<TD><a title=' 0.0%' class=ank>31</a>
+<TR valign=top align=right class=evn><TD>7466<TD align=left class=sc>Rednak M<TD>2<TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>16</a>
+<TR valign=top align=right class=odd><TD>7467<TD align=left class=sc>Redzepagic S<TD><a TITLE=" Article PANOECONOMICUS Title: Balkan Countries: Catching Up and their Integration in the European Financial System" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=evn><TD>7468<TD align=left class=sc>Redzic A<TD><a TITLE=" Article COLLEGIUM ANTROPOLOGICUM Title: Influence of some socio-economic factors on growth and development of the boys in the Tuzla region (Bosnia and Herzegovina)" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=odd><TD>7469<TD align=left class=sc>Redzic S<TD>4<TD>0<TD><a title=' 0.1%' class=ank>69</a>
+<TR valign=top align=right class=evn><TD>7470<TD align=left class=sc>Redzic SS<TD><a TITLE=" Article COLLEGIUM ANTROPOLOGICUM Title: The ecological aspect of ethnobotany and ethnopharmacology of population in Bosnia and Herzegovina" href=javascript:opeNod(1981)>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.2%' class=ank>136</a>
+<TR valign=top align=right class=odd><TD>7471<TD align=left class=sc>Reed K<TD><a TITLE=" Article PRILOZI INSTITUTA ZA ARHEOLOG Title: Assemblages from Marginal Spaces: The results of the excavations in Mala (Nova) Pecina near Muc and the Neolithic of Dalmatinska Zagora" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7472<TD align=left class=sc>Rees A<TD><a TITLE=" Article JOURNAL OF GLOBAL HISTORY Title: &#39;Treated like Chinamen&#39;: United States immigration restriction and white British subjects" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=odd><TD>7473<TD align=left class=sc>Rees W<TD><a TITLE=" BOOK CHAPTER EUROPEAN UNION IN THE SECURIT Title: THE EU AND THE EASTERN ARC OF INSTABILITY The Western Balkans, Eastern Europe and Southern Caucasus" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7474<TD align=left class=sc>Regalsky A<TD><a TITLE=" Article REVISTA URUGUAYA DE HISTORIA  Title: STATE-OWNED BANKS AND CRISIS: BANCO DE LA NACION ARGENTINA AND BIG DEBTORS DURING THE CRISIS OF 1914-15" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7475<TD align=left class=sc>Regert M<TD><a TITLE=" Article CAMBRIDGE ARCHAEOLOGICAL JOUR Title: The Consumption of Bone Powder in the Early Neolithic Societies of Southeastern Europe: Evidence of a Diet Stress?" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>7476<TD align=left class=sc>Regueiro M<TD><a TITLE=" Article AMERICAN JOURNAL OF PHYSICAL  Title: Human Y-Chromosome Short Tandem Repeats: A Tale of Acculturation and Migrations as Mechanisms for the Diffusion of Agriculture in the Balkan Peninsula" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>23</a>
+<TR valign=top align=right class=odd><TD>7477<TD align=left class=sc>Rehman NU<TD><a TITLE=" Article COGENT ECONOMICS &amp; FINANCE Title: The effect of financial development and remittances on economic growth" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>7478<TD align=left class=sc>Rehren T<TD>7<TD><a title=' 0.6%' class=ank>52</a><TD><a title=' 0.3%' class=ank>256</a>
+<TR valign=top align=right class=odd><TD>7479<TD align=left class=sc>Reich J<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: First absolute chronologies of neolithic and bronze age settlements at Lake Ohrid based on dendrochronology and radiocarbon dating" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7480<TD align=left class=sc>Reid AI<TD><a TITLE=" Article EUROPEAN JOURNAL OF INNOVATIO Title: Smart specialisation strategies in south Europe during crisis" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>42</a>
+<TR valign=top align=right class=odd><TD>7481<TD align=left class=sc>Reid EA<TD><a TITLE=" Article NATIONALITIES PAPERS-THE JOUR Title: Third Rome or Potemkin village: Analyzing the Extent of Russia&#39;s Power in Serbia, 2012-2019" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7482<TD align=left class=sc>Reidla M<TD><a TITLE=" Article PLOS ONE Title: Genetic Heritage of the Balto-Slavic Speaking Populations: A Synthesis of Autosomal, Mitochondrial and Y-Chromosomal Data" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.1%' class=ank>62</a>
+<TR valign=top align=right class=odd><TD>7483<TD align=left class=sc>Reimer P<TD><a TITLE=" Article ANTIQUITY Title: The end of the affair: formal chronological modelling for the top of the Neolithic tell of Vinca-Belo Brdo" href=javascript:na() class=nu>1</a><TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=evn><TD>7484<TD align=left class=sc>Rein TR<TD><a TITLE=" Article JOURNAL OF HUMAN EVOLUTION Title: New Neanderthal remains from Mani peninsula, Southern Greece: The Kalamakia Middle Paleolithic cave site" href=javascript:na() class=nu>1</a><TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.1%' class=ank>56</a>
+<TR valign=top align=right class=odd><TD>7485<TD align=left class=sc>Reinkowski M<TD><a TITLE=" Editorial Material; Book Chapter WORLD WAR I AND THE END OF TH Title: WORLD WAR I AND THE END OF THE OTTOMANS: FROM THE BALKAN WARS TO THE ARMENIAN GENOCIDE INTRODUCTION" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7486<TD align=left class=sc>Reiter H<TD><a TITLE=" Article ANNALES-ANALI ZA ISTRSKE IN M Title: TRANSFORMATION AND DEMOGRAPHIC CHANGE IN THE EX-YUGOSLAV COUNTRIES - MATERIALIST, IDEALIST, AND INSTITUTIONALIST PERSPECTIVES ON REPRODUCTIVE TRENDS" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=odd><TD>7487<TD align=left class=sc>Reka B<TD><a TITLE=" Article EUROPOLITY-CONTINUITY AND CHA Title: NON-TRADITIONAL SECURITY CHALLENGES AS A MAIN SECURITY THREAT TO THE WESTERN BALKAN COUNTRIES" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7488<TD align=left class=sc>Rekas J<TD><a TITLE=" Article SLAVIA MERIDIONALIS Title: Around Jozef Obrebski&#39;s Narrative on Religion and Religiosity: On the Basis of Materials Collected in the Macedonian Region of Porece" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7489<TD align=left class=sc>Reljic D<TD>2<TD><a title=' 0.2%' class=ank>19</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=evn><TD>7490<TD align=left class=sc>REMAK J<TD><a TITLE=" Article JOURNAL OF MODERN HISTORY Title: 1914-THIRD BALKAN WAR - ORIGINS RECONSIDERED" href=javascript:na() class=nu>1</a><TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>25</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="au-name.html">Author</a></SPAN><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>7491<TD align=left class=sc>Remenyi P<TD><a TITLE=" Article MITTEILUNGEN DER OSTERREICHIS Title: ISLAM AND THE HUNGARIANS" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7492<TD align=left class=sc>Remington RA<TD><a TITLE=" Article; Proceedings Paper PROBLEMS OF POST-COMMUNISM Title: NATO transformation and miscalculation - Balkan quicksand" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7493<TD align=left class=sc>Ren LC<TD><a TITLE=" Article TECHNOLOGICAL AND ECONOMIC DE Title: ASSESSMENT OF CORPORATE SOCIAL RESPONSIBILITY AND ITS IMPACTS ON CORPORATE REPUTATION OF COMPANIES IN SELECTED BALKAN COUNTRIES FORMER YUGOSLAVIA STATES" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=evn><TD>7494<TD align=left class=sc>Renard J<TD><a TITLE=" BOOK CHAPTER CROSSING CONFESSIONAL BOUNDAR Title: Geographies Shared III From Anatolia to the Balkans" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7495<TD align=left class=sc>Renault-Fabregon L<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: Neolithic sheep birth distribution: Results from Nova Nadezhda (sixth millennium BC, Bulgaria) and a reassessment of European data with a new modern reference set including upper and lower molars" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=evn><TD>7496<TD align=left class=sc>Renda MC<TD><a TITLE=" Article PROCEEDINGS OF THE NATIONAL A Title: Maritime route of colonization of Europe" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.1%' class=ank>51</a>
+<TR valign=top align=right class=odd><TD>7497<TD align=left class=sc>RENFREW C<TD><a TITLE=" Article ANTIQUITY Title: SITAGROI, RADIOCARBON AND PREHISTORY OF SOUTH-EAST EUROPE" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>4</a><TD><a title=' 0.0%' class=ank>20</a>
+<TR valign=top align=right class=evn><TD>7498<TD align=left class=sc>Renko N<TD><a TITLE=" Article JOURNAL OF PUBLIC POLICY &amp; MA Title: When policies and marketing systems explode: An assessment of food marketing in the war-ravaged balkans and implications for recovery, sustainable peace, and prosperity" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.1%' class=ank>47</a>
+<TR valign=top align=right class=odd><TD>7499<TD align=left class=sc>Renko S<TD>3<TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>7500<TD align=left class=sc>Renner S<TD><a TITLE=" Article EUROPEAN INTEGRATION ONLINE P Title: The Energy Community of Southeast Europe: A neo-functionalist project of regional integration" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>28</a>
+<TR valign=top align=right class=odd><TD>7501<TD align=left class=sc>Rentzsch J<TD><a TITLE=" Article TURKIC LANGUAGES Title: Complementation strategies with the verb &#39;to know&#39; in the Turkish dialect of Ohrid compared to Standard Turkish and Macedonian" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7502<TD align=left class=sc>Repe B<TD><a TITLE=" Article ANNALES-ANALI ZA ISTRSKE IN M Title: THE ROLE OF MILAN KUCAN IN SLOVENIAN FOREIGN POLICY" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7503<TD align=left class=sc>Repin V<TD><a TITLE=" Article CZECH-POLISH HISTORICAL AND P Title: Political Struggle in Bessarabia and at the Romanian Front. The Beginning of Romanian Occupation of Bessarabia (November 1917 - February 1918)" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7504<TD align=left class=sc>Repo N<TD><a TITLE=" Article CONTEMPORARY ISLAM-DYNAMICS O Title: Albanian women&#39;s interpretations of Islam enlarge the space of women" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7505<TD align=left class=sc>Repousis S<TD><a TITLE=" Article SOUTHEASTERN EUROPE Title: International Development Assistance and Economic Growth: the Case of Four Southeast European Countries" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7506<TD align=left class=sc>Resch G<TD>2<TD>0<TD><a title=' 0.0%' class=ank>12</a>
+<TR valign=top align=right class=odd><TD>7507<TD align=left class=sc>Rescio A<TD><a TITLE=" Article MEDITERRANEA-RICERCHE STORICH Title: A FRIENDLY TRADE AGREEMENT BETWEEN ALBANIA AND PUGLIA IN 1514" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7508<TD align=left class=sc>Resic E<TD><a TITLE=" Article INTERDISCIPLINARY DESCRIPTION Title: RECENT IMPACTS OF SELECTED DEVELOPMENT INDICATORS ON UNEMPLOYMENT RATE: FOCUSING THE SEE COUNTRIES" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7509<TD align=left class=sc>RESIS A<TD><a TITLE=" Article AMERICAN HISTORICAL REVIEW Title: CHURCHILL-STALIN SECRET PERCENTAGES AGREEMENT ON BALKANS, MOSCOW, OCTOBER 1944" href=javascript:na() class=nu>1</a><TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=evn><TD>7510<TD align=left class=sc>Reskin BF<TD>2<TD>0<TD><a title=' 0.4%' class=ank>321</a>
+<TR valign=top align=right class=odd><TD>7511<TD align=left class=sc>Resmini L<TD><a TITLE=" BOOK CHAPTER FOREIGN DIRECT INVESTMENT IN  Title: The determinants of FDI in Central, Eastern and South-Eastern Europe: lessons from the past and prospects for the future" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>7512<TD align=left class=sc>Reuter E<TD><a TITLE=" Article OCCASIONAL PAPERS ON RELIGION Title: THE SOCIALIST IMPACT ON THE CHRISTIAN-MUSLIM SHARED ST. NAUM MONASTERY" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7513<TD align=left class=sc>Reuter J<TD><a TITLE=" Article INTERNATIONALE POLITIK Title: War in the Balkans - International dimension" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7514<TD align=left class=sc>Reveillas H<TD><a TITLE=" Article AMERICAN JOURNAL OF PHYSICAL  Title: Ancient mitochondrial DNA from the middle neolithic necropolis of Obernai extends the genetic influence of the LBK to west of the Rhine" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=odd><TD>7515<TD align=left class=sc>Rewjakina L<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7516<TD align=left class=sc>Rexhaj X<TD><a TITLE=" Article INTERNATIONAL JOURNAL OF INCL Title: Dearth of early education experience: a significant barrier to educational and social inclusion in the Western Balkans" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>7517<TD align=left class=sc>Rexhepi A<TD><a TITLE=" Article BALKAN ARASTIRMA ENSTITUSU DE Title: TRACES OF PERSIAN LITERATURE ON NAIM FRASHERI&#39;S POETRY" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7518<TD align=left class=sc>Rexhepi G<TD>2<TD>0<TD><a title=' 0.1%' class=ank>74</a>
+<TR valign=top align=right class=odd><TD>7519<TD align=left class=sc>Rexhepi P<TD>6<TD><a title=' 0.1%' class=ank>11</a><TD><a title=' 0.0%' class=ank>37</a>
+<TR valign=top align=right class=evn><TD>7520<TD align=left class=sc>Rexhepi Y<TD><a TITLE=" Article PERSONNEL REVIEW Title: Rewarding employees in turbulent economies for improved organisational performance Exploring SMEs in the South-Eastern European region" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>16</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="au-name.html">Author</a></SPAN><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>7521<TD align=left class=sc>Reyes J<TD><a TITLE=" Article JOURNAL OF INTERNATIONAL BUSI Title: The architecture of globalization: a network approach to international economic integration" href=javascript:opeNod(2060)>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.2%' class=ank>160</a>
+<TR valign=top align=right class=evn><TD>7522<TD align=left class=sc>Rhode GF<TD><a TITLE=" Article DIPLOMACY &amp; STATECRAFT Title: &#39;China&#39;s Emergence as a Power in the Mediterranean: Port Diplomacy and Active Engagement&#39;" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7523<TD align=left class=sc>Riano Y<TD>3<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.1%' class=ank>91</a>
+<TR valign=top align=right class=evn><TD>7524<TD align=left class=sc>Ribakova E<TD><a TITLE=" Article JOURNAL OF COMPARATIVE ECONOM Title: Foreign direct investment in European transition economies - The role of policies" href=javascript:na() class=nu>1</a><TD><a title=' 0.1%' class=ank>8</a><TD><a title=' 0.1%' class=ank>70</a>
+<TR valign=top align=right class=odd><TD>7525<TD align=left class=sc>Ribas LS<TD><a TITLE=" Article REVISTA DE FILOLOGIA ALEMANA Title: Language, Memory, Country: Return to the Past in Engste Heimat by Erica Pedretti" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7526<TD align=left class=sc>Ribolini A<TD><a TITLE=" Article JOURNAL OF MAPS Title: Geomorphology of the topmost part of the Bistra Mountain, Mavrovo Park, North Macedonia" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7527<TD align=left class=sc>Ricca M<TD><a TITLE=" Article INTERNATIONAL JOURNAL OF CONS Title: CHARACTERIZATION OF ARCHAEOLOGICAL BRONZE OBJECTS FROM THE NATIONAL MUSEUM OF BOSNIA AND HERZEGOVINA (SARAJEVO)" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7528<TD align=left class=sc>Richard Y<TD><a TITLE=" Article ESPACE POLITIQUE Title: Are EU neighbours EU&#39;s peripheries ?" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7529<TD align=left class=sc>Richards MP<TD><a TITLE=" Article EUROPEAN JOURNAL OF ARCHAEOLO Title: Stable Isotope Palaeodietary and Radiocarbon Evidence from the Early Neolithic Site of Zemunica, Dalmatia, Croatia" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>10</a>
+<TR valign=top align=right class=evn><TD>7530<TD align=left class=sc>Richardson R<TD><a TITLE=" Article SCOTT GEOGR MAG Title: New railway projects in the Balkan Peninsula" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7531<TD align=left class=sc>Richet X<TD><a TITLE=" Article ASIAN ECONOMIC PAPERS Title: Geographical and Strategic Factors in Chinese Foreign Direct Investment in Europe" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=evn><TD>7532<TD align=left class=sc>Richmond OP<TD><a TITLE=" Article JOURNAL OF INTERVENTION AND S Title: De Facto States in the Balkans: Shared Governance versus Ethnic Sovereignty in Republika Srpska and Kosovo" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>11</a>
+<TR valign=top align=right class=odd><TD>7533<TD align=left class=sc>RICHTER A<TD><a TITLE=" Article ZEITSCHRIFT FUR SLAWISTIK Title: A HISTORY OF ACADEMIES-OF-SCIENCES IN EASTERN AND SOUTHEASTERN EUROPE, A SURVEY" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7534<TD align=left class=sc>Richter J<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: First chronometric dates (TL and OSL) for the Aurignacian open-air site of Romanesti-Dumbravita I, Romania" href=javascript:na() class=nu>1</a><TD><a title=' 0.1%' class=ank>5</a><TD><a title=' 0.0%' class=ank>24</a>
+<TR valign=top align=right class=odd><TD>7535<TD align=left class=sc>RICHTER L<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7536<TD align=left class=sc>Richter S<TD>5<TD><a title=' 0.9%' class=ank>74</a><TD><a title=' 0.2%' class=ank>142</a>
+<TR valign=top align=right class=odd><TD>7537<TD align=left class=sc>Rickards O<TD><a TITLE=" Article JOURNAL OF CULTURAL HERITAGE Title: A molecular approach to the study of the ancient populations of southern Italy" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7538<TD align=left class=sc>Rid T<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7539<TD align=left class=sc>Ridiche F<TD><a TITLE=" Article PLOS ONE Title: Ancient DNA from South-East Europe Reveals Different Events during Early and Middle Neolithic Influencing the European Genetic Heritage" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>25</a>
+<TR valign=top align=right class=evn><TD>7540<TD align=left class=sc>Riding J<TD>2<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=odd><TD>7541<TD align=left class=sc>Ridley HE<TD><a TITLE=" Article SCIENCE Title: Development and Disintegration of Maya Political Systems in Response to Climate Change" href=javascript:opeNod(3729)>1</a><TD>0<TD><a title=' 0.4%' class=ank>328</a>
+<TR valign=top align=right class=evn><TD>7542<TD align=left class=sc>Ridley N<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7543<TD align=left class=sc>Riedler F<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7544<TD align=left class=sc>Riegler H<TD><a TITLE=" BOOK CHAPTER EVOLUTION OF CIVIL-MILITARY R Title: State Violence, State Weakness - Explaining the Plethora of Security Risks and Instability in South East Europe" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7545<TD align=left class=sc>Rihtman-Augustin D<TD><a TITLE=" Article OSTERREICHISCHE ZEITSCHRIFT F Title: Croatia and the Balkans - Popular culture, representation, politics" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7546<TD align=left class=sc>Rijavec D<TD><a TITLE=" Article CENTRAL EUROPEAN PUBLIC ADMIN Title: An Examination and Evaluation of Multi-Level Governance During Migration Crisis: The Case of Slovenia" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>7547<TD align=left class=sc>Rikev K<TD>2<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7548<TD align=left class=sc>Rimac I<TD><a TITLE=" Article LJETOPIS SOCIJALNOG RADA Title: EPIDEMIOLOGICAL RESEARCH OF PREVALENCE AND INCIDENCE OF FAMILY VIOLENCE ON CHILDREN IN CROATIA" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>7549<TD align=left class=sc>Rimhinn C<TD><a TITLE=" BOOK CHAPTER CREATING LANGUAGES IN CENTRAL Title: Setting the Stage in Europe" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7550<TD align=left class=sc>Rinaldi M<TD><a TITLE=" Article NUOVA RIVISTA STORICA Title: RETURNING PROTAGONISTS TO THE LEVANT: ITALY&#39;S ECONOMIC AND COMMERCIAL POLICY TOWARDS GREECE IN THE IMMEDIATE POST-WAR PERIOD, BETWEEN AMBITIONS AND LIMITS" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="au-name.html">Author</a></SPAN><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>7551<TD align=left class=sc>Rindlisbaker S<TD><a TITLE=" Article JOURNAL OF AUTISM AND DEVELOP Title: A Pilot Study of a Behavioral Parent Training in the Republic of Macedonia" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=evn><TD>7552<TD align=left class=sc>Ringdal K<TD>5<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=odd><TD>7553<TD align=left class=sc>Ringsmose J<TD><a TITLE=" Article EUROPEAN JOURNAL OF INTERNATI Title: Prestige-seeking small states: Danish and Norwegian military contributions to US-led operations" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>22</a>
+<TR valign=top align=right class=evn><TD>7554<TD align=left class=sc>Rink WJ<TD><a TITLE=" Article PLOS ONE Title: New Radiometric Ages for the BH-1 Hominin from Balanica (Serbia): Implications for Understanding the Role of the Balkans in Middle Pleistocene Human Evolution" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>33</a>
+<TR valign=top align=right class=odd><TD>7555<TD align=left class=sc>Riquelme SF<TD><a TITLE=" Article RAZON HISTORICA-REVISTA HISPA Title: Montenegro, a Balkan identity in conflict" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7556<TD align=left class=sc>Rishi M<TD><a TITLE=" Article JOURNAL OF DEVELOPMENTAL ENTR Title: ECONOMIC AND SOCIAL CHARACTERISTICS OF ALBANIAN IMMIGRANT ENTREPRENEURS IN GREECE" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=odd><TD>7557<TD align=left class=sc>Ristani I<TD><a TITLE=" Article SLOVENE-INTERNATIONAL JOURNAL Title: Medieval Churches in Shushica Valley (South Albania) and the Slavonic Bishopric of St. Clement of Ohrid" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>7</a>
+<TR valign=top align=right class=evn><TD>7558<TD align=left class=sc>Risteski LS<TD><a TITLE=" Article ETNOANTROPOLOSKI PROBLEMI-ISS Title: Josef Obrebski&#39;s Anthropological Research on Macedonia" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7559<TD align=left class=sc>Ristic I<TD>2<TD><a title=' 0.1%' class=ank>6</a><TD><a title=' 0.0%' class=ank>17</a>
+<TR valign=top align=right class=evn><TD>7560<TD align=left class=sc>Ristic L<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=odd><TD>7561<TD align=left class=sc>Ristic MR<TD><a TITLE=" Article JOURNAL OF EAST EUROPEAN MANA Title: A Cross-Cultural Comparison of Conflict Management Styles in Multinational Organisations: Empirical Evidence from Serbia" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>7562<TD align=left class=sc>Ristovic M<TD>2<TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7563<TD align=left class=sc>Ristovska-Josifovska B<TD>3<TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7564<TD align=left class=sc>Ritter M<TD><a TITLE=" Article BYZANTINOSLAVICA-REVUE INTERN Title: The vlacho-bulgarian rebellion and the attempts of its suppression by Emperor Isaacius II (1185-1195)" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=odd><TD>7565<TD align=left class=sc>Ritzberger-Grunwald D<TD><a TITLE=" Editorial Material; Book Chapter EURO AND ECONOMIC STABILITY:  Title: The Euro and Economic Stability Focus on Central, Eastern and South-Eastern Europe Preface" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7566<TD align=left class=sc>RIVERO LML<TD><a TITLE=" Article NATURAL LANGUAGE &amp; LINGUISTIC Title: CLAUSE STRUCTURE AND V-MOVEMENT IN THE LANGUAGES OF THE BALKANS" href=javascript:opeNod(966)>1</a><TD><a title=' 0.1%' class=ank>7</a><TD><a title=' 0.1%' class=ank>101</a>
+<TR valign=top align=right class=odd><TD>7567<TD align=left class=sc>Rivero ML<TD><a TITLE=" Article LINGUA Title: Topics in Bulgarian morphology and syntax: a minimalist perspective" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>14</a>
+<TR valign=top align=right class=evn><TD>7568<TD align=left class=sc>Rivi L<TD><a TITLE=" BOOK CHAPTER EUROPEAN CINEMA AFTER 1989: C Title: UNDERGROUND AND THE BALKANIZATION OF HISTORY" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7569<TD align=left class=sc>Rivollat M<TD><a TITLE=" Article AMERICAN JOURNAL OF PHYSICAL  Title: Ancient mitochondrial DNA from the middle neolithic necropolis of Obernai extends the genetic influence of the LBK to west of the Rhine" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>6</a>
+<TR valign=top align=right class=evn><TD>7570<TD align=left class=sc>Rizaj G<TD><a TITLE=" Article CASOPIS ZA SUVREMENU POVIJEST Title: Diplomatic Disputes regarding the Trans-Balkan Railway Projects in the 1900-1912 Period in the Context of the Albanian Question" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7571<TD align=left class=sc>RIZOPOULOS NX<TD><a TITLE=" Article WORLD POLICY JOURNAL Title: A 3RD BALKAN WAR" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7572<TD align=left class=sc>Rizopoulos Y<TD>2<TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>7573<TD align=left class=sc>Rkman P<TD><a TITLE=" Article CROATIAN OPERATIONAL RESEARCH Title: EVALUATION OF THE FDI ATTRACTIVENESS OF THE EUROPEAN COUNTRIES USING PROMETHEE METHOD" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7574<TD align=left class=sc>Robarts A<TD>3<TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>5</a>
+<TR valign=top align=right class=odd><TD>7575<TD align=left class=sc>Robbins BG<TD><a TITLE=" Article SOCIOLOGY COMPASS Title: What is Trust? A Multidisciplinary Review, Critique, and Synthesis" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>38</a>
+<TR valign=top align=right class=evn><TD>7576<TD align=left class=sc>Roberts BW<TD><a TITLE=" Article JOURNAL OF WORLD PREHISTORY Title: Early Balkan Metallurgy: Origins, Evolution and Society, 6200-3700 BC" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7577<TD align=left class=sc>Roberts E<TD>2<TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7578<TD align=left class=sc>Roberts F<TD><a TITLE=" Article MANAGEMENT DECISION Title: Differentiating foothold attacks from strategic feints" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>7579<TD align=left class=sc>Roberts I<TD><a TITLE=" Article JOURNAL OF WAR &amp; CULTURE STUD Title: The Return of the Hero? Contemporary German War Films" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=evn><TD>7580<TD align=left class=sc>Roberts K<TD><a TITLE=" Article JOURNAL OF YOUTH STUDIES Title: Youth mobilisations and political generations: young activists in political change movements during and since the twentieth century" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>23</a>
+<TR bgcolor=#e1e9e1><TD align=right>#<TH><SPAN class=sc><a href="au-name.html">Author</a></SPAN><TH><a href="au-pubs.html" TITLE=" Records ">Recs</a><TH><a href="au-lcs.html" TITLE=" Total Local Citation Score ">TLCS</a><TH><a href="au-gcs.html" TITLE=" Total Global Citation Score ">TGCS</a>
+<TR valign=top align=right class=odd><TD>7581<TD align=left class=sc>Roberts N<TD><a TITLE=" Article CURRENT ANTHROPOLOGY Title: Diversity and Complexity in Early Farming Communities of Southwest Asia: New Insights into the Economic and Environmental Basis of Neolithic Catalhoyuk" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.1%' class=ank>57</a>
+<TR valign=top align=right class=evn><TD>7582<TD align=left class=sc>Robertson J<TD><a TITLE=" Article EAST EUROPEAN POLITICS AND SO Title: Imagining the Balkans as a Space of Revolution: The Federalist Vision of Serbian Socialism, 1870-1914" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>2</a>
+<TR valign=top align=right class=odd><TD>7583<TD align=left class=sc>Robic S<TD><a TITLE=" BOOK CHAPTER ENERGY POVERTY AND VULNERABIL Title: Energy poverty in the Western Balkans Adjusting policy responses to socio-economic drivers" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7584<TD align=left class=sc>Robinson LM<TD><a TITLE=" Article FRONTIERS-A JOURNAL OF WOMEN  Title: Fighting balkanization (in bed)" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7585<TD align=left class=sc>ROBLES HE<TD><a TITLE=" Article; Proceedings Paper HISPAMERICA-REVISTA DE LITERA Title: HOMOGENIZATION/BALKANIZATION, GUAYAQUIL AND THE MIRRORS IN &#39;NUNCA MAS EL MAR&#39;" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=evn><TD>7586<TD align=left class=sc>Robson HK<TD><a TITLE=" Article ARCHAEOLOGICAL AND ANTHROPOLO Title: Diet, cuisine and consumption practices of the first farmers in the southeastern Baltic" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>16</a>
+<TR valign=top align=right class=odd><TD>7587<TD align=left class=sc>Robu R<TD><a TITLE=" Article ROMANIAN JOURNAL OF EUROPEAN  Title: In Search of Emerging Polities: Thematic Agendas of Selected European Cross-Border Cooperation Structures" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>7588<TD align=left class=sc>Rocchi L<TD><a TITLE=" Article ZEITSCHRIFT FUR ROMANISCHE PH Title: Some considerations of the Italian dagger reflections in the Balkan and Turkish-Ottoman languages" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=odd><TD>7589<TD align=left class=sc>Roche C<TD><a TITLE=" Article AMERICAN POLITICS RESEARCH Title: Forging Bonds and Burning Bridges: Polarization and Incivility in Blog Discussions About Occupy Wall Street" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>15</a>
+<TR valign=top align=right class=evn><TD>7590<TD align=left class=sc>Roche D<TD><a TITLE=" Article EUROPEAN JOURNAL OF AMERICAN  Title: (De) constructing &quot;America&quot;: the Case of Emir Kusturica&#39;s Arizona Dream (1993)" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7591<TD align=left class=sc>Rod JK<TD><a TITLE=" Article INTERNATIONAL AREA STUDIES RE Title: Ethnonationalism in post-war Bosnia-Herzegovina and Kosovo The effects of local violence and ethnic composition" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>4</a>
+<TR valign=top align=right class=evn><TD>7592<TD align=left class=sc>Rodgers P<TD><a TITLE=" Article SERVICE INDUSTRIES JOURNAL Title: &quot;The price is different depending on whether you want a receipt or not&#39;: examining the purchasing of goods and services from the informal economy in South-East Europe" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>2</a><TD><a title=' 0.0%' class=ank>8</a>
+<TR valign=top align=right class=odd><TD>7593<TD align=left class=sc>Rodic D<TD><a TITLE=" Article AMFITEATRU ECONOMIC Title: TIMING OF PROACTIVE ORGANIZATIONAL CONSULTING: DIFFERENCE BETWEEN ORGANIZATIONAL PERCEPTION AND BEHAVIOUR" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>1</a><TD><a title=' 0.0%' class=ank>3</a>
+<TR valign=top align=right class=evn><TD>7594<TD align=left class=sc>Rodin S<TD><a TITLE=" BOOK CHAPTER FOREIGN POLICY OF THE EUROPEA Title: The European Union and the Western Balkans: Does the Lisbon Treaty Matter?" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>1</a>
+<TR valign=top align=right class=odd><TD>7595<TD align=left class=sc>Roding C<TD><a TITLE=" Article NATURE Title: Apidima Cave fossils provide earliest evidence of Homo sapiens in Eurasia" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.1%' class=ank>94</a>
+<TR valign=top align=right class=evn><TD>7596<TD align=left class=sc>Rodler AS<TD><a TITLE=" Article JOURNAL OF ARCHAEOLOGICAL SCI Title: Provenancing ancient pigments: Lead isotope analyses of the copper compound of egyptian blue pigments from ancient mediterranean artefacts" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>9</a>
+<TR valign=top align=right class=odd><TD>7597<TD align=left class=sc>Rodogno D<TD><a TITLE=" Article EUROPEAN HISTORY QUARTERLY Title: Italiani brava gente? Fascist Italy&#39;s policy toward the Jews in the Balkans, April 1941-July 1943" href=javascript:na() class=nu>1</a><TD><a title=' 0.0%' class=ank>3</a><TD><a title=' 0.0%' class=ank>17</a>
+<TR valign=top align=right class=evn><TD>7598<TD align=left class=sc>Rodondi N<TD><a TITLE=" Article PLOS ONE Title: Multimorbidity in Adult Asylum Seekers: A First Overview" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>18</a>
+<TR valign=top align=right class=odd><TD>7599<TD align=left class=sc>Rodoplu F<TD><a TITLE=" Article BALKAN ARASTRMA ENSTITUSU DER Title: THE IMPORTANCE OF SHEIKS AND DERVISHES&#39; SPRITUAL IMPACT OF TURKS IN THE BALKANS: THE EXAMPLE OF DEMIR BABA" href=javascript:na() class=nu>1</a><TD>0<TD>0
+<TR valign=top align=right class=evn><TD>7600<TD align=left class=sc>Rodorigo M<TD><a TITLE=" Article ESTUDIOS SOBRE EDUCACION Title: Interprofessional Coordination in Schools: A Bet for Inclusion" href=javascript:na() class=nu>1</a><TD>0<TD><a title=' 0.0%' class=ank>3</a>
+</TABLE>
+<div style="margin: 5px 0;font:12px Verdana;">Page&nbsp;<b>38</b> of 51 &nbsp;<a href=au-name.html class=nu>1</a>&nbsp; &nbsp;<a href=au-name-11.html class=nu>11</a>&nbsp; &nbsp;<a href=au-name-21.html class=nu>21</a>&nbsp;<span class=nonprn>: [  &nbsp;<a href=au-name-31.html class=nu>31</a> &nbsp;<a href=au-name-32.html class=nu>32</a> &nbsp;<a href=au-name-33.html class=nu>33</a> &nbsp;<a href=au-name-34.html class=nu>34</a> &nbsp;<a href=au-name-35.html class=nu>35</a> &nbsp;<a href=au-name-36.html class=nu>36</a> &nbsp;<a href=au-name-37.html class=nu>37</a> &nbsp;38 &nbsp;<a href=au-name-39.html class=nu>39</a> &nbsp;<a href=au-name-40.html class=nu>40</a> ]</span> &nbsp;<a href=au-name-41.html class=nu>41</a>&nbsp; &nbsp;<a href=au-name-51.html class=nu>51</a>&nbsp;</div>
+</BODY>
